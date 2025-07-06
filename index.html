@@ -93,6 +93,22 @@
             border: 1px solid #d1d5db;
             border-radius: 0.75rem;
             overflow: hidden; /* Hide any overflow from the scanner component */
+            position: relative; /* For video/canvas positioning */
+            min-height: 300px; /* Ensure scanner area is visible */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #333; /* Dark background for scanner area */
+        }
+        #video-preview {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover; /* Cover the area, cropping if necessary */
+            transform: scaleX(-1); /* Mirror effect for selfie camera, remove if using rear camera */
+        }
+        #qr-canvas {
+            display: none; /* Hidden canvas for processing frames */
         }
         #scanned-result, #ticket-status {
             margin-top: 1rem;
@@ -209,7 +225,10 @@
         <!-- QR Scanner Section -->
         <div id="qr-scanner-section" class="p-6 border border-gray-200 rounded-lg shadow-sm">
             <h2 class="section-header">Escanear Entrada</h2>
-            <div id="reader" class="mb-4"></div>
+            <div id="reader">
+                <video id="video-preview" autoplay playsinline></video>
+                <canvas id="qr-canvas"></canvas>
+            </div>
             <div id="scanned-result" class="hidden"></div>
             <div id="ticket-status" class="hidden"></div>
             <button id="mark-used-btn" class="button-primary w-full mt-4 hidden">Marcar como Usada</button>
@@ -218,8 +237,8 @@
 
     <!-- QR Code Generator Library -->
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-    <!-- HTML5-QR Code Scanner Library -->
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- jsQR Library for QR code scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.0.0/dist/jsQR.min.js"></script>
     <!-- JSZip Library for creating ZIP files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- FileSaver.js for saving files -->
@@ -230,7 +249,12 @@
         // In a real application, this would be a backend database like Firestore.
         let ticketsDB = {};
         let currentScannedTicketId = null;
-        let html5QrCodeScanner = null; 
+        
+        let video = document.getElementById('video-preview');
+        let canvasElement = document.getElementById('qr-canvas');
+        let canvas = canvasElement.getContext('2d');
+        let scanning = false;
+        let videoStream = null; // To store the media stream
 
         // Get DOM elements
         const showGeneratorBtn = document.getElementById('show-generator-btn');
@@ -261,19 +285,12 @@
         const markUsedBtn = document.getElementById('mark-used-btn');
         const qrReaderDiv = document.getElementById('reader');
 
-        // Function to hide all sections
+        // Function to hide all sections and stop scanner
         function hideAllSections() {
             ticketGeneratorSection.classList.add('hidden');
             batchTicketGeneratorSection.classList.add('hidden');
             qrScannerSection.classList.add('hidden');
-            // Stop scanner if it's running when switching away from scanner section
-            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) { 
-                html5QrCodeScanner.stop().then(() => {
-                    console.log("QR scanning stopped.");
-                }).catch((err) => {
-                    console.error("Error stopping QR scanning:", err);
-                });
-            }
+            stopQrScanner(); // Ensure scanner is stopped when switching sections
         }
 
         // Function to reset button styles
@@ -326,15 +343,13 @@
             });
 
             // Wait for the QR code to be rendered in the temp div
-            // This is a hacky way; a better way would be to use a library that returns data URL directly
-            await new Promise(resolve => setTimeout(resolve, 50)); // Give it a moment to render
+            await new Promise(resolve => setTimeout(resolve, 50)); 
 
             const qrCanvas = tempQrDiv.querySelector('canvas');
             let qrDataURL = '';
             if (qrCanvas) {
                 qrDataURL = qrCanvas.toDataURL('image/png');
             } else {
-                // Fallback for older browsers or if QR code renders as img
                 const qrImg = tempQrDiv.querySelector('img');
                 if (qrImg) {
                     qrDataURL = qrImg.src;
@@ -570,73 +585,37 @@
                 });
         }
 
+        // --- QR Scanner Logic (using jsQR) ---
 
         // Function to start the QR scanner
         async function startQrScanner() {
-            // Ensure previous scanner instance is stopped before starting a new one
-            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
-                await html5QrCodeScanner.stop().then(() => {
-                    console.log("QR scanning stopped.");
-                }).catch((err) => {
-                    console.error("Error stopping QR scanning:", err);
-                });
-            }
-            initializeScanner();
-        }
+            stopQrScanner(); // Ensure any existing stream is stopped
 
-        async function initializeScanner() {
-            // Clear previous results
             scannedResultDiv.classList.add('hidden');
             ticketStatusDiv.classList.add('hidden');
             markUsedBtn.classList.add('hidden');
             scannedResultDiv.textContent = '';
             ticketStatusDiv.textContent = '';
-
-            // Limpiar el contenido del lector antes de renderizar uno nuevo
-            qrReaderDiv.innerHTML = '';
-
-            // Check if Html5Qrcode is loaded
-            if (typeof Html5Qrcode === 'undefined') {
-                displayMessage('La librería del escáner QR no se ha cargado correctamente. Intenta recargar la página.', 'error');
-                console.error('Html5Qrcode library is not loaded.');
-                return;
-            }
+            
+            // Set canvas dimensions to match video
+            canvasElement.width = video.videoWidth;
+            canvasElement.height = video.videoHeight;
 
             try {
-                // Get available cameras
-                const cameras = await Html5Qrcode.getCameras();
-
-                if (cameras && cameras.length) {
-                    // Stop any existing scanner instance before creating a new one
-                    if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
-                        await html5QrCodeScanner.stop().catch(e => console.warn("Error stopping previous scanner instance:", e));
+                // Request camera access
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "environment", // Prefer rear camera
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
                     }
-
-                    // Create a new instance of Html5Qrcode
-                    html5QrCodeScanner = new Html5Qrcode("reader");
-                    
-                    // Start scanning using the first camera found, preferring rear camera
-                    await html5QrCodeScanner.start(
-                        { facingMode: "environment" }, // Prefer rear camera
-                        {
-                            fps: 10,
-                            qrbox: { width: 250, height: 250 },
-                            disableFlip: false // Set to true if QR codes are inverted
-                        },
-                        onScanSuccess,
-                        (errorMessage) => {
-                            // Only log errors that are not just "no QR code found"
-                            if (!errorMessage.includes("No QR code found")) {
-                                console.warn(`QR scan error: ${errorMessage}`);
-                                displayMessage(`Error en el escáner: ${errorMessage}.`, 'error');
-                            }
-                        }
-                    );
-                    displayMessage('Escáner de QR iniciado. Apunta la cámara a un código.', 'info');
-                } else {
-                    displayMessage('No se encontraron cámaras en este dispositivo. Asegúrate de que tu dispositivo tenga una cámara y que esté habilitada.', 'error');
-                    console.error('No cameras found.');
-                }
+                });
+                video.srcObject = videoStream;
+                video.setAttribute("playsinline", true); // Required for iOS
+                video.play();
+                scanning = true;
+                requestAnimationFrame(tick); // Start scanning loop
+                displayMessage('Escáner de QR iniciado. Apunta la cámara a un código.', 'info');
             } catch (err) {
                 let userFriendlyMessage = `Error al iniciar la cámara: ${err.message}.`;
                 if (err.name === 'NotAllowedError') {
@@ -651,13 +630,52 @@
                     userFriendlyMessage = 'Tu navegador no soporta la API de la cámara o la configuración solicitada.';
                 }
                 displayMessage(userFriendlyMessage, 'error');
-                console.error('Error accessing camera:', err);
+                console.error('Error accessing camera for scanning:', err);
+                scanning = false;
             }
         }
 
-        // Callback function for successful QR scan
-        function onScanSuccess(decodedText, decodedResult) {
-            console.log(`QR code detected: ${decodedText}`, decodedResult);
+        // Function to stop the QR scanner
+        function stopQrScanner() {
+            scanning = false;
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                videoStream = null;
+            }
+            canvas.clearRect(0, 0, canvasElement.width, canvasElement.height); // Clear canvas
+        }
+
+        // Scanning loop
+        function tick() {
+            if (!scanning || video.readyState !== video.HAVE_ENOUGH_DATA) {
+                if (scanning) requestAnimationFrame(tick); // Keep trying if scanning is true but video not ready
+                return;
+            }
+
+            // Set canvas dimensions dynamically based on video
+            canvasElement.width = video.videoWidth;
+            canvasElement.height = video.videoHeight;
+
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert", // Try to avoid inverted QR codes for faster scanning
+            });
+
+            if (code) {
+                // QR code found
+                onScanSuccess(code.data);
+                stopQrScanner(); // Stop scanning after successful read
+            } else {
+                // No QR code found, continue scanning
+                requestAnimationFrame(tick);
+            }
+        }
+
+        // Callback function for successful QR scan (from jsQR)
+        function onScanSuccess(decodedText) {
+            console.log(`QR code detected: ${decodedText}`);
             currentScannedTicketId = decodedText;
             scannedResultDiv.classList.remove('hidden');
             scannedResultDiv.textContent = `Código Escaneado: ${decodedText}`;
