@@ -230,7 +230,6 @@
         // In a real application, this would be a backend database like Firestore.
         let ticketsDB = {};
         let currentScannedTicketId = null;
-        // Cambiado de Html5QrcodeScanner a Html5Qrcode para usar el método .start()
         let html5QrCodeScanner = null; 
 
         // Get DOM elements
@@ -247,15 +246,15 @@
         const generatedTicketInfo = document.getElementById('generated-ticket-info');
         const ticketIdDisplay = document.getElementById('ticket-id-display');
         const qrcodeSingleDiv = document.getElementById('qrcode-single');
-        const shareSingleQrBtn = document.getElementById('share-single-qr-btn'); // New share button
+        const shareSingleQrBtn = document.getElementById('share-single-qr-btn'); 
 
         const batchTicketNamesTextarea = document.getElementById('batch-ticket-names');
         const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
         const generatedBatchTicketsInfo = document.getElementById('generated-batch-tickets-info');
         const batchQRCodesDisplay = document.getElementById('batch-qrcodes-display');
-        const selectAllQRsBtn = document.getElementById('select-all-qrs-btn'); // New select all button
-        const shareSelectedQRsBtn = document.getElementById('share-selected-qrs-btn'); // New share selected button
-        const downloadSelectedQRsBtn = document.getElementById('download-selected-qrs-btn'); // New download selected button
+        const selectAllQRsBtn = document.getElementById('select-all-qrs-btn'); 
+        const shareSelectedQRsBtn = document.getElementById('share-selected-qrs-btn'); 
+        const downloadSelectedQRsBtn = document.getElementById('download-selected-qrs-btn'); 
 
         const scannedResultDiv = document.getElementById('scanned-result');
         const ticketStatusDiv = document.getElementById('ticket-status');
@@ -268,7 +267,7 @@
             batchTicketGeneratorSection.classList.add('hidden');
             qrScannerSection.classList.add('hidden');
             // Stop scanner if it's running when switching away from scanner section
-            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) { // isScanning is a property of Html5Qrcode
+            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) { 
                 html5QrCodeScanner.stop().then(() => {
                     console.log("QR scanning stopped.");
                 }).catch((err) => {
@@ -603,34 +602,33 @@
                 return;
             }
 
-            // Check for cameras before rendering
             try {
+                // Get available cameras
                 const cameras = await Html5Qrcode.getCameras();
+
                 if (cameras && cameras.length) {
                     // Stop any existing scanner instance before creating a new one
                     if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
-                        await html5QrCodeScanner.stop().catch(e => console.warn("Error stopping previous scanner:", e));
+                        await html5QrCodeScanner.stop().catch(e => console.warn("Error stopping previous scanner instance:", e));
                     }
 
-                    // Instanciamos Html5Qrcode para usar el método .start()
+                    // Create a new instance of Html5Qrcode
                     html5QrCodeScanner = new Html5Qrcode("reader");
                     
-                    // Explicitly start the scanner with the camera
-                    // Using `cameraId` directly from the detected cameras
+                    // Start scanning using the first camera found, preferring rear camera
                     await html5QrCodeScanner.start(
-                        cameras[0].id, // Use the ID of the first detected camera
+                        { facingMode: "environment" }, // Prefer rear camera
                         {
                             fps: 10,
                             qrbox: { width: 250, height: 250 },
-                            facingMode: "environment" // Prefer rear camera if available
+                            disableFlip: false // Set to true if QR codes are inverted
                         },
                         onScanSuccess,
                         (errorMessage) => {
                             // Only log errors that are not just "no QR code found"
                             if (!errorMessage.includes("No QR code found")) {
                                 console.warn(`QR scan error: ${errorMessage}`);
-                                // More specific error message for camera issues
-                                displayMessage(`Error en el escáner: ${errorMessage}. Asegúrate de que la cámara esté disponible y no esté siendo utilizada por otra aplicación.`, 'error');
+                                displayMessage(`Error en el escáner: ${errorMessage}.`, 'error');
                             }
                         }
                     );
@@ -640,7 +638,7 @@
                     console.error('No cameras found.');
                 }
             } catch (err) {
-                let userFriendlyMessage = `Error general al acceder a la cámara: ${err.message}.`;
+                let userFriendlyMessage = `Error al iniciar la cámara: ${err.message}.`;
                 if (err.name === 'NotAllowedError') {
                     userFriendlyMessage = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
                 } else if (err.name === 'NotFoundError') {
@@ -649,6 +647,8 @@
                     userFriendlyMessage = 'La cámara está en uso o no se puede acceder a ella. Cierra otras aplicaciones que puedan estar usando la cámara e inténtalo de nuevo.';
                 } else if (err.name === 'AbortError') {
                     userFriendlyMessage = 'La operación de la cámara fue abortada. Esto puede ocurrir si cierras rápidamente la sección o si hay un problema interno.';
+                } else if (err.name === 'NotSupportedError') {
+                    userFriendlyMessage = 'Tu navegador no soporta la API de la cámara o la configuración solicitada.';
                 }
                 displayMessage(userFriendlyMessage, 'error');
                 console.error('Error accessing camera:', err);
