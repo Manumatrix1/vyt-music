@@ -230,7 +230,8 @@
         // In a real application, this would be a backend database like Firestore.
         let ticketsDB = {};
         let currentScannedTicketId = null;
-        let html5QrCodeScanner = null; // Declare scanner instance globally
+        // Cambiado de Html5QrcodeScanner a Html5Qrcode para usar el método .start()
+        let html5QrCodeScanner = null; 
 
         // Get DOM elements
         const showGeneratorBtn = document.getElementById('show-generator-btn');
@@ -267,7 +268,7 @@
             batchTicketGeneratorSection.classList.add('hidden');
             qrScannerSection.classList.add('hidden');
             // Stop scanner if it's running when switching away from scanner section
-            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
+            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) { // isScanning is a property of Html5Qrcode
                 html5QrCodeScanner.stop().then(() => {
                     console.log("QR scanning stopped.");
                 }).catch((err) => {
@@ -599,46 +600,26 @@
             try {
                 const cameras = await Html5Qrcode.getCameras();
                 if (cameras && cameras.length) {
-                    // Use the first camera found
-                    const cameraId = cameras[0].id;
-                    html5QrCodeScanner = new Html5QrcodeScanner(
-                        "reader", {
-                            fps: 10,
-                            qrbox: {
-                                width: 250,
-                                height: 250
-                            },
-                            facingMode: "environment" // Prefer rear camera
-                        },
-                        /* verbose= */ false
-                    );
+                    // Instanciamos Html5Qrcode para usar el método .start()
+                    html5QrCodeScanner = new Html5Qrcode("reader");
                     
                     // Explicitly start the scanner with the camera
-                    html5QrCodeScanner.start(cameraId, {
-                        fps: 10,
-                        qrbox: { width: 250, height: 250 },
-                        facingMode: "environment"
-                    }, onScanSuccess, (errorMessage) => {
-                        // Only log errors that are not just "no QR code found"
-                        if (!errorMessage.includes("No QR code found")) {
-                            console.warn(`QR scan error: ${errorMessage}`);
-                            // More specific error message for camera issues
-                            displayMessage(`Error en el escáner: ${errorMessage}. Asegúrate de que la cámara esté disponible y no esté siendo utilizada por otra aplicación.`, 'error');
+                    await html5QrCodeScanner.start(
+                        { facingMode: "environment" }, // Prefer rear camera
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 }
+                        },
+                        onScanSuccess,
+                        (errorMessage) => {
+                            // Only log errors that are not just "no QR code found"
+                            if (!errorMessage.includes("No QR code found")) {
+                                console.warn(`QR scan error: ${errorMessage}`);
+                                // More specific error message for camera issues
+                                displayMessage(`Error en el escáner: ${errorMessage}. Asegúrate de que la cámara esté disponible y no esté siendo utilizada por otra aplicación.`, 'error');
+                            }
                         }
-                    }).catch((err) => {
-                        let userFriendlyMessage = `Error al iniciar la cámara: ${err.message}.`;
-                        if (err.name === 'NotAllowedError') {
-                            userFriendlyMessage = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
-                        } else if (err.name === 'NotFoundError') {
-                            userFriendlyMessage = 'No se encontró una cámara compatible. Asegúrate de que tu dispositivo tenga una cámara.';
-                        } else if (err.name === 'NotReadableError' || err.name === 'OverconstrainedError') {
-                            userFriendlyMessage = 'La cámara está en uso o no se puede acceder a ella. Cierra otras aplicaciones que puedan estar usando la cámara e inténtalo de nuevo.';
-                        } else if (err.name === 'AbortError') {
-                            userFriendlyMessage = 'La operación de la cámara fue abortada. Esto puede ocurrir si cierras rápidamente la sección o si hay un problema interno.';
-                        }
-                        displayMessage(userFriendlyMessage, 'error');
-                        console.error('Error starting camera:', err);
-                    });
+                    );
                     displayMessage('Escáner de QR iniciado. Apunta la cámara a un código.', 'info');
                 } else {
                     displayMessage('No se encontraron cámaras en este dispositivo. Asegúrate de que tu dispositivo tenga una cámara y que esté habilitada.', 'error');
@@ -652,6 +633,8 @@
                     userFriendlyMessage = 'No se encontró una cámara compatible. Asegúrate de que tu dispositivo tenga una cámara.';
                 } else if (err.name === 'NotReadableError' || err.name === 'OverconstrainedError') {
                     userFriendlyMessage = 'La cámara está en uso o no se puede acceder a ella. Cierra otras aplicaciones que puedan estar usando la cámara e inténtalo de nuevo.';
+                } else if (err.name === 'AbortError') {
+                    userFriendlyMessage = 'La operación de la cámara fue abortada. Esto puede ocurrir si cierras rápidamente la sección o si hay un problema interno.';
                 }
                 displayMessage(userFriendlyMessage, 'error');
                 console.error('Error accessing camera:', err);
