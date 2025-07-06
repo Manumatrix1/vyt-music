@@ -616,16 +616,24 @@
                         // Only log errors that are not just "no QR code found"
                         if (!errorMessage.includes("No QR code found")) {
                             console.warn(`QR scan error: ${errorMessage}`);
-                            displayMessage(`Error en el escáner: ${errorMessage}`, 'error');
+                            displayMessage(`Error en el escáner: ${errorMessage}. Asegúrate de que la cámara esté disponible y no esté siendo utilizada por otra aplicación.`, 'error');
                         }
                     });
                     displayMessage('Escáner de QR iniciado. Apunta la cámara a un código.', 'info');
                 } else {
-                    displayMessage('No se encontraron cámaras en este dispositivo.', 'error');
+                    displayMessage('No se encontraron cámaras en este dispositivo. Asegúrate de que tu dispositivo tenga una cámara y que esté habilitada.', 'error');
                     console.error('No cameras found.');
                 }
             } catch (err) {
-                displayMessage(`Error al acceder a la cámara: ${err.message}`, 'error');
+                let userFriendlyMessage = `Error al acceder a la cámara: ${err.message}.`;
+                if (err.name === 'NotAllowedError') {
+                    userFriendlyMessage = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
+                } else if (err.name === 'NotFoundError') {
+                    userFriendlyMessage = 'No se encontró una cámara compatible. Asegúrate de que tu dispositivo tenga una cámara.';
+                } else if (err.name === 'NotReadableError' || err.name === 'OverconstrainedError') {
+                    userFriendlyMessage = 'La cámara está en uso o no se puede acceder a ella. Cierra otras aplicaciones que puedan estar usando la cámara e inténtalo de nuevo.';
+                }
+                displayMessage(userFriendlyMessage, 'error');
                 console.error('Error accessing camera:', err);
             }
         }
