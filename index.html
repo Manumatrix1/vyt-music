@@ -70,7 +70,7 @@
             margin-bottom: 1rem;
         }
         /* Style for QR code container */
-        .qrcode-container { /* Changed from #qrcode to .qrcode-container for multiple QRs */
+        .qrcode-container {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -123,6 +123,34 @@
             margin-bottom: 1rem;
             background-color: #f9fafb; /* Gray 50 */
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative; /* For checkbox positioning */
+        }
+        .share-button {
+            background-color: #10b981; /* Emerald 500 */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .share-button:hover {
+            background-color: #059669; /* Emerald 600 */
+        }
+        .checkbox-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        .batch-action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
     </style>
 </head>
@@ -132,7 +160,7 @@
         <p class="text-lg text-center text-gray-600 mb-8">Sistema de Control de Entradas con QR</p>
 
         <!-- Navigation Buttons -->
-        <div class="flex justify-center space-x-4 mb-8">
+        <div class="flex justify-center flex-wrap gap-4 mb-8">
             <button id="show-generator-btn" class="button-primary">Generar Entrada Individual</button>
             <button id="show-batch-generator-btn" class="button-secondary">Generar Múltiples Entradas</button>
             <button id="show-scanner-btn" class="button-secondary">Escanear Entrada</button>
@@ -152,6 +180,7 @@
                 <p class="text-gray-700 text-sm">ID de la Entrada:</p>
                 <p id="ticket-id-display" class="text-xl font-bold text-indigo-700 break-words"></p>
                 <div id="qrcode-single" class="qrcode-container"></div> <!-- Unique ID for single QR -->
+                <button id="share-single-qr-btn" class="share-button">Compartir QR</button>
             </div>
         </div>
 
@@ -166,7 +195,12 @@
 
             <div id="generated-batch-tickets-info" class="mt-6 hidden">
                 <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Entradas Generadas:</h3>
-                <div id="batch-qrcodes-display" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="batch-action-buttons">
+                    <button id="select-all-qrs-btn" class="button-secondary">Seleccionar Todos</button>
+                    <button id="share-selected-qrs-btn" class="share-button">Compartir Seleccionados</button>
+                    <button id="download-selected-qrs-btn" class="button-secondary">Descargar Seleccionados</button>
+                </div>
+                <div id="batch-qrcodes-display" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                     <!-- QR codes will be dynamically inserted here -->
                 </div>
             </div>
@@ -186,6 +220,10 @@
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <!-- HTML5-QR Code Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- JSZip Library for creating ZIP files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- FileSaver.js for saving files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <script>
         // In-memory database for tickets (for demonstration purposes only)
@@ -196,23 +234,27 @@
 
         // Get DOM elements
         const showGeneratorBtn = document.getElementById('show-generator-btn');
-        const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn'); // New button
+        const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
         const showScannerBtn = document.getElementById('show-scanner-btn');
 
         const ticketGeneratorSection = document.getElementById('ticket-generator-section');
-        const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section'); // New section
+        const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
         const qrScannerSection = document.getElementById('qr-scanner-section');
 
         const ticketHolderNameInput = document.getElementById('ticket-holder-name');
         const generateTicketBtn = document.getElementById('generate-ticket-btn');
         const generatedTicketInfo = document.getElementById('generated-ticket-info');
         const ticketIdDisplay = document.getElementById('ticket-id-display');
-        const qrcodeSingleDiv = document.getElementById('qrcode-single'); // Renamed for clarity
+        const qrcodeSingleDiv = document.getElementById('qrcode-single');
+        const shareSingleQrBtn = document.getElementById('share-single-qr-btn'); // New share button
 
-        const batchTicketNamesTextarea = document.getElementById('batch-ticket-names'); // New textarea
-        const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn'); // New button
-        const generatedBatchTicketsInfo = document.getElementById('generated-batch-tickets-info'); // New div
-        const batchQRCodesDisplay = document.getElementById('batch-qrcodes-display'); // New div for multiple QRs
+        const batchTicketNamesTextarea = document.getElementById('batch-ticket-names');
+        const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
+        const generatedBatchTicketsInfo = document.getElementById('generated-batch-tickets-info');
+        const batchQRCodesDisplay = document.getElementById('batch-qrcodes-display');
+        const selectAllQRsBtn = document.getElementById('select-all-qrs-btn'); // New select all button
+        const shareSelectedQRsBtn = document.getElementById('share-selected-qrs-btn'); // New share selected button
+        const downloadSelectedQRsBtn = document.getElementById('download-selected-qrs-btn'); // New download selected button
 
         const scannedResultDiv = document.getElementById('scanned-result');
         const ticketStatusDiv = document.getElementById('ticket-status');
@@ -268,11 +310,42 @@
         }
 
         // Function to generate a single QR code and update DB
-        function createAndDisplayTicket(name, containerElement) {
+        async function createAndDisplayTicket(name, containerElement, isBatch = false) {
             const ticketId = generateUniqueTicketId();
+            
+            // Create a temporary div for QR code generation to get the data URL
+            const tempQrDiv = document.createElement('div');
+            // QRCode library requires a DOM element to render to
+            new QRCode(tempQrDiv, {
+                text: ticketId,
+                width: isBatch ? 150 : 200, // Smaller QR for batch display
+                height: isBatch ? 150 : 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Wait for the QR code to be rendered in the temp div
+            // This is a hacky way; a better way would be to use a library that returns data URL directly
+            await new Promise(resolve => setTimeout(resolve, 50)); // Give it a moment to render
+
+            const qrCanvas = tempQrDiv.querySelector('canvas');
+            let qrDataURL = '';
+            if (qrCanvas) {
+                qrDataURL = qrCanvas.toDataURL('image/png');
+            } else {
+                // Fallback for older browsers or if QR code renders as img
+                const qrImg = tempQrDiv.querySelector('img');
+                if (qrImg) {
+                    qrDataURL = qrImg.src;
+                }
+            }
+            
+            // Store ticket data including the QR image data URL
             ticketsDB[ticketId] = {
                 status: 'valid',
-                name: name
+                name: name,
+                qrDataURL: qrDataURL
             };
 
             // Clear previous QR code if it's a single generation
@@ -283,48 +356,59 @@
             // Create a new div for the QR code and text
             const ticketCard = document.createElement('div');
             ticketCard.className = 'ticket-card text-center';
+            ticketCard.dataset.ticketId = ticketId; // Store ticket ID for selection
+
+            if (isBatch) {
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'checkbox-container';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'ticket-checkbox w-5 h-5 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500';
+                checkbox.dataset.ticketId = ticketId;
+                checkboxContainer.appendChild(checkbox);
+                ticketCard.appendChild(checkboxContainer);
+            }
 
             const namePara = document.createElement('p');
-            namePara.className = 'text-lg font-semibold text-gray-800 mb-2';
+            namePara.className = 'text-lg font-semibold text-gray-800 mb-2 mt-4'; // Added mt-4 for checkbox spacing
             namePara.textContent = `Titular: ${name}`;
 
             const idPara = document.createElement('p');
             idPara.className = 'text-sm text-gray-600 mb-2 break-words';
             idPara.textContent = `ID: ${ticketId}`;
 
-            const qrCodeWrapper = document.createElement('div');
-            qrCodeWrapper.className = 'qrcode-container mx-auto'; // Use the class for styling
-            qrCodeWrapper.style.width = '150px'; // Smaller QR for batch display
-            qrCodeWrapper.style.height = '150px';
+            const qrImage = document.createElement('img');
+            qrImage.src = qrDataURL;
+            qrImage.alt = `QR Code for ${name}`;
+            qrImage.style.width = isBatch ? '150px' : '200px';
+            qrImage.style.height = isBatch ? '150px' : '200px';
+            qrImage.className = 'mx-auto';
+
+            const shareButton = document.createElement('button');
+            shareButton.className = 'share-button';
+            shareButton.textContent = 'Compartir QR';
+            shareButton.onclick = () => shareQrCode(ticketId);
 
             ticketCard.appendChild(namePara);
             ticketCard.appendChild(idPara);
-            ticketCard.appendChild(qrCodeWrapper);
+            ticketCard.appendChild(qrImage);
+            ticketCard.appendChild(shareButton);
 
             containerElement.appendChild(ticketCard);
-
-            new QRCode(qrCodeWrapper, {
-                text: ticketId,
-                width: 150,
-                height: 150,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
 
             console.log('Ticket generado:', ticketsDB[ticketId]);
             return ticketId; // Return the generated ID
         }
 
         // Function to handle individual ticket generation
-        function generateIndividualTicket() {
+        async function generateIndividualTicket() {
             const ticketHolderName = ticketHolderNameInput.value.trim();
             if (!ticketHolderName) {
                 displayMessage('Por favor, ingresa el nombre del titular de la entrada.', 'error');
                 return;
             }
 
-            const generatedId = createAndDisplayTicket(ticketHolderName, qrcodeSingleDiv);
+            const generatedId = await createAndDisplayTicket(ticketHolderName, qrcodeSingleDiv);
             ticketIdDisplay.textContent = generatedId;
             generatedTicketInfo.classList.remove('hidden');
             ticketHolderNameInput.value = ''; // Clear input after generation
@@ -332,7 +416,7 @@
         }
 
         // Function to handle batch ticket generation
-        function generateBatchTickets() {
+        async function generateBatchTickets() {
             const namesInput = batchTicketNamesTextarea.value.trim();
             if (!namesInput) {
                 displayMessage('Por favor, ingresa al menos un nombre para generar entradas.', 'error');
@@ -350,34 +434,157 @@
             batchQRCodesDisplay.innerHTML = ''; // Clear previous batch QRs
             let generatedCount = 0;
 
-            names.forEach(name => {
-                createAndDisplayTicket(name, batchQRCodesDisplay);
+            for (const name of names) { // Use for...of with await
+                await createAndDisplayTicket(name, batchQRCodesDisplay, true); // Pass true for isBatch
                 generatedCount++;
-            });
+            }
 
             generatedBatchTicketsInfo.classList.remove('hidden');
             batchTicketNamesTextarea.value = ''; // Clear textarea
             displayMessage(`¡Se generaron ${generatedCount} entradas exitosamente!`, 'success');
         }
 
+        // Function to share a single QR code
+        async function shareQrCode(ticketId) {
+            const ticket = ticketsDB[ticketId];
+            if (!ticket || !ticket.qrDataURL) {
+                displayMessage('Error: QR no encontrado para compartir.', 'error');
+                return;
+            }
 
-        // Function to start the QR scanner
-        function startQrScanner() {
-            // Ensure previous scanner instance is stopped before starting a new one
-            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
-                html5QrCodeScanner.stop().then(() => {
-                    console.log("Previous QR scanning stopped before starting new.");
-                    initializeScanner();
-                }).catch((err) => {
-                    console.error("Error stopping previous QR scanning:", err);
-                    initializeScanner(); // Try to initialize anyway
-                });
+            // Convert data URL to Blob for sharing
+            const blob = await (await fetch(ticket.qrDataURL)).blob();
+            const file = new File([blob], `${ticket.name}_${ticketId}.png`, { type: 'image/png' });
+
+            if (navigator.share && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: `Entrada VYTMUSIC para ${ticket.name}`,
+                        text: `Aquí tienes tu entrada para VYTMUSIC. ID: ${ticketId}`
+                    });
+                    displayMessage('QR compartido exitosamente.', 'success');
+                } catch (error) {
+                    console.error('Error al compartir QR:', error);
+                    displayMessage('No se pudo compartir el QR. Intenta descargarlo.', 'error');
+                    // Fallback to download if sharing fails
+                    saveAs(file, `${ticket.name}_${ticketId}.png`);
+                }
             } else {
-                initializeScanner();
+                displayMessage('Tu navegador no soporta la función de compartir. Descargando el QR...', 'info');
+                saveAs(file, `${ticket.name}_${ticketId}.png`);
             }
         }
 
-        function initializeScanner() {
+        // Function to select/deselect all checkboxes
+        function toggleSelectAllQRs() {
+            const checkboxes = document.querySelectorAll('.ticket-checkbox');
+            const allSelected = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => {
+                cb.checked = !allSelected;
+            });
+        }
+
+        // Function to share selected QR codes (as a ZIP file)
+        async function shareSelectedQRs() {
+            const selectedCheckboxes = document.querySelectorAll('.ticket-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                displayMessage('Por favor, selecciona al menos una entrada para compartir.', 'info');
+                return;
+            }
+
+            const zip = new JSZip();
+            const filesToShare = [];
+
+            displayMessage('Preparando QRs para compartir...', 'info');
+
+            for (const checkbox of selectedCheckboxes) {
+                const ticketId = checkbox.dataset.ticketId;
+                const ticket = ticketsDB[ticketId];
+                if (ticket && ticket.qrDataURL) {
+                    const blob = await (await fetch(ticket.qrDataURL)).blob();
+                    const fileName = `${ticket.name.replace(/[^a-zA-Z0-9]/g, '_')}_${ticketId}.png`;
+                    zip.file(fileName, blob);
+                    filesToShare.push(new File([blob], fileName, { type: 'image/png' }));
+                }
+            }
+
+            if (filesToShare.length === 0) {
+                displayMessage('No se encontraron QRs válidos para compartir.', 'error');
+                return;
+            }
+
+            // Try to use Web Share API for multiple files if supported
+            if (navigator.share && navigator.canShare({ files: filesToShare })) {
+                try {
+                    await navigator.share({
+                        files: filesToShare,
+                        title: 'Entradas VYTMUSIC Seleccionadas',
+                        text: 'Aquí tienes las entradas seleccionadas para VYTMUSIC.'
+                    });
+                    displayMessage('QRs seleccionados compartidos exitosamente.', 'success');
+                } catch (error) {
+                    console.error('Error al compartir QRs seleccionados:', error);
+                    displayMessage('No se pudo compartir los QRs. Generando archivo ZIP...', 'error');
+                    // Fallback to ZIP download
+                    generateAndDownloadZip(zip);
+                }
+            } else {
+                displayMessage('Tu navegador no soporta compartir múltiples archivos. Generando archivo ZIP...', 'info');
+                generateAndDownloadZip(zip);
+            }
+        }
+
+        // Function to generate and download a ZIP file of selected QR codes
+        async function downloadSelectedQRs() {
+            const selectedCheckboxes = document.querySelectorAll('.ticket-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                displayMessage('Por favor, selecciona al menos una entrada para descargar.', 'info');
+                return;
+            }
+
+            const zip = new JSZip();
+            displayMessage('Preparando QRs para descargar...', 'info');
+
+            for (const checkbox of selectedCheckboxes) {
+                const ticketId = checkbox.dataset.ticketId;
+                const ticket = ticketsDB[ticketId];
+                if (ticket && ticket.qrDataURL) {
+                    const blob = await (await fetch(ticket.qrDataURL)).blob();
+                    const fileName = `${ticket.name.replace(/[^a-zA-Z0-9]/g, '_')}_${ticketId}.png`;
+                    zip.file(fileName, blob);
+                }
+            }
+            generateAndDownloadZip(zip);
+        }
+
+        function generateAndDownloadZip(zip) {
+            zip.generateAsync({ type: "blob" })
+                .then(function (content) {
+                    saveAs(content, "VYTMUSIC_Entradas_QR.zip");
+                    displayMessage('Archivo ZIP de QRs descargado exitosamente.', 'success');
+                })
+                .catch(error => {
+                    console.error('Error al generar el ZIP:', error);
+                    displayMessage('Error al generar el archivo ZIP.', 'error');
+                });
+        }
+
+
+        // Function to start the QR scanner
+        async function startQrScanner() {
+            // Ensure previous scanner instance is stopped before starting a new one
+            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
+                await html5QrCodeScanner.stop().then(() => {
+                    console.log("QR scanning stopped.");
+                }).catch((err) => {
+                    console.error("Error stopping QR scanning:", err);
+                });
+            }
+            initializeScanner();
+        }
+
+        async function initializeScanner() {
             // Clear previous results
             scannedResultDiv.classList.add('hidden');
             ticketStatusDiv.classList.add('hidden');
@@ -388,18 +595,39 @@
             // Limpiar el contenido del lector antes de renderizar uno nuevo
             qrReaderDiv.innerHTML = '';
 
-            html5QrCodeScanner = new Html5QrcodeScanner(
-                "reader", {
-                    fps: 10,
-                    qrbox: {
-                        width: 250,
-                        height: 250
-                    }
-                },
-                /* verbose= */ false
-            );
-
-            html5QrCodeScanner.render(onScanSuccess, onScanError);
+            // Check for cameras before rendering
+            try {
+                const cameras = await Html5Qrcode.getCameras();
+                if (cameras && cameras.length) {
+                    // Use the first camera found
+                    const cameraId = cameras[0].id;
+                    html5QrCodeScanner = new Html5QrcodeScanner(
+                        "reader", {
+                            fps: 10,
+                            qrbox: {
+                                width: 250,
+                                height: 250
+                            },
+                            facingMode: "environment" // Prefer rear camera
+                        },
+                        /* verbose= */ false
+                    );
+                    html5QrCodeScanner.render(onScanSuccess, (errorMessage) => {
+                        // Only log errors that are not just "no QR code found"
+                        if (!errorMessage.includes("No QR code found")) {
+                            console.warn(`QR scan error: ${errorMessage}`);
+                            displayMessage(`Error en el escáner: ${errorMessage}`, 'error');
+                        }
+                    });
+                    displayMessage('Escáner de QR iniciado. Apunta la cámara a un código.', 'info');
+                } else {
+                    displayMessage('No se encontraron cámaras en este dispositivo.', 'error');
+                    console.error('No cameras found.');
+                }
+            } catch (err) {
+                displayMessage(`Error al acceder a la cámara: ${err.message}`, 'error');
+                console.error('Error accessing camera:', err);
+            }
         }
 
         // Callback function for successful QR scan
@@ -430,12 +658,6 @@
                 ticketStatusDiv.classList.remove('status-valid', 'status-used');
                 ticketStatusDiv.classList.add('status-invalid');
             }
-        }
-
-        // Callback function for QR scan error
-        function onScanError(errorMessage) {
-            // console.warn(`QR scan error: ${errorMessage}`);
-            // This can be noisy, so only log if needed for debugging
         }
 
         // Function to mark ticket as used
@@ -493,11 +715,17 @@
 
         // Event Listeners
         showGeneratorBtn.addEventListener('click', () => switchSection('ticket-generator-section'));
-        showBatchGeneratorBtn.addEventListener('click', () => switchSection('batch-ticket-generator-section')); // New event listener
+        showBatchGeneratorBtn.addEventListener('click', () => switchSection('batch-ticket-generator-section'));
         showScannerBtn.addEventListener('click', () => switchSection('qr-scanner-section'));
-        generateTicketBtn.addEventListener('click', generateIndividualTicket); // Renamed function
-        generateBatchTicketsBtn.addEventListener('click', generateBatchTickets); // New event listener
+        generateTicketBtn.addEventListener('click', generateIndividualTicket);
+        generateBatchTicketsBtn.addEventListener('click', generateBatchTickets);
         markUsedBtn.addEventListener('click', markTicketAsUsed);
+
+        // New event listeners for batch actions
+        selectAllQRsBtn.addEventListener('click', toggleSelectAllQRs);
+        shareSelectedQRsBtn.addEventListener('click', shareSelectedQRs);
+        downloadSelectedQRsBtn.addEventListener('click', downloadSelectedQRs);
+
 
         // Initial setup: show generator section by default
         window.onload = () => {
