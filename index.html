@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Entradas VYTMUSIC</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Mover la configuración de Tailwind después de que el CDN de Tailwind se haya cargado.
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .button-primary {
+            background-color: #6366f1; /* Indigo 500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .button-primary:hover {
+            background-color: #4f46e5; /* Indigo 600 */
+        }
+        .button-secondary {
+            background-color: #e0e7ff; /* Indigo 100 */
+            color: #4f46e5; /* Indigo 600 */
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .button-secondary:hover {
+            background-color: #c7d2fe; /* Indigo 200 */
+        }
+        .section-header {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            color: #1f2937; /* Gray 900 */
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db; /* Gray 300 */
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        /* Style for QR code container */
+        .qrcode-container { /* Changed from #qrcode to .qrcode-container for multiple QRs */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            background-color: #f9fafb; /* Gray 50 */
+            border-radius: 0.75rem;
+            margin-top: 1.5rem;
+            min-height: 200px; /* Ensure visibility even if QR is small */
+        }
+        .qrcode-container img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* QR Scanner specific styles */
+        #reader {
+            width: 100%;
+            max-width: 400px; /* Limit scanner width for better aspect ratio */
+            margin: 0 auto;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            overflow: hidden; /* Hide any overflow from the scanner component */
+        }
+        #scanned-result, #ticket-status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .status-valid {
+            background-color: #d1fae5; /* Green 100 */
+            color: #065f46; /* Green 800 */
+        }
+        .status-used {
+            background-color: #fee2e2; /* Red 100 */
+            color: #991b1b; /* Red 800 */
+        }
+        .status-invalid {
+            background-color: #fef3c7; /* Yellow 100 */
+            color: #92400e; /* Yellow 800 */
+        }
+        .hidden {
+            display: none;
+        }
+        .ticket-card {
+            border: 1px solid #e5e7eb; /* Gray 200 */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background-color: #f9fafb; /* Gray 50 */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="font-inter antialiased">
+    <div class="container">
+        <h1 class="text-4xl font-extrabold text-center text-indigo-700 mb-6">VYTMUSIC</h1>
+        <p class="text-lg text-center text-gray-600 mb-8">Sistema de Control de Entradas con QR</p>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-center space-x-4 mb-8">
+            <button id="show-generator-btn" class="button-primary">Generar Entrada Individual</button>
+            <button id="show-batch-generator-btn" class="button-secondary">Generar Múltiples Entradas</button>
+            <button id="show-scanner-btn" class="button-secondary">Escanear Entrada</button>
+        </div>
+
+        <!-- Ticket Generator Section (Individual) -->
+        <div id="ticket-generator-section" class="p-6 border border-gray-200 rounded-lg shadow-sm">
+            <h2 class="section-header">Generar Nueva Entrada Individual</h2>
+            <div class="mb-4">
+                <label for="ticket-holder-name" class="block text-gray-700 text-sm font-bold mb-2">Nombre del Titular:</label>
+                <input type="text" id="ticket-holder-name" class="input-field" placeholder="Ej: Juan Pérez">
+            </div>
+            <button id="generate-ticket-btn" class="button-primary w-full">Generar Entrada QR</button>
+
+            <div id="generated-ticket-info" class="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-center hidden">
+                <p class="text-indigo-800 font-semibold mb-2">¡Entrada Generada Exitosamente!</p>
+                <p class="text-gray-700 text-sm">ID de la Entrada:</p>
+                <p id="ticket-id-display" class="text-xl font-bold text-indigo-700 break-words"></p>
+                <div id="qrcode-single" class="qrcode-container"></div> <!-- Unique ID for single QR -->
+            </div>
+        </div>
+
+        <!-- Batch Ticket Generator Section -->
+        <div id="batch-ticket-generator-section" class="p-6 border border-gray-200 rounded-lg shadow-sm hidden">
+            <h2 class="section-header">Generar Múltiples Entradas</h2>
+            <div class="mb-4">
+                <label for="batch-ticket-names" class="block text-gray-700 text-sm font-bold mb-2">Nombres de los Titulares (uno por línea o separados por comas):</label>
+                <textarea id="batch-ticket-names" class="input-field h-32" placeholder="Ej:&#10;Mauro&#10;Ana&#10;Carlos&#10;Sofía"></textarea>
+            </div>
+            <button id="generate-batch-tickets-btn" class="button-primary w-full">Generar Entradas QR por Lotes</button>
+
+            <div id="generated-batch-tickets-info" class="mt-6 hidden">
+                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Entradas Generadas:</h3>
+                <div id="batch-qrcodes-display" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- QR codes will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Scanner Section -->
+        <div id="qr-scanner-section" class="p-6 border border-gray-200 rounded-lg shadow-sm hidden">
+            <h2 class="section-header">Escanear Entrada</h2>
+            <div id="reader" class="mb-4"></div>
+            <div id="scanned-result" class="hidden"></div>
+            <div id="ticket-status" class="hidden"></div>
+            <button id="mark-used-btn" class="button-primary w-full mt-4 hidden">Marcar como Usada</button>
+        </div>
+    </div>
+
+    <!-- QR Code Generator Library -->
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <!-- HTML5-QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <script>
+        // In-memory database for tickets (for demonstration purposes only)
+        // In a real application, this would be a backend database like Firestore.
+        let ticketsDB = {};
+        let currentScannedTicketId = null;
+        let html5QrCodeScanner = null; // Declare scanner instance globally
+
+        // Get DOM elements
+        const showGeneratorBtn = document.getElementById('show-generator-btn');
+        const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn'); // New button
+        const showScannerBtn = document.getElementById('show-scanner-btn');
+
+        const ticketGeneratorSection = document.getElementById('ticket-generator-section');
+        const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section'); // New section
+        const qrScannerSection = document.getElementById('qr-scanner-section');
+
+        const ticketHolderNameInput = document.getElementById('ticket-holder-name');
+        const generateTicketBtn = document.getElementById('generate-ticket-btn');
+        const generatedTicketInfo = document.getElementById('generated-ticket-info');
+        const ticketIdDisplay = document.getElementById('ticket-id-display');
+        const qrcodeSingleDiv = document.getElementById('qrcode-single'); // Renamed for clarity
+
+        const batchTicketNamesTextarea = document.getElementById('batch-ticket-names'); // New textarea
+        const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn'); // New button
+        const generatedBatchTicketsInfo = document.getElementById('generated-batch-tickets-info'); // New div
+        const batchQRCodesDisplay = document.getElementById('batch-qrcodes-display'); // New div for multiple QRs
+
+        const scannedResultDiv = document.getElementById('scanned-result');
+        const ticketStatusDiv = document.getElementById('ticket-status');
+        const markUsedBtn = document.getElementById('mark-used-btn');
+        const qrReaderDiv = document.getElementById('reader');
+
+        // Function to hide all sections
+        function hideAllSections() {
+            ticketGeneratorSection.classList.add('hidden');
+            batchTicketGeneratorSection.classList.add('hidden');
+            qrScannerSection.classList.add('hidden');
+            // Stop scanner if it's running when switching away from scanner section
+            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
+                html5QrCodeScanner.stop().then(() => {
+                    console.log("QR scanning stopped.");
+                }).catch((err) => {
+                    console.error("Error stopping QR scanning:", err);
+                });
+            }
+        }
+
+        // Function to reset button styles
+        function resetButtonStyles() {
+            showGeneratorBtn.classList.add('button-secondary');
+            showGeneratorBtn.classList.remove('button-primary');
+            showBatchGeneratorBtn.classList.add('button-secondary');
+            showBatchGeneratorBtn.classList.remove('button-primary');
+            showScannerBtn.classList.add('button-secondary');
+            showScannerBtn.classList.remove('button-primary');
+        }
+
+        // Function to switch between sections
+        function switchSection(sectionId) {
+            hideAllSections();
+            resetButtonStyles();
+
+            if (sectionId === 'ticket-generator-section') {
+                ticketGeneratorSection.classList.remove('hidden');
+                showGeneratorBtn.classList.add('button-primary');
+            } else if (sectionId === 'batch-ticket-generator-section') {
+                batchTicketGeneratorSection.classList.remove('hidden');
+                showBatchGeneratorBtn.classList.add('button-primary');
+            } else if (sectionId === 'qr-scanner-section') {
+                qrScannerSection.classList.remove('hidden');
+                showScannerBtn.classList.add('button-primary');
+                startQrScanner(); // Start scanner when switching to scanner section
+            }
+        }
+
+        // Function to generate a unique ticket ID
+        function generateUniqueTicketId() {
+            return 'VYTMUSIC-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+        }
+
+        // Function to generate a single QR code and update DB
+        function createAndDisplayTicket(name, containerElement) {
+            const ticketId = generateUniqueTicketId();
+            ticketsDB[ticketId] = {
+                status: 'valid',
+                name: name
+            };
+
+            // Clear previous QR code if it's a single generation
+            if (containerElement === qrcodeSingleDiv) {
+                containerElement.innerHTML = '';
+            }
+
+            // Create a new div for the QR code and text
+            const ticketCard = document.createElement('div');
+            ticketCard.className = 'ticket-card text-center';
+
+            const namePara = document.createElement('p');
+            namePara.className = 'text-lg font-semibold text-gray-800 mb-2';
+            namePara.textContent = `Titular: ${name}`;
+
+            const idPara = document.createElement('p');
+            idPara.className = 'text-sm text-gray-600 mb-2 break-words';
+            idPara.textContent = `ID: ${ticketId}`;
+
+            const qrCodeWrapper = document.createElement('div');
+            qrCodeWrapper.className = 'qrcode-container mx-auto'; // Use the class for styling
+            qrCodeWrapper.style.width = '150px'; // Smaller QR for batch display
+            qrCodeWrapper.style.height = '150px';
+
+            ticketCard.appendChild(namePara);
+            ticketCard.appendChild(idPara);
+            ticketCard.appendChild(qrCodeWrapper);
+
+            containerElement.appendChild(ticketCard);
+
+            new QRCode(qrCodeWrapper, {
+                text: ticketId,
+                width: 150,
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            console.log('Ticket generado:', ticketsDB[ticketId]);
+            return ticketId; // Return the generated ID
+        }
+
+        // Function to handle individual ticket generation
+        function generateIndividualTicket() {
+            const ticketHolderName = ticketHolderNameInput.value.trim();
+            if (!ticketHolderName) {
+                displayMessage('Por favor, ingresa el nombre del titular de la entrada.', 'error');
+                return;
+            }
+
+            const generatedId = createAndDisplayTicket(ticketHolderName, qrcodeSingleDiv);
+            ticketIdDisplay.textContent = generatedId;
+            generatedTicketInfo.classList.remove('hidden');
+            ticketHolderNameInput.value = ''; // Clear input after generation
+            displayMessage('¡Entrada Generada Exitosamente!', 'success');
+        }
+
+        // Function to handle batch ticket generation
+        function generateBatchTickets() {
+            const namesInput = batchTicketNamesTextarea.value.trim();
+            if (!namesInput) {
+                displayMessage('Por favor, ingresa al menos un nombre para generar entradas.', 'error');
+                return;
+            }
+
+            // Split names by newline or comma, filter empty strings
+            const names = namesInput.split(/[\n,]+/).map(name => name.trim()).filter(name => name.length > 0);
+
+            if (names.length === 0) {
+                displayMessage('No se encontraron nombres válidos para generar entradas.', 'error');
+                return;
+            }
+
+            batchQRCodesDisplay.innerHTML = ''; // Clear previous batch QRs
+            let generatedCount = 0;
+
+            names.forEach(name => {
+                createAndDisplayTicket(name, batchQRCodesDisplay);
+                generatedCount++;
+            });
+
+            generatedBatchTicketsInfo.classList.remove('hidden');
+            batchTicketNamesTextarea.value = ''; // Clear textarea
+            displayMessage(`¡Se generaron ${generatedCount} entradas exitosamente!`, 'success');
+        }
+
+
+        // Function to start the QR scanner
+        function startQrScanner() {
+            // Ensure previous scanner instance is stopped before starting a new one
+            if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
+                html5QrCodeScanner.stop().then(() => {
+                    console.log("Previous QR scanning stopped before starting new.");
+                    initializeScanner();
+                }).catch((err) => {
+                    console.error("Error stopping previous QR scanning:", err);
+                    initializeScanner(); // Try to initialize anyway
+                });
+            } else {
+                initializeScanner();
+            }
+        }
+
+        function initializeScanner() {
+            // Clear previous results
+            scannedResultDiv.classList.add('hidden');
+            ticketStatusDiv.classList.add('hidden');
+            markUsedBtn.classList.add('hidden');
+            scannedResultDiv.textContent = '';
+            ticketStatusDiv.textContent = '';
+
+            // Limpiar el contenido del lector antes de renderizar uno nuevo
+            qrReaderDiv.innerHTML = '';
+
+            html5QrCodeScanner = new Html5QrcodeScanner(
+                "reader", {
+                    fps: 10,
+                    qrbox: {
+                        width: 250,
+                        height: 250
+                    }
+                },
+                /* verbose= */ false
+            );
+
+            html5QrCodeScanner.render(onScanSuccess, onScanError);
+        }
+
+        // Callback function for successful QR scan
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`QR code detected: ${decodedText}`, decodedResult);
+            currentScannedTicketId = decodedText;
+            scannedResultDiv.classList.remove('hidden');
+            scannedResultDiv.textContent = `Código Escaneado: ${decodedText}`;
+
+            const ticket = ticketsDB[decodedText];
+
+            ticketStatusDiv.classList.remove('hidden');
+            markUsedBtn.classList.add('hidden'); // Hide by default
+
+            if (ticket) {
+                if (ticket.status === 'valid') {
+                    ticketStatusDiv.textContent = `Estado: Válida (${ticket.name})`;
+                    ticketStatusDiv.classList.remove('status-used', 'status-invalid');
+                    ticketStatusDiv.classList.add('status-valid');
+                    markUsedBtn.classList.remove('hidden');
+                } else if (ticket.status === 'used') {
+                    ticketStatusDiv.textContent = `Estado: Ya Utilizada (${ticket.name})`;
+                    ticketStatusDiv.classList.remove('status-valid', 'status-invalid');
+                    ticketStatusDiv.classList.add('status-used');
+                }
+            } else {
+                ticketStatusDiv.textContent = 'Estado: Entrada Inválida o No Encontrada';
+                ticketStatusDiv.classList.remove('status-valid', 'status-used');
+                ticketStatusDiv.classList.add('status-invalid');
+            }
+        }
+
+        // Callback function for QR scan error
+        function onScanError(errorMessage) {
+            // console.warn(`QR scan error: ${errorMessage}`);
+            // This can be noisy, so only log if needed for debugging
+        }
+
+        // Function to mark ticket as used
+        function markTicketAsUsed() {
+            if (currentScannedTicketId && ticketsDB[currentScannedTicketId] && ticketsDB[currentScannedTicketId].status === 'valid') {
+                ticketsDB[currentScannedTicketId].status = 'used';
+                ticketStatusDiv.textContent = `Estado: Marcada como Usada (${ticketsDB[currentScannedTicketId].name})`;
+                ticketStatusDiv.classList.remove('status-valid');
+                ticketStatusDiv.classList.add('status-used');
+                markUsedBtn.classList.add('hidden');
+                console.log('Ticket marcado como usado:', currentScannedTicketId);
+                displayMessage('Entrada marcada como usada.', 'success');
+            }
+        }
+
+        // Función para mostrar mensajes al usuario (reemplazo de alert)
+        function displayMessage(message, type) {
+            const messageBox = document.createElement('div');
+            messageBox.textContent = message;
+            messageBox.style.padding = '1rem';
+            messageBox.style.borderRadius = '0.5rem';
+            messageBox.style.marginTop = '1rem';
+            messageBox.style.textAlign = 'center';
+            messageBox.style.fontWeight = '600';
+            messageBox.style.transition = 'opacity 0.5s ease-out';
+            messageBox.style.opacity = '1';
+            messageBox.style.position = 'fixed'; // Fixed position
+            messageBox.style.top = '20px'; // From top
+            messageBox.style.left = '50%'; // Center horizontally
+            messageBox.style.transform = 'translateX(-50%)'; // Adjust for centering
+            messageBox.style.zIndex = '1000'; // Ensure it's on top
+            messageBox.style.minWidth = '300px'; // Minimum width
+            messageBox.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'; // Subtle shadow
+
+            if (type === 'success') {
+                messageBox.style.backgroundColor = '#d1fae5'; /* Green 100 */
+                messageBox.style.color = '#065f46'; /* Green 800 */
+            } else if (type === 'error') {
+                messageBox.style.backgroundColor = '#fee2e2'; /* Red 100 */
+                messageBox.style.color = '#991b1b'; /* Red 800 */
+            } else {
+                messageBox.style.backgroundColor = '#fef3c7'; /* Yellow 100 */
+                messageBox.style.color = '#92400e'; /* Yellow 800 */
+            }
+
+            document.body.appendChild(messageBox);
+
+            // Eliminar el mensaje después de un tiempo
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                messageBox.addEventListener('transitionend', () => messageBox.remove());
+            }, 3000);
+        }
+
+
+        // Event Listeners
+        showGeneratorBtn.addEventListener('click', () => switchSection('ticket-generator-section'));
+        showBatchGeneratorBtn.addEventListener('click', () => switchSection('batch-ticket-generator-section')); // New event listener
+        showScannerBtn.addEventListener('click', () => switchSection('qr-scanner-section'));
+        generateTicketBtn.addEventListener('click', generateIndividualTicket); // Renamed function
+        generateBatchTicketsBtn.addEventListener('click', generateBatchTickets); // New event listener
+        markUsedBtn.addEventListener('click', markTicketAsUsed);
+
+        // Initial setup: show generator section by default
+        window.onload = () => {
+            switchSection('ticket-generator-section');
+        };
+    </script>
+</body>
+</html>
