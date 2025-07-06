@@ -105,10 +105,14 @@
             height: auto;
             display: block;
             object-fit: cover; /* Cover the area, cropping if necessary */
-            transform: scaleX(-1); /* Mirror effect for selfie camera, remove if using rear camera */
         }
         #qr-canvas {
-            display: none; /* Hidden canvas for processing frames */
+            position: absolute; /* Overlay canvas on video */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none; /* Hidden canvas for processing frames, will be shown for drawing */
         }
         #scanned-result, #ticket-status {
             margin-top: 1rem;
@@ -227,7 +231,7 @@
             <h2 class="section-header">Escanear Entrada</h2>
             <div id="reader">
                 <video id="video-preview" autoplay playsinline></video>
-                <canvas id="qr-canvas"></canvas>
+                <canvas id="qr-canvas"></canvas> <!-- Canvas for drawing detection box -->
             </div>
             <div id="scanned-result" class="hidden"></div>
             <div id="ticket-status" class="hidden"></div>
@@ -542,11 +546,11 @@
                     console.error('Error al compartir QRs seleccionados:', error);
                     displayMessage('No se pudo compartir los QRs. Generando archivo ZIP...', 'error');
                     // Fallback to ZIP download
-                    generateAndDownloadZip(zip);
+                    generateAndZipAndDownload(zip);
                 }
             } else {
                 displayMessage('Tu navegador no soporta compartir múltiples archivos. Generando archivo ZIP...', 'info');
-                generateAndDownloadZip(zip);
+                generateAndZipAndDownload(zip);
             }
         }
 
@@ -570,10 +574,10 @@
                     zip.file(fileName, blob);
                 }
             }
-            generateAndDownloadZip(zip);
+            generateAndZipAndDownload(zip);
         }
 
-        function generateAndDownloadZip(zip) {
+        function generateAndZipAndDownload(zip) {
             zip.generateAsync({ type: "blob" })
                 .then(function (content) {
                     saveAs(content, "VYTMUSIC_Entradas_QR.zip");
@@ -597,9 +601,8 @@
             scannedResultDiv.textContent = '';
             ticketStatusDiv.textContent = '';
             
-            // Set canvas dimensions to match video
-            canvasElement.width = video.videoWidth;
-            canvasElement.height = video.videoHeight;
+            // Ensure canvas is visible for drawing detection box
+            canvasElement.style.display = 'block';
 
             try {
                 // Request camera access
@@ -612,10 +615,18 @@
                 });
                 video.srcObject = videoStream;
                 video.setAttribute("playsinline", true); // Required for iOS
-                video.play();
-                scanning = true;
-                requestAnimationFrame(tick); // Start scanning loop
-                displayMessage('Escáner de QR iniciado. Apunta la cámara a un código.', 'info');
+                
+                // Wait for video metadata to load before playing and starting scan
+                video.onloadedmetadata = () => {
+                    video.play();
+                    scanning = true;
+                    // Set canvas dimensions to match video after it's loaded
+                    canvasElement.width = video.videoWidth;
+                    canvasElement.height = video.videoHeight;
+                    requestAnimationFrame(tick); // Start scanning loop
+                    displayMessage('Escáner de QR iniciado. Apunta la cámara a un código.', 'info');
+                };
+
             } catch (err) {
                 let userFriendlyMessage = `Error al iniciar la cámara: ${err.message}.`;
                 if (err.name === 'NotAllowedError') {
@@ -632,6 +643,7 @@
                 displayMessage(userFriendlyMessage, 'error');
                 console.error('Error accessing camera for scanning:', err);
                 scanning = false;
+                canvasElement.style.display = 'none'; // Hide canvas if camera fails
             }
         }
 
@@ -644,6 +656,17 @@
                 videoStream = null;
             }
             canvas.clearRect(0, 0, canvasElement.width, canvasElement.height); // Clear canvas
+            canvasElement.style.display = 'none'; // Hide canvas
+        }
+
+        // Drawing function for QR code bounding box
+        function drawLine(begin, end, color) {
+            canvas.beginPath();
+            canvas.moveTo(begin.x, begin.y);
+            canvas.lineTo(end.x, end.y);
+            canvas.lineWidth = 4;
+            canvas.strokeStyle = color;
+            canvas.stroke();
         }
 
         // Scanning loop
@@ -660,11 +683,16 @@
             canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
             const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
             const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                inversionAttempts: "dontInvert", // Try to avoid inverted QR codes for faster scanning
+                inversionAttempts: "attemptBoth", // Try both normal and inverted QR codes
             });
 
             if (code) {
                 // QR code found
+                drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#00FF00");
+                drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#00FF00");
+                drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#00FF00");
+                drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#00FF00");
+
                 onScanSuccess(code.data);
                 stopQrScanner(); // Stop scanning after successful read
             } else {
