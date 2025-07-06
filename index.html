@@ -260,6 +260,24 @@
         let scanning = false;
         let videoStream = null; // To store the media stream
 
+        // Global variables for the logo images
+        let logoNegro = new Image();
+        logoNegro.src = 'uploaded:LOGO NEGRO.jpg-014a468e-dce4-4df6-8bce-a2575e30369c'; // Updated contentFetchId for LOGO NEGRO.jpg
+        logoNegro.onerror = () => console.error("Error al cargar el logo negro.");
+
+        let logoBlanco = new Image();
+        logoBlanco.src = 'uploaded:logo blanco.jpg-77eec31c-0e38-4c9f-bfbd-d802a22e026a'; // contentFetchId for logo blanco.jpg
+        logoBlanco.onerror = () => console.error("Error al cargar el logo blanco.");
+
+        // Wait for both logos to load
+        const loadLogosPromise = Promise.all([
+            new Promise(resolve => { logoNegro.onload = resolve; }),
+            new Promise(resolve => { logoBlanco.onload = resolve; })
+        ]);
+
+        // Your phone number
+        const VYTMUSIC_PHONE = '34177422062';
+
         // Get DOM elements
         const showGeneratorBtn = document.getElementById('show-generator-btn');
         const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
@@ -330,41 +348,109 @@
             return 'VYTMUSIC-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9).toUpperCase();
         }
 
-        // Function to generate a single QR code and update DB
-        async function createAndDisplayTicket(name, containerElement, isBatch = false) {
-            const ticketId = generateUniqueTicketId();
-            
-            // Create a temporary div for QR code generation to get the data URL
-            const tempQrDiv = document.createElement('div');
-            // QRCode library requires a DOM element to render to
-            new QRCode(tempQrDiv, {
-                text: ticketId,
-                width: isBatch ? 150 : 200, // Smaller QR for batch display
-                height: isBatch ? 150 : 200,
+        // Function to create a composite QR image with details
+        async function createCompositeQrImage(ticketId, name, isBatch = false) {
+            const qrText = ticketId; // The data encoded in the QR
+
+            // Wait for logos to load before proceeding
+            await loadLogosPromise;
+
+            // Create a temporary canvas for the composite image
+            const compositeCanvas = document.createElement('canvas');
+            const compositeCtx = compositeCanvas.getContext('2d');
+
+            // Define dimensions for the composite image
+            const logoHeight = 80;
+            const qrSize = isBatch ? 150 : 200;
+            const textLineHeight = 20;
+            const padding = 15;
+            const marginBetweenElements = 10;
+
+            const canvasWidth = Math.max(qrSize + padding * 2, 300); // Ensure enough width for text
+            const canvasHeight = logoHeight + marginBetweenElements + (textLineHeight * 2) + marginBetweenElements + qrSize + marginBetweenElements + textLineHeight + padding * 2;
+
+            compositeCanvas.width = canvasWidth;
+            compositeCanvas.height = canvasHeight;
+
+            compositeCtx.fillStyle = '#ffffff'; // White background
+            compositeCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            let currentY = padding;
+
+            // 1. Draw Logo
+            // Choose which logo to draw. For now, we'll use logoNegro.
+            // You can add logic here to choose logoBlanco based on context if needed.
+            const logoToDraw = logoNegro; // Default to black logo
+            // const logoToDraw = logoBlanco; // Uncomment to use white logo
+
+            if (logoToDraw.complete && logoToDraw.naturalHeight !== 0) {
+                const logoAspectRatio = logoToDraw.width / logoToDraw.height;
+                const drawLogoHeight = logoHeight;
+                const drawLogoWidth = drawLogoHeight * logoAspectRatio;
+                const drawLogoX = (canvasWidth - drawLogoWidth) / 2;
+                compositeCtx.drawImage(logoToDraw, drawLogoX, currentY, drawLogoWidth, drawLogoHeight);
+                currentY += drawLogoHeight + marginBetweenElements;
+            } else {
+                // Fallback if logo not loaded (should be rare now with Promise.all)
+                console.warn("Logo no cargado, usando texto de fallback.");
+                compositeCtx.fillStyle = '#1f2937';
+                compositeCtx.font = 'bold 20px Inter, sans-serif';
+                compositeCtx.textAlign = 'center';
+                compositeCtx.fillText('VYTMUSIC', canvasWidth / 2, currentY + logoHeight / 2);
+                currentY += logoHeight + marginBetweenElements;
+            }
+
+            // 2. Draw Ticket Holder Name
+            compositeCtx.fillStyle = '#1f2937'; // Gray 900
+            compositeCtx.font = 'bold 18px Inter, sans-serif';
+            compositeCtx.textAlign = 'center';
+            compositeCtx.fillText(`Titular: ${name}`, canvasWidth / 2, currentY);
+            currentY += textLineHeight;
+
+            // 3. Draw Ticket ID
+            compositeCtx.font = '14px Inter, sans-serif';
+            compositeCtx.fillText(`ID: ${ticketId}`, canvasWidth / 2, currentY);
+            currentY += textLineHeight + marginBetweenElements;
+
+            // 4. Draw QR Code
+            const qrTempDiv = document.createElement('div');
+            new QRCode(qrTempDiv, {
+                text: qrText,
+                width: qrSize,
+                height: qrSize,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
 
-            // Wait for the QR code to be rendered in the temp div
-            await new Promise(resolve => setTimeout(resolve, 50)); 
-
-            const qrCanvas = tempQrDiv.querySelector('canvas');
-            let qrDataURL = '';
-            if (qrCanvas) {
-                qrDataURL = qrCanvas.toDataURL('image/png');
-            } else {
-                const qrImg = tempQrDiv.querySelector('img');
-                if (qrImg) {
-                    qrDataURL = qrImg.src;
-                }
+            // Wait for QR code to render to temp div
+            await new Promise(resolve => setTimeout(resolve, 50));
+            const qrImageElement = qrTempDiv.querySelector('canvas') || qrTempDiv.querySelector('img');
+            if (qrImageElement) {
+                const qrX = (canvasWidth - qrSize) / 2;
+                compositeCtx.drawImage(qrImageElement, qrX, currentY, qrSize, qrSize);
+                currentY += qrSize + marginBetweenElements;
             }
+
+            // 5. Draw Phone Number
+            compositeCtx.font = 'bold 16px Inter, sans-serif';
+            compositeCtx.fillStyle = '#6366f1'; // Indigo 500
+            compositeCtx.fillText(`Tel: ${VYTMUSIC_PHONE}`, canvasWidth / 2, currentY);
+            currentY += textLineHeight;
+
+            return compositeCanvas.toDataURL('image/png');
+        }
+
+        // Function to generate a single QR code and update DB (now uses createCompositeQrImage)
+        async function createAndDisplayTicket(name, containerElement, isBatch = false) {
+            const ticketId = generateUniqueTicketId();
+            const finalQrDataURL = await createCompositeQrImage(ticketId, name, isBatch);
             
-            // Store ticket data including the QR image data URL
+            // Store ticket data including the composite QR image data URL
             ticketsDB[ticketId] = {
                 status: 'valid',
                 name: name,
-                qrDataURL: qrDataURL
+                qrDataURL: finalQrDataURL // This is the combined image
             };
 
             // Clear previous QR code if it's a single generation
@@ -397,7 +483,7 @@
             idPara.textContent = `ID: ${ticketId}`;
 
             const qrImage = document.createElement('img');
-            qrImage.src = qrDataURL;
+            qrImage.src = finalQrDataURL; // Use the composite image
             qrImage.alt = `QR Code for ${name}`;
             qrImage.style.width = isBatch ? '150px' : '200px';
             qrImage.style.height = isBatch ? '150px' : '200px';
@@ -545,7 +631,7 @@
                 } catch (error) {
                     console.error('Error al compartir QRs seleccionados:', error);
                     displayMessage('No se pudo compartir los QRs. Generando archivo ZIP...', 'error');
-                    // Fallback to ZIP download
+                    // Fallback to download
                     generateAndZipAndDownload(zip);
                 }
             } else {
