@@ -207,7 +207,7 @@
         </div>
 
         <!-- QR Scanner Section -->
-        <div id="qr-scanner-section" class="p-6 border border-gray-200 rounded-lg shadow-sm hidden">
+        <div id="qr-scanner-section" class="p-6 border border-gray-200 rounded-lg shadow-sm">
             <h2 class="section-header">Escanear Entrada</h2>
             <div id="reader" class="mb-4"></div>
             <div id="scanned-result" class="hidden"></div>
@@ -596,19 +596,33 @@
             // Limpiar el contenido del lector antes de renderizar uno nuevo
             qrReaderDiv.innerHTML = '';
 
+            // Check if Html5Qrcode is loaded
+            if (typeof Html5Qrcode === 'undefined') {
+                displayMessage('La librería del escáner QR no se ha cargado correctamente. Intenta recargar la página.', 'error');
+                console.error('Html5Qrcode library is not loaded.');
+                return;
+            }
+
             // Check for cameras before rendering
             try {
                 const cameras = await Html5Qrcode.getCameras();
                 if (cameras && cameras.length) {
+                    // Stop any existing scanner instance before creating a new one
+                    if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
+                        await html5QrCodeScanner.stop().catch(e => console.warn("Error stopping previous scanner:", e));
+                    }
+
                     // Instanciamos Html5Qrcode para usar el método .start()
                     html5QrCodeScanner = new Html5Qrcode("reader");
                     
                     // Explicitly start the scanner with the camera
+                    // Using `cameraId` directly from the detected cameras
                     await html5QrCodeScanner.start(
-                        { facingMode: "environment" }, // Prefer rear camera
+                        cameras[0].id, // Use the ID of the first detected camera
                         {
                             fps: 10,
-                            qrbox: { width: 250, height: 250 }
+                            qrbox: { width: 250, height: 250 },
+                            facingMode: "environment" // Prefer rear camera if available
                         },
                         onScanSuccess,
                         (errorMessage) => {
