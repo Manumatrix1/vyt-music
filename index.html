@@ -575,7 +575,7 @@
             <h2 class="section-header">Entradas Registradas</h2>
             <div class="mb-4">
                 <label for="ticket-search-input" class="block text-gray-700 text-sm font-bold mb-2">Buscar por Nombre o ID:</label>
-                <input type="text" id="ticket-search-input" class="input-field" placeholder="Ej: Juan Pérez o VYTMUSIC-...">
+                <input type="text" id="ticket-search-input" class="input-field" placeholder="Ej: Juan Pérez o VYTMUSIC-..."></input>
             </div>
             <div class="summary-cards">
                 <div class="summary-card valid">
@@ -617,11 +617,19 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
+        // IMPORTANT: These variables (__app_id, __firebase_config, __initial_auth_token) are expected
+        // to be provided by the Canvas environment as global variables.
+        // Do NOT declare them with 'const' or 'let' at the top level of this module script,
+        // as that can cause a 'ReferenceError' if they are also defined globally elsewhere.
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // jsQR Library for QR code scanning
+        // Note: For module imports like this, jsQR might not be globally available.
+        // If you encounter 'jsQR is not defined', you might need to adjust how it's imported
+        // or ensure the CDN explicitly makes it global.
         import "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
         
         console.log("JavaScript is running!"); // Debug: Script loaded
@@ -631,8 +639,11 @@
             console.log("DOM fully loaded and parsed. Initializing script...");
 
             // --- Firebase Initialization ---
+            // Access global variables provided by the Canvas environment
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
+
 
             let app;
             let db;
@@ -648,8 +659,8 @@
                 auth = getAuth(app);
 
                 // Authenticate user
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
                     console.log("Signed in with custom token.");
                 } else {
                     await signInAnonymously(auth);
@@ -695,8 +706,8 @@
             // debido a restricciones de seguridad (CORS - Cross-Origin Resource Sharing).
             // Para que tu logo real aparezca, debes subirlo a un servicio de alojamiento de imágenes público
             // (por ejemplo, Google Cloud Storage, Imgur, tu propio servidor web, etc.) y usar su URL pública aquí.
-            // Por ahora, se usará texto de respaldo si la imagen no se carga.
-            const logoUrl = 'uploaded:image_8bf34f.jpg-1059de73-997b-48d3-a7fe-db6f042e9072'; 
+            // Por ahora, se usará una URL de placeholder.
+            const logoUrl = 'https://placehold.co/50x50/000000/FFFFFF?text=LOGO'; 
             let logoImage = new Image();
             logoImage.crossOrigin = "Anonymous"; 
 
@@ -707,7 +718,7 @@
                     resolve();
                 };
                 logoImage.onerror = () => {
-                    console.error("Error al cargar el logo. Se usará texto de respaldo.");
+                    console.error("Error al cargar el logo. Se usará texto de respaldo o se omitirá el logo.");
                     logoImage = null; // Establecer a null para indicar que la carga falló
                     resolve(); // Resolver la promesa de todos modos para que la aplicación no se cuelgue
                 };
@@ -738,7 +749,7 @@
             const whatsappSingleQrBtn = document.getElementById('whatsapp-single-qr-btn'); // Nuevo botón de WhatsApp
 
             const batchTicketNamesTextarea = document.getElementById('batch-ticket-names');
-            const generateBatchTicketsBtn = document = document.getElementById('generate-batch-tickets-btn');
+            const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
             const generatedBatchTicketsInfo = document.getElementById('generated-batch-tickets-info');
             const batchQRCodesDisplay = document.getElementById('batch-qrcodes-display');
             const selectAllQRsBtn = document.getElementById('select-all-qrs-btn'); 
@@ -770,6 +781,8 @@
                 }
 
                 // Public collection for tickets
+                // IMPORTANT: Ensure your Firestore security rules allow read/write for authenticated users
+                // for this path: `artifacts/{appId}/public/data/vytmusic_tickets`
                 const ticketsCollectionRef = collection(db, `artifacts/${appId}/public/data/vytmusic_tickets`);
                 
                 onSnapshot(ticketsCollectionRef, (snapshot) => {
