@@ -672,7 +672,10 @@
 
             } catch (error) {
                 console.error("Error initializing Firebase or authenticating:", error);
-                displayMessage("Error al iniciar la aplicación. Por favor, recarga.", "error");
+                // Añadido para dar más detalles al usuario en la consola
+                console.error("Nombre del error:", error.name);
+                console.error("Mensaje del error:", error.message);
+                displayMessage("Error al iniciar la aplicación. Por favor, recarga. Revisa la consola para más detalles.", "error");
             }
 
             // In-memory cache for tickets (will be synchronized with Firestore)
