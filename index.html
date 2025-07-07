@@ -495,23 +495,31 @@
             let videoStream = null;
 
             // URL de un logo de marcador de posición.
-            // IMPORTANTE: Reemplaza esta URL con la URL de tu logo real.
-            const logoUrl = 'https://placehold.co/120x120/6366f1/FFFFFF?text=VYT'; 
+            // IMPORTANTE: Reemplaza esta URL con la URL de tu logo real si quieres uno.
+            // Para este cambio, no usaremos una imagen de logo, solo el texto "VYTMUSIC".
+            const logoUrl = ''; // Dejar vacío para no cargar ninguna imagen de logo
             let logoImage = new Image();
-            logoImage.crossOrigin = "Anonymous"; // Necesario para cargar imágenes de otros dominios en un canvas
+            logoImage.crossOrigin = "Anonymous"; 
 
             // Promesa para asegurar que el logo se cargue antes de usarlo.
+            // Aunque no dibujemos la imagen, mantenemos la promesa para no romper la lógica existente.
             const loadLogoPromise = new Promise(resolve => {
-                logoImage.onload = () => {
-                    console.log("Logo cargado exitosamente.");
+                if (logoUrl) { // Solo intentar cargar si hay una URL
+                    logoImage.onload = () => {
+                        console.log("Logo cargado exitosamente.");
+                        resolve();
+                    };
+                    logoImage.onerror = () => {
+                        console.error("Error al cargar el logo. Se usará texto de respaldo.");
+                        logoImage = null; // Establecer a null para indicar que la carga falló
+                        resolve(); // Resolver la promesa de todos modos para que la aplicación no se cuelgue
+                    };
+                    logoImage.src = logoUrl;
+                } else {
+                    console.log("No se proporcionó URL de logo, se usará solo texto.");
+                    logoImage = null; // Asegurarse de que no se intente dibujar una imagen
                     resolve();
-                };
-                logoImage.onerror = () => {
-                    console.error("Error al cargar el logo. Se usará texto de respaldo.");
-                    logoImage = null; // Establecer a null para indicar que la carga falló
-                    resolve(); // Resolver la promesa de todos modos para que la aplicación no se cuelgue
-                };
-                logoImage.src = logoUrl;
+                }
             });
 
             // Número de teléfono de VYTMUSIC
@@ -602,7 +610,7 @@
             async function createCompositeQrImage(ticketId, name) {
                 const qrText = ticketId;
 
-                // Esperar a que el logo se cargue antes de continuar
+                // Esperar a que el logo se cargue antes de continuar (aunque no se dibuje)
                 await loadLogoPromise;
 
                 // Crear un canvas temporal para la imagen compuesta
@@ -610,86 +618,56 @@
                 const compositeCtx = compositeCanvas.getContext('2d');
 
                 // Definir dimensiones para la imagen compuesta
-                const logoHeight = 80;
                 const qrSize = 200; // Tamaño fijo para el QR en la imagen compuesta
                 const textLineHeight = 20;
                 const padding = 15;
                 const marginBetweenElements = 10;
+                const phoneToQRMargin = 30; // Margen adicional entre QR y teléfono
 
+                // Ajustar la altura del canvas
+                const headerTextHeight = 28; // Altura para el título "VYTMUSIC"
+                const decorativeLineHeight = 4; // Altura para la línea debajo de VYTMUSIC
                 const canvasWidth = Math.max(qrSize + padding * 2, 300);
-                const canvasHeight = logoHeight + marginBetweenElements + (textLineHeight * 2) + marginBetweenElements + qrSize + marginBetweenElements + textLineHeight + padding * 2;
+                const canvasHeight = padding + headerTextHeight + marginBetweenElements + decorativeLineHeight + marginBetweenElements + (textLineHeight * 2) + marginBetweenElements + qrSize + phoneToQRMargin + textLineHeight + padding;
 
                 compositeCanvas.width = canvasWidth;
                 compositeCanvas.height = canvasHeight;
 
-                // Dibujar fondo con gradiente sutil
-                const gradient = compositeCtx.createLinearGradient(0, 0, canvasWidth, canvasHeight);
-                gradient.addColorStop(0, '#f9fafb');
-                gradient.addColorStop(1, '#e5e7eb');
-                compositeCtx.fillStyle = gradient;
+                // Dibujar fondo blanco simple (eliminado el gradiente y los arcos decorativos)
+                compositeCtx.fillStyle = '#FFFFFF';
                 compositeCtx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-                // Dibujar elementos decorativos
-                compositeCtx.fillStyle = '#6366f1';
-                compositeCtx.globalAlpha = 0.1;
-                compositeCtx.beginPath();
-                compositeCtx.arc(0, 0, 100, 0, Math.PI * 2);
-                compositeCtx.fill();
-                
-                compositeCtx.beginPath();
-                compositeCtx.arc(canvasWidth, canvasHeight, 120, 0, Math.PI * 2);
-                compositeCtx.fill();
-                compositeCtx.globalAlpha = 1;
 
                 let currentY = padding;
 
-                // Dibujar texto del logo VYTMUSIC (como respaldo si el logo real falla)
+                // Dibujar texto "VYTMUSIC" como título principal
                 compositeCtx.fillStyle = '#1f2937';
-                compositeCtx.font = 'bold 20px Inter, sans-serif';
+                compositeCtx.font = 'bold 24px Inter, sans-serif'; 
                 compositeCtx.textAlign = 'center';
-                compositeCtx.fillText('VYTMUSIC', canvasWidth / 2, currentY + 25);
+                compositeCtx.fillText('VYTMUSIC', canvasWidth / 2, currentY + (headerTextHeight / 2));
+                currentY += headerTextHeight;
 
-                // Dibujar línea decorativa debajo del logo
+                // Dibujar línea decorativa debajo del título
                 compositeCtx.beginPath();
-                compositeCtx.moveTo(canvasWidth * 0.3, currentY + 35);
-                compositeCtx.lineTo(canvasWidth * 0.7, currentY + 35);
+                compositeCtx.moveTo(canvasWidth * 0.3, currentY + 5); 
+                compositeCtx.lineTo(canvasWidth * 0.7, currentY + 5); 
                 compositeCtx.strokeStyle = '#6366f1';
                 compositeCtx.lineWidth = 2;
                 compositeCtx.stroke();
+                currentY += decorativeLineHeight + marginBetweenElements; 
 
-                currentY += logoHeight + marginBetweenElements;
-
-                // 1. Dibujar Logo (imagen real o texto de respaldo)
-                if (logoImage && logoImage.complete && logoImage.naturalHeight !== 0) {
-                    const logoAspectRatio = logoImage.width / logoImage.height;
-                    const drawLogoHeight = logoHeight;
-                    const drawLogoWidth = drawLogoHeight * logoAspectRatio;
-                    const drawLogoX = (canvasWidth - drawLogoWidth) / 2;
-                    compositeCtx.drawImage(logoImage, drawLogoX, currentY, drawLogoWidth, drawLogoHeight);
-                    currentY += drawLogoHeight + marginBetweenElements;
-                } else {
-                    console.warn("Logo no cargado o no disponible, usando texto de fallback en QR."); // Log de depuración
-                    // Texto de respaldo si la imagen falla en cargar o no está disponible
-                    compositeCtx.fillStyle = '#1f2937';
-                    compositeCtx.font = 'bold 20px Inter, sans-serif';
-                    compositeCtx.textAlign = 'center';
-                    compositeCtx.fillText('VYT-MUSIC', canvasWidth / 2, currentY + logoHeight / 2);
-                    currentY += logoHeight + marginBetweenElements;
-                }
-
-                // 2. Dibujar Nombre del Titular del Ticket
+                // 1. Dibujar Nombre del Titular del Ticket
                 compositeCtx.fillStyle = '#1f2937'; // Gris 900
                 compositeCtx.font = 'bold 18px Inter, sans-serif';
                 compositeCtx.textAlign = 'center';
                 compositeCtx.fillText(`Titular: ${name}`, canvasWidth / 2, currentY);
                 currentY += textLineHeight;
 
-                // 3. Dibujar ID del Ticket
+                // 2. Dibujar ID del Ticket
                 compositeCtx.font = '14px Inter, sans-serif';
                 compositeCtx.fillText(`ID: ${ticketId}`, canvasWidth / 2, currentY);
                 currentY += textLineHeight + marginBetweenElements;
 
-                // 4. Dibujar Código QR
+                // 3. Dibujar Código QR
                 const qrTempDiv = document.createElement('div');
                 new QRCode(qrTempDiv, {
                     text: qrText,
@@ -708,12 +686,13 @@
                     compositeCtx.fillStyle = '#ffffff'; // Fondo blanco para el QR
                     compositeCtx.fillRect(qrX - 5, currentY - 5, qrSize + 10, qrSize + 10);
                     compositeCtx.drawImage(qrImageElement, qrX, currentY, qrSize, qrSize);
-                    currentY += qrSize + marginBetweenElements;
+                    currentY += qrSize + phoneToQRMargin; // Añadir el margen adicional aquí
                 }
 
-                // 5. Dibujar Número de Teléfono
+                // 4. Dibujar Número de Teléfono
                 compositeCtx.font = 'bold 16px Inter, sans-serif';
                 compositeCtx.fillStyle = '#6366f1'; // Indigo 500
+                compositeCtx.textAlign = 'center';
                 compositeCtx.fillText(`Tel: ${VYTMUSIC_PHONE}`, canvasWidth / 2, currentY);
                 currentY += textLineHeight;
 
@@ -941,7 +920,8 @@
                             text: 'Aquí tienes las entradas seleccionadas para VYTMUSIC.'
                         });
                         displayMessage('QRs seleccionados compartidos exitosamente.', 'success');
-                    } catch (error) {
+                    }
+                    catch (error) {
                         console.error('Error al compartir QRs seleccionados:', error);
                         displayMessage('No se pudo compartir los QRs. Generando archivo ZIP...', 'error');
                         // Fallback para descargar
