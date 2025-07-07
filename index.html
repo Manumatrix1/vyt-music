@@ -640,9 +640,10 @@
 
             // --- Firebase Initialization ---
             // Access global variables provided by the Canvas environment
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
+            // Ensure these global variables are defined in a non-module script tag before this module script.
+            const appId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
+            const firebaseConfig = typeof window.__firebase_config !== 'undefined' ? JSON.parse(window.__firebase_config) : {};
+            const initialAuthToken = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : '';
 
 
             let app;
