@@ -14,7 +14,6 @@
                     fontFamily: {
                         inter: ['Inter', 'sans-serif'],
                     },
-                    // Se ha eliminado 'logo-pattern' ya que se usará una imagen real o un placeholder
                 }
             }
         }
@@ -23,7 +22,6 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f2f5;
-            /* Se ha eliminado la imagen de fondo SVG duplicada para simplificar */
         }
         .container {
             max-width: 900px;
@@ -35,7 +33,6 @@
             position: relative;
             overflow: hidden;
         }
-        /* Se ha eliminado el pseudo-elemento ::before duplicado */
         .button-primary {
             background: linear-gradient(135deg, #6366f1, #4f46e5);
             color: white;
@@ -100,7 +97,6 @@
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
-        /* Style for QR code container */
         .qrcode-container {
             display: flex;
             justify-content: center;
@@ -120,7 +116,6 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* QR Scanner specific styles */
         #reader {
             width: 100%;
             max-width: 400px;
@@ -245,6 +240,9 @@
             transform: translateY(-3px);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        .ticket-card p {
+            text-decoration: none; /* Elimina cualquier tachado */
+        }
         .share-button {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
@@ -260,6 +258,33 @@
         .share-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+        }
+        .whatsapp-button {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-top: 0.5rem; /* Ajuste para espaciado */
+            border: none;
+            box-shadow: 0 2px 4px rgba(37, 211, 102, 0.2);
+            display: flex; /* Añadido para flexbox */
+            flex-direction: column; /* Añadido para apilar el texto */
+            align-items: center; /* Centrar el texto apilado */
+            line-height: 1.2; /* Ajuste de interlineado */
+        }
+        .whatsapp-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3);
+        }
+        .whatsapp-button .main-text {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 700; /* font-bold */
+        }
+        .whatsapp-button .sub-text {
+            font-size: 0.75rem; /* text-xs */
         }
         .checkbox-container {
             position: absolute;
@@ -380,6 +405,76 @@
             background-color: #f59e0b;
             color: white;
         }
+        /* Estilos para la tabla de entradas registradas */
+        .tickets-table-container {
+            margin-top: 1.5rem;
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            overflow-x: auto; /* Para tablas responsivas */
+        }
+        .tickets-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tickets-table th, .tickets-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .tickets-table th {
+            background-color: #eff6ff;
+            color: #1f2937;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+        .tickets-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .tickets-table tbody tr:hover {
+            background-color: #f3f4f6;
+        }
+        .status-cell {
+            font-weight: 600;
+        }
+        .status-cell.valid {
+            color: #065f46; /* green-700 */
+        }
+        .status-cell.used {
+            color: #991b1b; /* red-700 */
+        }
+        .summary-cards {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .summary-card {
+            background-color: #ffffff;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            text-align: center;
+            min-width: 150px;
+        }
+        .summary-card .count {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .summary-card .label {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        .summary-card.valid .count {
+            color: #10b981; /* green-500 */
+        }
+        .summary-card.used .count {
+            color: #ef4444; /* red-500 */
+        }
     </style>
 </head>
 <body class="font-inter antialiased">
@@ -388,6 +483,7 @@
             <div class="app-logo"></div>
             <h1 class="app-title">VYTMUSIC</h1>
             <p class="app-subtitle">Sistema profesional de gestión de entradas con tecnología QR</p>
+            <p id="user-id-display" class="text-sm text-gray-500 mt-2">ID de Usuario: Cargando...</p>
         </div>
 
         <!-- Navigation Buttons -->
@@ -401,6 +497,10 @@
                 <span id="batch-count" class="ticket-count">0</span>
             </button>
             <button id="show-scanner-btn" class="button-secondary">Escanear Entrada</button>
+            <button id="show-registered-tickets-btn" class="button-secondary">
+                Ver Entradas Registradas
+                <span id="total-tickets-count" class="ticket-count">0</span>
+            </button>
         </div>
 
         <!-- Ticket Generator Section (Individual) -->
@@ -418,6 +518,10 @@
                 <p id="ticket-id-display" class="text-xl font-bold text-indigo-700 break-words"></p>
                 <div id="qrcode-single" class="qrcode-container"></div>
                 <button id="share-single-qr-btn" class="share-button">Compartir QR</button>
+                <a id="whatsapp-single-qr-btn" href="https://wa.link/yv77yc" target="_blank" class="whatsapp-button inline-flex items-center justify-center">
+                    <span class="main-text">Inscribite</span>
+                    <span class="sub-text">al Certamen de Canto</span>
+                </a>
             </div>
         </div>
 
@@ -465,25 +569,113 @@
             <div id="scanned-result" class="hidden"></div>
             <div id="ticket-status" class="hidden"></div>
         </div>
+
+        <!-- Registered Tickets Section -->
+        <div id="registered-tickets-section" class="p-6 border border-gray-200 rounded-lg shadow-sm bg-white hidden">
+            <h2 class="section-header">Entradas Registradas</h2>
+            <div class="mb-4">
+                <label for="ticket-search-input" class="block text-gray-700 text-sm font-bold mb-2">Buscar por Nombre o ID:</label>
+                <input type="text" id="ticket-search-input" class="input-field" placeholder="Ej: Juan Pérez o VYTMUSIC-...">
+            </div>
+            <div class="summary-cards">
+                <div class="summary-card valid">
+                    <div id="valid-tickets-count" class="count">0</div>
+                    <div class="label">Entradas Válidas</div>
+                </div>
+                <div class="summary-card used">
+                    <div id="used-tickets-count" class="count">0</div>
+                    <div class="label">Entradas Usadas</div>
+                </div>
+                <div class="summary-card">
+                    <div id="total-tickets-display" class="count">0</div>
+                    <div class="label">Total Entradas</div>
+                </div>
+            </div>
+            <div class="tickets-table-container mt-6">
+                <table class="tickets-table">
+                    <thead>
+                        <tr>
+                            <th>Titular</th>
+                            <th>ID de Entrada</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tickets-table-body">
+                        <!-- Tickets will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- QR Code Generator Library -->
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-    <!-- jsQR Library for QR code scanning -->
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <!-- JSZip Library for creating ZIP files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- FileSaver.js for saving files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-    <script>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // jsQR Library for QR code scanning
+        import "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+        
         console.log("JavaScript is running!"); // Debug: Script loaded
 
         // Envuelve todo el código JavaScript en DOMContentLoaded para asegurar que el HTML esté completamente cargado.
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             console.log("DOM fully loaded and parsed. Initializing script...");
 
-            // Base de datos en memoria para tickets (solo para demostración)
+            // --- Firebase Initialization ---
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+            let app;
+            let db;
+            let auth;
+            let userId = 'cargando...'; // Default value until authenticated
+
+            const userIdDisplay = document.getElementById('user-id-display');
+            if (userIdDisplay) userIdDisplay.textContent = `ID de Usuario: ${userId}`;
+
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authenticate user
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                    console.log("Signed in with custom token.");
+                } else {
+                    await signInAnonymously(auth);
+                    console.log("Signed in anonymously.");
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("User authenticated:", userId);
+                        if (userIdDisplay) userIdDisplay.textContent = `ID de Usuario: ${userId}`;
+                        // Start listening to Firestore changes after authentication
+                        setupFirestoreListener();
+                    } else {
+                        console.log("No user is signed in.");
+                        userId = 'no-autenticado';
+                        if (userIdDisplay) userIdDisplay.textContent = `ID de Usuario: ${userId}`;
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error initializing Firebase or authenticating:", error);
+                displayMessage("Error al iniciar la aplicación. Por favor, recarga.", "error");
+            }
+
+            // In-memory cache for tickets (will be synchronized with Firestore)
             let ticketsDB = {};
             let currentScannedTicketId = null;
             
@@ -494,45 +686,44 @@
             let scanning = false;
             let videoStream = null;
 
-            // URL de un logo de marcador de posición.
-            // IMPORTANTE: Reemplaza esta URL con la URL de tu logo real si quieres uno.
-            // Para este cambio, no usaremos una imagen de logo, solo el texto "VYTMUSIC".
-            const logoUrl = ''; // Dejar vacío para no cargar ninguna imagen de logo
+            // URL del logo para el QR
+            // IMPORTANTE: Las URLs con el prefijo 'uploaded:' (como 'uploaded:LOGO NEGRO.jpg-...')
+            // no pueden ser cargadas directamente por `new Image()` en el navegador para dibujar en un canvas
+            // debido a restricciones de seguridad (CORS).
+            // Para que tu logo real aparezca, debes subirlo a un servicio de alojamiento de imágenes público
+            // (por ejemplo, Google Cloud Storage, Imgur, tu propio servidor web) y usar su URL pública aquí.
+            const logoUrl = 'uploaded:image_8bf34f.jpg-1059de73-997b-48d3-a7fe-db6f042e9072'; 
             let logoImage = new Image();
             logoImage.crossOrigin = "Anonymous"; 
 
             // Promesa para asegurar que el logo se cargue antes de usarlo.
-            // Aunque no dibujemos la imagen, mantenemos la promesa para no romper la lógica existente.
             const loadLogoPromise = new Promise(resolve => {
-                if (logoUrl) { // Solo intentar cargar si hay una URL
-                    logoImage.onload = () => {
-                        console.log("Logo cargado exitosamente.");
-                        resolve();
-                    };
-                    logoImage.onerror = () => {
-                        console.error("Error al cargar el logo. Se usará texto de respaldo.");
-                        logoImage = null; // Establecer a null para indicar que la carga falló
-                        resolve(); // Resolver la promesa de todos modos para que la aplicación no se cuelgue
-                    };
-                    logoImage.src = logoUrl;
-                } else {
-                    console.log("No se proporcionó URL de logo, se usará solo texto.");
-                    logoImage = null; // Asegurarse de que no se intente dibujar una imagen
+                logoImage.onload = () => {
+                    console.log("Logo cargado exitosamente.");
                     resolve();
-                }
+                };
+                logoImage.onerror = () => {
+                    console.error("Error al cargar el logo. Se usará texto de respaldo.");
+                    logoImage = null; // Establecer a null para indicar que la carga falló
+                    resolve(); // Resolver la promesa de todos modos para que la aplicación no se cuelgue
+                };
+                logoImage.src = logoUrl;
             });
 
             // Número de teléfono de VYTMUSIC
             const VYTMUSIC_PHONE = '34177422062';
+            const WHATSAPP_LINK = 'https://wa.link/yv77yc'; // Enlace de WhatsApp
 
             // Obtener elementos del DOM
             const showGeneratorBtn = document.getElementById('show-generator-btn');
             const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
             const showScannerBtn = document.getElementById('show-scanner-btn');
+            const showRegisteredTicketsBtn = document.getElementById('show-registered-tickets-btn'); // Nuevo botón
 
             const ticketGeneratorSection = document.getElementById('ticket-generator-section');
             const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
             const qrScannerSection = document.getElementById('qr-scanner-section');
+            const registeredTicketsSection = document.getElementById('registered-tickets-section'); // Nueva sección
 
             const ticketHolderNameInput = document.getElementById('ticket-holder-name');
             const generateTicketBtn = document.getElementById('generate-ticket-btn');
@@ -540,6 +731,7 @@
             const ticketIdDisplay = document.getElementById('ticket-id-display');
             const qrcodeSingleDiv = document.getElementById('qrcode-single');
             const shareSingleQrBtn = document.getElementById('share-single-qr-btn'); 
+            const whatsappSingleQrBtn = document.getElementById('whatsapp-single-qr-btn'); // Nuevo botón de WhatsApp
 
             const batchTicketNamesTextarea = document.getElementById('batch-ticket-names');
             const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
@@ -556,18 +748,121 @@
             const restartScannerBtn = document.getElementById('restart-scanner-btn');
             const singleCountSpan = document.getElementById('single-count');
             const batchCountSpan = document.getElementById('batch-count');
+            const totalTicketsCountSpan = document.getElementById('total-tickets-count'); // Nuevo span para el conteo total en el botón
+
+            // Elementos de la nueva sección de tickets registrados
+            const ticketSearchInput = document.getElementById('ticket-search-input');
+            const ticketsTableBody = document.getElementById('tickets-table-body');
+            const validTicketsCountDisplay = document.getElementById('valid-tickets-count');
+            const usedTicketsCountDisplay = document.getElementById('used-tickets-count');
+            const totalTicketsDisplay = document.getElementById('total-tickets-display');
+
+
+            // --- Firestore Listener Setup ---
+            function setupFirestoreListener() {
+                if (!db || !userId || userId === 'cargando...') {
+                    console.warn("Firestore o userId no están listos para configurar el listener.");
+                    return;
+                }
+
+                // Public collection for tickets
+                const ticketsCollectionRef = collection(db, `artifacts/${appId}/public/data/vytmusic_tickets`);
+                
+                onSnapshot(ticketsCollectionRef, (snapshot) => {
+                    console.log("Firestore snapshot received.");
+                    ticketsDB = {}; // Clear existing tickets
+                    snapshot.forEach(doc => {
+                        const ticketData = doc.data();
+                        ticketsDB[doc.id] = { ...ticketData, id: doc.id };
+                    });
+                    console.log("Tickets actualizados desde Firestore:", ticketsDB);
+                    renderAllTickets(); // Re-render all tickets based on updated DB
+                    updateTicketCounts(); // Update counts
+                    // If currently scanning, re-evaluate the scanned ticket status
+                    if (currentScannedTicketId && qrScannerSection && !qrScannerSection.classList.contains('hidden')) {
+                        onScanSuccess(currentScannedTicketId); // Re-evaluate the status of the currently scanned ticket
+                    }
+                    // Re-render registered tickets table
+                    filterAndRenderRegisteredTickets();
+                }, (error) => {
+                    console.error("Error listening to Firestore:", error);
+                    displayMessage("Error al sincronizar tickets con la nube.", "error");
+                });
+            }
+
+            // Function to render all tickets from ticketsDB (for batch display)
+            function renderAllTickets() {
+                if (batchQRCodesDisplay) batchQRCodesDisplay.innerHTML = ''; // Clear current display
+
+                const batchTickets = Object.values(ticketsDB).filter(ticket => ticket.name && ticket.name.trim().length > 0);
+                
+                batchTickets.forEach(ticket => {
+                    const ticketCard = document.createElement('div');
+                    ticketCard.className = 'ticket-card text-center';
+                    ticketCard.dataset.ticketId = ticket.id;
+                    
+                    const checkboxContainer = document.createElement('div');
+                    checkboxContainer.className = 'checkbox-container';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'ticket-checkbox w-5 h-5 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500';
+                    checkbox.dataset.ticketId = ticket.id;
+                    checkbox.checked = false; // Default to unchecked on re-render
+
+                    checkboxContainer.appendChild(checkbox);
+                    ticketCard.appendChild(checkboxContainer);
+
+                    const namePara = document.createElement('p');
+                    namePara.className = 'text-lg font-semibold text-gray-800 mb-2 mt-4';
+                    namePara.textContent = `Titular: ${ticket.name}`;
+
+                    const idPara = document.createElement('p');
+                    idPara.className = 'text-sm text-gray-600 mb-2 break-words';
+                    idPara.textContent = `ID: ${ticket.id}`;
+
+                    const qrImage = document.createElement('img');
+                    qrImage.src = ticket.qrDataURL; // Use the stored Data URL
+                    qrImage.alt = `Código QR para ${ticket.name}`;
+                    qrImage.style.width = '150px';
+                    qrImage.style.height = '150px';
+                    qrImage.className = 'mx-auto';
+
+                    const shareButton = document.createElement('button');
+                    shareButton.className = 'share-button';
+                    shareButton.textContent = 'Compartir QR';
+                    shareButton.onclick = () => shareQrCode(ticket.id);
+
+                    const whatsappButton = document.createElement('a');
+                    whatsappButton.href = WHATSAPP_LINK;
+                    whatsappButton.target = "_blank";
+                    whatsappButton.className = 'whatsapp-button inline-flex items-center justify-center';
+                    whatsappButton.innerHTML = `
+                        <span class="main-text">Inscribite</span>
+                        <span class="sub-text">al Certamen de Canto</span>
+                    `;
+
+                    ticketCard.appendChild(namePara);
+                    ticketCard.appendChild(idPara);
+                    ticketCard.appendChild(qrImage);
+                    ticketCard.appendChild(shareButton);
+                    ticketCard.appendChild(whatsappButton); // Añadir el botón de WhatsApp
+
+                    batchQRCodesDisplay.appendChild(ticketCard);
+                });
+            }
 
             // Función para ocultar todas las secciones y detener el escáner
             function hideAllSections() {
                 if (ticketGeneratorSection) ticketGeneratorSection.classList.add('hidden');
                 if (batchTicketGeneratorSection) batchTicketGeneratorSection.classList.add('hidden');
                 if (qrScannerSection) qrScannerSection.classList.add('hidden');
+                if (registeredTicketsSection) registeredTicketsSection.classList.add('hidden'); // Ocultar nueva sección
                 stopQrScanner();
             }
 
             // Función para restablecer los estilos de los botones de navegación
             function resetButtonStyles() {
-                [showGeneratorBtn, showBatchGeneratorBtn, showScannerBtn].forEach(btn => {
+                [showGeneratorBtn, showBatchGeneratorBtn, showScannerBtn, showRegisteredTicketsBtn].forEach(btn => {
                     if (btn) {
                         btn.classList.remove('button-primary');
                         btn.classList.add('button-secondary');
@@ -592,6 +887,10 @@
                     targetSection = qrScannerSection;
                     targetButton = showScannerBtn;
                     startQrScanner(); // Iniciar escáner solo si se va a la sección del escáner
+                } else if (sectionId === 'registered-tickets-section') { // Nueva sección
+                    targetSection = registeredTicketsSection;
+                    targetButton = showRegisteredTicketsBtn;
+                    filterAndRenderRegisteredTickets(); // Renderizar tickets al mostrar la sección
                 }
 
                 if(targetSection && targetButton) {
@@ -602,6 +901,7 @@
             }
 
             // Función para generar un ID de ticket único
+            // Firestore will generate its own ID, but we'll still use this for the QR content
             function generateUniqueTicketId() {
                 return 'VYTMUSIC-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9).toUpperCase();
             }
@@ -610,7 +910,7 @@
             async function createCompositeQrImage(ticketId, name) {
                 const qrText = ticketId;
 
-                // Esperar a que el logo se cargue antes de continuar (aunque no se dibuje)
+                // Esperar a que el logo se cargue antes de continuar
                 await loadLogoPromise;
 
                 // Crear un canvas temporal para la imagen compuesta
@@ -623,17 +923,20 @@
                 const padding = 15;
                 const marginBetweenElements = 10;
                 const phoneToQRMargin = 30; // Margen adicional entre QR y teléfono
+                const logoInQrSize = 50; // Tamaño del logo dentro del QR
 
                 // Ajustar la altura del canvas
                 const headerTextHeight = 28; // Altura para el título "VYTMUSIC"
-                const decorativeLineHeight = 4; // Altura para la línea debajo de VYTMUSIC
+                const subHeaderTextHeight = 20; // Altura para "Certamen de Canto"
                 const canvasWidth = Math.max(qrSize + padding * 2, 300);
-                const canvasHeight = padding + headerTextHeight + marginBetweenElements + decorativeLineHeight + marginBetweenElements + (textLineHeight * 2) + marginBetweenElements + qrSize + phoneToQRMargin + textLineHeight + padding;
+                // Calcular la altura del canvas basándose en todos los elementos
+                const canvasHeight = padding + headerTextHeight + subHeaderTextHeight + marginBetweenElements + (textLineHeight * 2) + marginBetweenElements + qrSize + phoneToQRMargin + textLineHeight + padding;
+
 
                 compositeCanvas.width = canvasWidth;
                 compositeCanvas.height = canvasHeight;
 
-                // Dibujar fondo blanco simple (eliminado el gradiente y los arcos decorativos)
+                // Dibujar fondo blanco simple
                 compositeCtx.fillStyle = '#FFFFFF';
                 compositeCtx.fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -646,14 +949,12 @@
                 compositeCtx.fillText('VYTMUSIC', canvasWidth / 2, currentY + (headerTextHeight / 2));
                 currentY += headerTextHeight;
 
-                // Dibujar línea decorativa debajo del título
-                compositeCtx.beginPath();
-                compositeCtx.moveTo(canvasWidth * 0.3, currentY + 5); 
-                compositeCtx.lineTo(canvasWidth * 0.7, currentY + 5); 
-                compositeCtx.strokeStyle = '#6366f1';
-                compositeCtx.lineWidth = 2;
-                compositeCtx.stroke();
-                currentY += decorativeLineHeight + marginBetweenElements; 
+                // Dibujar "Certamen de Canto"
+                compositeCtx.font = 'bold 16px Inter, sans-serif';
+                compositeCtx.fillStyle = '#4f46e5'; // Color para el subtítulo
+                compositeCtx.textAlign = 'center'; // Asegurarse de que esté centrado
+                compositeCtx.fillText('Certamen de Canto', canvasWidth / 2, currentY + (subHeaderTextHeight / 2));
+                currentY += subHeaderTextHeight + marginBetweenElements; // Eliminar la línea decorativa
 
                 // 1. Dibujar Nombre del Titular del Ticket
                 compositeCtx.fillStyle = '#1f2937'; // Gris 900
@@ -686,6 +987,17 @@
                     compositeCtx.fillStyle = '#ffffff'; // Fondo blanco para el QR
                     compositeCtx.fillRect(qrX - 5, currentY - 5, qrSize + 10, qrSize + 10);
                     compositeCtx.drawImage(qrImageElement, qrX, currentY, qrSize, qrSize);
+
+                    // Dibujar el logo dentro del área del código QR, en la esquina inferior derecha
+                    if (logoImage && logoImage.complete && logoImage.naturalHeight !== 0) {
+                        const logoAspectRatio = logoImage.width / logoImage.height;
+                        const drawLogoHeight = logoInQrSize;
+                        const drawLogoWidth = logoInQrSize * logoAspectRatio;
+                        // Posición en la esquina inferior derecha del área del QR
+                        const logoX = qrX + qrSize - drawLogoWidth - 5; // 5px de padding desde el borde derecho del QR
+                        const logoY = currentY + qrSize - drawLogoHeight - 5; // 5px de padding desde el borde inferior del QR
+                        compositeCtx.drawImage(logoImage, logoX, logoY, drawLogoWidth, drawLogoHeight);
+                    }
                     currentY += qrSize + phoneToQRMargin; // Añadir el margen adicional aquí
                 }
 
@@ -707,84 +1019,60 @@
             // Función para generar un ticket individual y actualizar la DB
             async function createAndDisplayTicket(name, containerElement, isBatch = false) {
                 console.log(`Creando y mostrando ticket para: ${name}, esLote: ${isBatch}`); // Log de depuración
-                const ticketId = generateUniqueTicketId();
+                if (!db) {
+                    displayMessage("Base de datos no inicializada. Intenta recargar la página.", "error");
+                    return;
+                }
+
+                const ticketId = generateUniqueTicketId(); // Still generate a unique ID for QR content
                 const finalQrDataURL = await createCompositeQrImage(ticketId, name);
                 
-                // Almacenar datos del ticket incluyendo la URL de datos de la imagen QR compuesta
-                ticketsDB[ticketId] = {
-                    status: 'valid',
-                    name: name,
-                    qrDataURL: finalQrDataURL,
-                    id: ticketId // Asegurar que el ID se almacene para una fácil búsqueda
-                };
+                try {
+                    // Add ticket to Firestore
+                    const ticketsCollectionRef = collection(db, `artifacts/${appId}/public/data/vytmusic_tickets`);
+                    await setDoc(doc(ticketsCollectionRef, ticketId), { // Use setDoc with custom ID
+                        name: name,
+                        status: 'valid',
+                        qrDataURL: finalQrDataURL,
+                        timestamp: Date.now(),
+                        generatedBy: userId // Store who generated the ticket
+                    });
+                    console.log("Ticket added to Firestore with ID:", ticketId);
 
-                // Limpiar el código QR anterior si es una generación individual
-                if (containerElement === qrcodeSingleDiv) {
-                    containerElement.innerHTML = '';
+                    // UI update logic (will be handled by onSnapshot listener)
+                    if (containerElement === qrcodeSingleDiv) {
+                        containerElement.innerHTML = `<img src="${finalQrDataURL}" alt="QR Code for ${name}" class="rounded-md shadow-lg">`;
+                        if (ticketIdDisplay) ticketIdDisplay.textContent = ticketId;
+                        if (generatedTicketInfo) generatedTicketInfo.classList.remove('hidden');
+                    }
+                    // For batch, the renderAllTickets() from onSnapshot will handle it.
+
+                    displayMessage('¡Entrada Generada Exitosamente!', 'success');
+                    return ticketId;
+
+                } catch (error) {
+                    console.error("Error adding ticket to Firestore:", error);
+                    displayMessage("Error al generar la entrada. Intenta de nuevo.", "error");
+                    return null;
                 }
-
-                // Crear un nuevo div para el código QR y el texto
-                const ticketCard = document.createElement('div');
-                ticketCard.className = 'ticket-card text-center';
-                ticketCard.dataset.ticketId = ticketId;
-
-                if (isBatch) {
-                    const checkboxContainer = document.createElement('div');
-                    checkboxContainer.className = 'checkbox-container';
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.className = 'ticket-checkbox w-5 h-5 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500';
-                    checkbox.dataset.ticketId = ticketId;
-                    checkbox.checked = true;
-                    checkboxContainer.appendChild(checkbox);
-                    ticketCard.appendChild(checkboxContainer);
-                }
-
-                const namePara = document.createElement('p');
-                namePara.className = 'text-lg font-semibold text-gray-800 mb-2 mt-4';
-                namePara.textContent = `Titular: ${name}`;
-
-                const idPara = document.createElement('p');
-                idPara.className = 'text-sm text-gray-600 mb-2 break-words';
-                idPara.textContent = `ID: ${ticketId}`;
-
-                const qrImage = document.createElement('img');
-                qrImage.src = finalQrDataURL;
-                qrImage.alt = `Código QR para ${name}`;
-                qrImage.style.width = isBatch ? '150px' : '200px';
-                qrImage.style.height = isBatch ? '150px' : '200px';
-                qrImage.className = 'mx-auto';
-
-                const shareButton = document.createElement('button');
-                shareButton.className = 'share-button';
-                shareButton.textContent = 'Compartir QR';
-                shareButton.onclick = () => shareQrCode(ticketId);
-
-
-                ticketCard.appendChild(namePara);
-                ticketCard.appendChild(idPara);
-                ticketCard.appendChild(qrImage);
-                ticketCard.appendChild(shareButton);
-
-                containerElement.appendChild(ticketCard);
-
-                console.log('Ticket generado:', ticketsDB[ticketId]); // Log de depuración
-                return ticketId;
             }
 
             // Función para actualizar la visualización de los recuentos de tickets
             function updateTicketCounts() {
-                // Contar tickets generados individualmente
-                const singleTickets = Object.values(ticketsDB).filter(ticket => 
-                    !document.querySelector(`#batch-qrcodes-display .ticket-card[data-ticket-id="${ticket.id}"]`)
-                ).length;
+                const allTickets = Object.values(ticketsDB);
+                const validCount = allTickets.filter(ticket => ticket.status === 'valid').length;
+                const usedCount = allTickets.filter(ticket => ticket.status === 'used').length;
+                const totalCount = allTickets.length;
                 
-                // Contar tickets que forman parte de la visualización por lotes
-                const batchTickets = document.querySelectorAll('#batch-qrcodes-display .ticket-card').length;
-                
-                if (singleCountSpan) singleCountSpan.textContent = singleTickets;
-                if (batchCountSpan) batchCountSpan.textContent = batchTickets;
-                if (generatedCountSpan) generatedCountSpan.textContent = batchTickets; // Actualizar el recuento generado para la sección de lotes
+                if (singleCountSpan) singleCountSpan.textContent = totalCount; // Mostrar total en generador individual
+                if (batchCountSpan) batchCountSpan.textContent = totalCount; // Mostrar total en generador por lotes
+                if (generatedCountSpan) generatedCountSpan.textContent = totalCount; // Mostrar total en sección de lotes
+                if (totalTicketsCountSpan) totalTicketsCountSpan.textContent = totalCount; // Mostrar total en el botón de la nueva sección
+
+                // Actualizar los conteos en la sección de entradas registradas
+                if (validTicketsCountDisplay) validTicketsCountDisplay.textContent = validCount;
+                if (usedTicketsCountDisplay) usedTicketsCountDisplay.textContent = usedCount;
+                if (totalTicketsDisplay) totalTicketsDisplay.textContent = totalCount;
             }
 
             // Función para manejar la generación de tickets individuales
@@ -796,15 +1084,11 @@
                     return;
                 }
 
-                const generatedId = await createAndDisplayTicket(ticketHolderName, qrcodeSingleDiv, false); // Establecer explícitamente isBatch en false
-                if (ticketIdDisplay) ticketIdDisplay.textContent = generatedId;
-                if (generatedTicketInfo) generatedTicketInfo.classList.remove('hidden');
+                const generatedId = await createAndDisplayTicket(ticketHolderName, qrcodeSingleDiv, false); 
+                if (generatedId && shareSingleQrBtn) {
+                    shareSingleQrBtn.onclick = () => shareQrCode(generatedId);
+                }
                 ticketHolderNameInput.value = '';
-                displayMessage('¡Entrada Generada Exitosamente!', 'success');
-
-                // Actualizar el controlador onclick para el botón principal de compartir individual con el ID correcto
-                if (shareSingleQrBtn) shareSingleQrBtn.onclick = () => shareQrCode(generatedId);
-                updateTicketCounts(); // Actualizar recuentos después de generar
             }
 
             // Función para manejar la generación de tickets por lotes
@@ -828,14 +1112,15 @@
                 let generatedCount = 0;
 
                 for (const name of names) { // Usar for...of con await
-                    await createAndDisplayTicket(name, batchQRCodesDisplay, true); // Pasar true para isBatch
-                    generatedCount++;
+                    const generatedId = await createAndDisplayTicket(name, batchQRCodesDisplay, true); 
+                    if (generatedId) {
+                        generatedCount++;
+                    }
                 }
 
                 if (generatedBatchTicketsInfo) generatedBatchTicketsInfo.classList.remove('hidden');
                 batchTicketNamesTextarea.value = ''; // Limpiar textarea
                 displayMessage(`¡Se generaron ${generatedCount} entradas exitosamente!`, 'success');
-                updateTicketCounts(); // Actualizar recuentos después de generar
             }
 
             // Función para compartir un solo código QR (ahora siempre comparte la imagen compuesta)
@@ -1123,16 +1408,23 @@
             }
 
             // Función para marcar el ticket como usado
-            function markTicketAsUsed() {
+            async function markTicketAsUsed() {
                 console.log('Botón "Marcar como Usada" clickeado.'); // Log de depuración
+                if (!db) {
+                    displayMessage("Base de datos no inicializada. Intenta recargar la página.", "error");
+                    return;
+                }
+
                 if (currentScannedTicketId && ticketsDB[currentScannedTicketId] && ticketsDB[currentScannedTicketId].status === 'valid') {
-                    ticketsDB[currentScannedTicketId].status = 'used';
-                    if (ticketStatusDiv) ticketStatusDiv.textContent = `Estado: Marcada como Usada (${ticketsDB[currentScannedTicketId].name})`;
-                    if (ticketStatusDiv) ticketStatusDiv.classList.remove('status-valid');
-                    if (ticketStatusDiv) ticketStatusDiv.classList.add('status-used');
-                    if (markUsedBtn) markUsedBtn.classList.add('hidden');
-                    console.log('Ticket marcado como usado:', currentScannedTicketId);
-                    displayMessage('Entrada marcada como usada.', 'success');
+                    try {
+                        const ticketDocRef = doc(db, `artifacts/${appId}/public/data/vytmusic_tickets`, currentScannedTicketId);
+                        await updateDoc(ticketDocRef, { status: 'used' });
+                        displayMessage(`Entrada de ${ticketsDB[currentScannedTicketId].name} marcada como usada.`, 'success');
+                        // UI will be updated by the onSnapshot listener
+                    } catch (error) {
+                        console.error("Error updating ticket status in Firestore:", error);
+                        displayMessage("Error al marcar la entrada como usada. Intenta de nuevo.", "error");
+                    }
                 }
             }
 
@@ -1147,6 +1439,29 @@
                 setTimeout(() => {
                     messageBox.remove();
                 }, 3000); // Coincide con la duración de la animación CSS
+            }
+
+            // Función para filtrar y renderizar las entradas en la tabla
+            function filterAndRenderRegisteredTickets() {
+                if (!ticketsTableBody) return;
+                ticketsTableBody.innerHTML = ''; // Limpiar tabla
+                const searchTerm = ticketSearchInput.value.toLowerCase();
+                const filteredTickets = Object.values(ticketsDB).filter(ticket => 
+                    ticket.name.toLowerCase().includes(searchTerm) || ticket.id.toLowerCase().includes(searchTerm)
+                );
+
+                filteredTickets.forEach(ticket => {
+                    const row = ticketsTableBody.insertRow();
+                    const nameCell = row.insertCell();
+                    const idCell = row.insertCell();
+                    const statusCell = row.insertCell();
+
+                    nameCell.textContent = ticket.name;
+                    idCell.textContent = ticket.id;
+                    statusCell.textContent = ticket.status === 'valid' ? 'Válida' : 'Usada';
+                    statusCell.classList.add('status-cell', ticket.status);
+                });
+                updateTicketCounts(); // Update counts based on current ticketsDB
             }
 
 
@@ -1167,6 +1482,11 @@
                 showScannerBtn.addEventListener('click', () => { console.log('showScannerBtn click'); switchSection('qr-scanner-section'); });
                 console.log("Listener adjuntado a showScannerBtn.");
             } else { console.log("showScannerBtn no encontrado."); }
+
+            if (showRegisteredTicketsBtn) { // Nuevo listener para el botón de la nueva sección
+                showRegisteredTicketsBtn.addEventListener('click', () => { console.log('showRegisteredTicketsBtn click'); switchSection('registered-tickets-section'); });
+                console.log("Listener adjuntado a showRegisteredTicketsBtn.");
+            } else { console.log("showRegisteredTicketsBtn no encontrado."); }
 
             if (generateTicketBtn) {
                 generateTicketBtn.addEventListener('click', generateIndividualTicket);
@@ -1217,11 +1537,17 @@
                 console.log("Listener inicial adjuntado a shareSingleQrBtn.");
             } else { console.log("shareSingleQrBtn no encontrado."); }
 
+            // Listener para el campo de búsqueda de tickets registrados
+            if (ticketSearchInput) {
+                ticketSearchInput.addEventListener('input', filterAndRenderRegisteredTickets);
+                console.log("Listener adjuntado a ticketSearchInput.");
+            } else { console.log("ticketSearchInput no encontrado."); }
+
 
             // Configuración inicial: mostrar la sección del generador por defecto
             try {
                 switchSection('ticket-generator-section');
-                updateTicketCounts(); // Inicializar recuentos al cargar
+                // Initial update of counts will happen after Firestore data is loaded
             } catch (e) {
                 console.error("Error durante la inicialización de la aplicación:", e);
                 displayMessage("Un error crítico ha ocurrido durante la inicialización. Por favor, recarga la página.", "error");
