@@ -14,6 +14,9 @@
                     fontFamily: {
                         inter: ['Inter', 'sans-serif'],
                     },
+                    backgroundImage: {
+                        'logo-pattern': "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzYzNjZmMSIgb3BhY2l0eT0iMC4wMyIvPjx0ZXh0IHg9IjI1MCIgeT0iMjUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM2MzY2ZjEiIG9wYWNpdHk9IjAuMiIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPlZ5dG11c2ljPC90ZXh0Pjwvc3ZnPg==')"
+                    }
                 }
             }
         }
@@ -22,97 +25,204 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f2f5;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzYzNjZmMSIgb3BhY2l0eT0iMC4wMyIvPjx0ZXh0IHg9IjI1MCIgeT0iMjUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM2MzY2ZjEiIG9wYWNpdHk9IjAuMSIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPlZ5dG11c2ljPC90ZXh0Pjwvc3ZnPg==');
+            background-size: 300px;
+            background-position: center;
         }
         .container {
             max-width: 900px;
             margin: 2rem auto;
             padding: 1.5rem;
-            background-color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.95);
             border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGV4dCB4PSIxNTAiIHk9IjE1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgwIiBmaWxsPSIjZjBmMjY1IiBvcGFjaXR5PSIwLjEiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5WTVVTPC90ZXh0Pjwvc3ZnPg==');
+            background-size: 200px;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
         }
         .button-primary {
-            background-color: #6366f1; /* Indigo 500 */
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
             font-weight: 600;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
             cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
         }
         .button-primary:hover {
-            background-color: #4f46e5; /* Indigo 600 */
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(79, 70, 229, 0.3);
         }
         .button-secondary {
-            background-color: #e0e7ff; /* Indigo 100 */
-            color: #4f46e5; /* Indigo 600 */
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            color: #4f46e5;
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
             font-weight: 600;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
             cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.1);
         }
         .button-secondary:hover {
-            background-color: #c7d2fe; /* Indigo 200 */
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(99, 102, 241, 0.15);
         }
         .section-header {
-            font-size: 1.875rem; /* text-3xl */
-            font-weight: 700; /* font-bold */
-            color: #1f2937; /* Gray 900 */
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1f2937;
             margin-bottom: 1.5rem;
             text-align: center;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .section-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #4f46e5);
+            border-radius: 2px;
         }
         .input-field {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db; /* Gray 300 */
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
             border-radius: 0.5rem;
             margin-bottom: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
         /* Style for QR code container */
         .qrcode-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
-            background-color: #f9fafb; /* Gray 50 */
+            padding: 1.5rem;
+            background-color: #f9fafb;
             border-radius: 0.75rem;
             margin-top: 1.5rem;
-            min-height: 200px; /* Ensure visibility even if QR is small */
+            min-height: 200px;
+            border: 1px solid #e5e7eb;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         .qrcode-container img {
             max-width: 100%;
             height: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         /* QR Scanner specific styles */
         #reader {
             width: 100%;
-            max-width: 400px; /* Limit scanner width for better aspect ratio */
+            max-width: 400px;
             margin: 0 auto;
             border: 1px solid #d1d5db;
             border-radius: 0.75rem;
-            overflow: hidden; /* Hide any overflow from the scanner component */
-            position: relative; /* For video/canvas positioning */
-            min-height: 300px; /* Ensure scanner area is visible */
+            overflow: hidden;
+            position: relative;
+            min-height: 300px;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #333; /* Dark background for scanner area */
+            background-color: #111827;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
         }
         #video-preview {
             width: 100%;
             height: auto;
             display: block;
-            object-fit: cover; /* Cover the area, cropping if necessary */
+            object-fit: cover;
         }
         #qr-canvas {
-            position: absolute; /* Overlay canvas on video */
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            display: none; /* Hidden canvas for processing frames, will be shown for drawing */
+            display: none;
+        }
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .scanner-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            border: 3px solid #6366f1;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+        }
+        .scanner-corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #4f46e5;
+        }
+        .corner-tl {
+            top: -3px;
+            left: -3px;
+            border-right: none;
+            border-bottom: none;
+            border-top-left-radius: 0.5rem;
+        }
+        .corner-tr {
+            top: -3px;
+            right: -3px;
+            border-left: none;
+            border-bottom: none;
+            border-top-right-radius: 0.5rem;
+        }
+        .corner-bl {
+            bottom: -3px;
+            left: -3px;
+            border-right: none;
+            border-top: none;
+            border-bottom-left-radius: 0.5rem;
+        }
+        .corner-br {
+            bottom: -3px;
+            right: -3px;
+            border-left: none;
+            border-top: none;
+            border-bottom-right-radius: 0.5rem;
         }
         #scanned-result, #ticket-status {
             margin-top: 1rem;
@@ -122,44 +232,55 @@
             text-align: center;
         }
         .status-valid {
-            background-color: #d1fae5; /* Green 100 */
-            color: #065f46; /* Green 800 */
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
         }
         .status-used {
-            background-color: #fee2e2; /* Red 100 */
-            color: #991b1b; /* Red 800 */
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
         }
         .status-invalid {
-            background-color: #fef3c7; /* Yellow 100 */
-            color: #92400e; /* Yellow 800 */
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fbbf24;
         }
         .hidden {
             display: none;
         }
         .ticket-card {
-            border: 1px solid #e5e7eb; /* Gray 200 */
+            border: 1px solid #e5e7eb;
             border-radius: 0.75rem;
             padding: 1.5rem;
             margin-bottom: 1rem;
-            background-color: #f9fafb; /* Gray 50 */
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            background-color: #f9fafb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative; /* For checkbox positioning */
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .ticket-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .share-button {
-            background-color: #10b981; /* Emerald 500 */
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             font-weight: 600;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
             cursor: pointer;
             margin-top: 1rem;
+            border: none;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
         }
         .share-button:hover {
-            background-color: #059669; /* Emerald 600 */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
         }
         .checkbox-container {
             position: absolute;
@@ -171,23 +292,140 @@
             justify-content: center;
             gap: 1rem;
             margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .app-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .app-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 15px rgba(99, 102, 241, 0.3);
+            overflow: hidden;
+            border: 4px solid white;
+        }
+        .app-logo::before {
+            content: "VYT";
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 1px;
+        }
+        .app-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #4f46e5, #6366f1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+        .app-subtitle {
+            color: #6b7280;
+            font-size: 1.125rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .scanner-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .restart-scanner-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+        }
+        .restart-scanner-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+        }
+        .ticket-count {
+            background-color: #6366f1;
+            color: white;
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        .floating-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-in 2.5s forwards;
+        }
+        @keyframes slideIn {
+            from { top: -100px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+        .notification-success {
+            background-color: #10b981;
+            color: white;
+        }
+        .notification-error {
+            background-color: #ef4444;
+            color: white;
+        }
+        .notification-info {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .notification-warning {
+            background-color: #f59e0b;
+            color: white;
         }
     </style>
 </head>
 <body class="font-inter antialiased">
     <div class="container">
-        <h1 class="text-4xl font-extrabold text-center text-indigo-700 mb-6">VYTMUSIC</h1>
-        <p class="text-lg text-center text-gray-600 mb-8">Sistema de Control de Entradas con QR</p>
+        <div class="app-header">
+            <div class="app-logo"></div>
+            <h1 class="app-title">VYTMUSIC</h1>
+            <p class="app-subtitle">Sistema profesional de gestión de entradas con tecnología QR</p>
+        </div>
 
         <!-- Navigation Buttons -->
         <div class="flex justify-center flex-wrap gap-4 mb-8">
-            <button id="show-generator-btn" class="button-primary">Generar Entrada Individual</button>
-            <button id="show-batch-generator-btn" class="button-secondary">Generar Múltiples Entradas</button>
+            <button id="show-generator-btn" class="button-primary">
+                Generar Entrada Individual
+                <span id="single-count" class="ticket-count">0</span>
+            </button>
+            <button id="show-batch-generator-btn" class="button-secondary">
+                Generar Múltiples Entradas
+                <span id="batch-count" class="ticket-count">0</span>
+            </button>
             <button id="show-scanner-btn" class="button-secondary">Escanear Entrada</button>
         </div>
 
         <!-- Ticket Generator Section (Individual) -->
-        <div id="ticket-generator-section" class="p-6 border border-gray-200 rounded-lg shadow-sm">
+        <div id="ticket-generator-section" class="p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
             <h2 class="section-header">Generar Nueva Entrada Individual</h2>
             <div class="mb-4">
                 <label for="ticket-holder-name" class="block text-gray-700 text-sm font-bold mb-2">Nombre del Titular:</label>
@@ -199,13 +437,13 @@
                 <p class="text-indigo-800 font-semibold mb-2">¡Entrada Generada Exitosamente!</p>
                 <p class="text-gray-700 text-sm">ID de la Entrada:</p>
                 <p id="ticket-id-display" class="text-xl font-bold text-indigo-700 break-words"></p>
-                <div id="qrcode-single" class="qrcode-container"></div> <!-- Unique ID for single QR -->
+                <div id="qrcode-single" class="qrcode-container"></div>
                 <button id="share-single-qr-btn" class="share-button">Compartir QR</button>
             </div>
         </div>
 
         <!-- Batch Ticket Generator Section -->
-        <div id="batch-ticket-generator-section" class="p-6 border border-gray-200 rounded-lg shadow-sm hidden">
+        <div id="batch-ticket-generator-section" class="p-6 border border-gray-200 rounded-lg shadow-sm bg-white hidden">
             <h2 class="section-header">Generar Múltiples Entradas</h2>
             <div class="mb-4">
                 <label for="batch-ticket-names" class="block text-gray-700 text-sm font-bold mb-2">Nombres de los Titulares (uno por línea o separados por comas):</label>
@@ -214,7 +452,7 @@
             <button id="generate-batch-tickets-btn" class="button-primary w-full">Generar Entradas QR por Lotes</button>
 
             <div id="generated-batch-tickets-info" class="mt-6 hidden">
-                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Entradas Generadas:</h3>
+                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Entradas Generadas: <span id="generated-count" class="text-indigo-500">0</span></h3>
                 <div class="batch-action-buttons">
                     <button id="select-all-qrs-btn" class="button-secondary">Seleccionar Todos</button>
                     <button id="share-selected-qrs-btn" class="share-button">Compartir Seleccionados</button>
@@ -227,22 +465,33 @@
         </div>
 
         <!-- QR Scanner Section -->
-        <div id="qr-scanner-section" class="p-6 border border-gray-200 rounded-lg shadow-sm">
+        <div id="qr-scanner-section" class="p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
             <h2 class="section-header">Escanear Entrada</h2>
             <div id="reader">
                 <video id="video-preview" autoplay playsinline></video>
-                <canvas id="qr-canvas"></canvas> <!-- Canvas for drawing detection box -->
+                <canvas id="qr-canvas"></canvas>
+                <div class="scanner-overlay">
+                    <div class="scanner-frame">
+                        <div class="scanner-corner corner-tl"></div>
+                        <div class="scanner-corner corner-tr"></div>
+                        <div class="scanner-corner corner-bl"></div>
+                        <div class="scanner-corner corner-br"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="scanner-actions">
+                <button id="restart-scanner-btn" class="restart-scanner-btn">Reiniciar Escáner</button>
+                <button id="mark-used-btn" class="button-primary hidden">Marcar como Usada</button>
             </div>
             <div id="scanned-result" class="hidden"></div>
             <div id="ticket-status" class="hidden"></div>
-            <button id="mark-used-btn" class="button-primary w-full mt-4 hidden">Marcar como Usada</button>
         </div>
     </div>
 
     <!-- QR Code Generator Library -->
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <!-- jsQR Library for QR code scanning -->
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.0.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <!-- JSZip Library for creating ZIP files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- FileSaver.js for saving files -->
@@ -250,7 +499,6 @@
 
     <script>
         // In-memory database for tickets (for demonstration purposes only)
-        // In a real application, this would be a backend database like Firestore.
         let ticketsDB = {};
         let currentScannedTicketId = null;
         
@@ -258,15 +506,15 @@
         let canvasElement = document.getElementById('qr-canvas');
         let canvas = canvasElement.getContext('2d');
         let scanning = false;
-        let videoStream = null; // To store the media stream
+        let videoStream = null;
 
         // Global variables for the logo images
         let logoNegro = new Image();
-        logoNegro.src = 'uploaded:LOGO NEGRO.jpg-014a468e-dce4-4df6-8bce-a2575e30369c'; // Updated contentFetchId for LOGO NEGRO.jpg
+        logoNegro.src = 'uploaded:LOGO NEGRO.jpg-014a468e-dce4-4df6-8bce-a2575e30369c'; 
         logoNegro.onerror = () => console.error("Error al cargar el logo negro.");
 
         let logoBlanco = new Image();
-        logoBlanco.src = 'uploaded:logo blanco.jpg-77eec31c-0e38-4c9f-bfbd-d802a22e026a'; // contentFetchId for logo blanco.jpg
+        logoBlanco.src = 'uploaded:logo blanco.jpg-77eec31c-0e38-4c9f-bfbd-d802a22e026a'; 
         logoBlanco.onerror = () => console.error("Error al cargar el logo blanco.");
 
         // Wait for both logos to load
@@ -301,18 +549,21 @@
         const selectAllQRsBtn = document.getElementById('select-all-qrs-btn'); 
         const shareSelectedQRsBtn = document.getElementById('share-selected-qrs-btn'); 
         const downloadSelectedQRsBtn = document.getElementById('download-selected-qrs-btn'); 
+        const generatedCountSpan = document.getElementById('generated-count');
 
         const scannedResultDiv = document.getElementById('scanned-result');
         const ticketStatusDiv = document.getElementById('ticket-status');
         const markUsedBtn = document.getElementById('mark-used-btn');
-        const qrReaderDiv = document.getElementById('reader');
+        const restartScannerBtn = document.getElementById('restart-scanner-btn');
+        const singleCountSpan = document.getElementById('single-count');
+        const batchCountSpan = document.getElementById('batch-count');
 
         // Function to hide all sections and stop scanner
         function hideAllSections() {
             ticketGeneratorSection.classList.add('hidden');
             batchTicketGeneratorSection.classList.add('hidden');
             qrScannerSection.classList.add('hidden');
-            stopQrScanner(); // Ensure scanner is stopped when switching sections
+            stopQrScanner();
         }
 
         // Function to reset button styles
@@ -339,7 +590,7 @@
             } else if (sectionId === 'qr-scanner-section') {
                 qrScannerSection.classList.remove('hidden');
                 showScannerBtn.classList.add('button-primary');
-                startQrScanner(); // Start scanner when switching to scanner section
+                startQrScanner();
             }
         }
 
@@ -350,7 +601,7 @@
 
         // Function to create a composite QR image with details
         async function createCompositeQrImage(ticketId, name, isBatch = false) {
-            const qrText = ticketId; // The data encoded in the QR
+            const qrText = ticketId;
 
             // Wait for logos to load before proceeding
             await loadLogosPromise;
@@ -366,16 +617,48 @@
             const padding = 15;
             const marginBetweenElements = 10;
 
-            const canvasWidth = Math.max(qrSize + padding * 2, 300); // Ensure enough width for text
+            const canvasWidth = Math.max(qrSize + padding * 2, 300);
             const canvasHeight = logoHeight + marginBetweenElements + (textLineHeight * 2) + marginBetweenElements + qrSize + marginBetweenElements + textLineHeight + padding * 2;
 
             compositeCanvas.width = canvasWidth;
             compositeCanvas.height = canvasHeight;
 
-            compositeCtx.fillStyle = '#ffffff'; // White background
+            // Draw background with subtle gradient
+            const gradient = compositeCtx.createLinearGradient(0, 0, canvasWidth, canvasHeight);
+            gradient.addColorStop(0, '#f9fafb');
+            gradient.addColorStop(1, '#e5e7eb');
+            compositeCtx.fillStyle = gradient;
             compositeCtx.fillRect(0, 0, canvasWidth, canvasHeight);
 
+            // Draw decorative elements
+            compositeCtx.fillStyle = '#6366f1';
+            compositeCtx.globalAlpha = 0.1;
+            compositeCtx.beginPath();
+            compositeCtx.arc(0, 0, 100, 0, Math.PI * 2);
+            compositeCtx.fill();
+            
+            compositeCtx.beginPath();
+            compositeCtx.arc(canvasWidth, canvasHeight, 120, 0, Math.PI * 2);
+            compositeCtx.fill();
+            compositeCtx.globalAlpha = 1;
+
             let currentY = padding;
+
+            // Draw VYTMUSIC logo text
+            compositeCtx.fillStyle = '#1f2937';
+            compositeCtx.font = 'bold 20px Inter, sans-serif';
+            compositeCtx.textAlign = 'center';
+            compositeCtx.fillText('VYTMUSIC', canvasWidth / 2, currentY + 25);
+
+            // Draw decorative line under logo
+            compositeCtx.beginPath();
+            compositeCtx.moveTo(canvasWidth * 0.3, currentY + 35);
+            compositeCtx.lineTo(canvasWidth * 0.7, currentY + 35);
+            compositeCtx.strokeStyle = '#6366f1';
+            compositeCtx.lineWidth = 2;
+            compositeCtx.stroke();
+
+            currentY += logoHeight + marginBetweenElements;
 
             // 1. Draw Logo
             // Choose which logo to draw. For now, we'll use logoNegro.
@@ -419,15 +702,17 @@
                 width: qrSize,
                 height: qrSize,
                 colorDark: "#000000",
-                colorLight: "#ffffff",
+                colorLight: "transparent",
                 correctLevel: QRCode.CorrectLevel.H
             });
 
             // Wait for QR code to render to temp div
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => setTimeout(resolve, 100));
             const qrImageElement = qrTempDiv.querySelector('canvas') || qrTempDiv.querySelector('img');
             if (qrImageElement) {
                 const qrX = (canvasWidth - qrSize) / 2;
+                compositeCtx.fillStyle = '#ffffff';
+                compositeCtx.fillRect(qrX - 5, currentY - 5, qrSize + 10, qrSize + 10);
                 compositeCtx.drawImage(qrImageElement, qrX, currentY, qrSize, qrSize);
                 currentY += qrSize + marginBetweenElements;
             }
@@ -438,10 +723,15 @@
             compositeCtx.fillText(`Tel: ${VYTMUSIC_PHONE}`, canvasWidth / 2, currentY);
             currentY += textLineHeight;
 
+            // Draw decorative border
+            compositeCtx.strokeStyle = '#d1d5db';
+            compositeCtx.lineWidth = 1;
+            compositeCtx.strokeRect(1, 1, canvasWidth - 2, canvasHeight - 2);
+
             return compositeCanvas.toDataURL('image/png');
         }
 
-        // Function to generate a single QR code and update DB (now uses createCompositeQrImage)
+        // Function to generate a single QR code and update DB
         async function createAndDisplayTicket(name, containerElement, isBatch = false) {
             const ticketId = generateUniqueTicketId();
             const finalQrDataURL = await createCompositeQrImage(ticketId, name, isBatch);
@@ -450,7 +740,7 @@
             ticketsDB[ticketId] = {
                 status: 'valid',
                 name: name,
-                qrDataURL: finalQrDataURL // This is the combined image
+                qrDataURL: finalQrDataURL
             };
 
             // Clear previous QR code if it's a single generation
@@ -461,7 +751,7 @@
             // Create a new div for the QR code and text
             const ticketCard = document.createElement('div');
             ticketCard.className = 'ticket-card text-center';
-            ticketCard.dataset.ticketId = ticketId; // Store ticket ID for selection
+            ticketCard.dataset.ticketId = ticketId;
 
             if (isBatch) {
                 const checkboxContainer = document.createElement('div');
@@ -470,12 +760,13 @@
                 checkbox.type = 'checkbox';
                 checkbox.className = 'ticket-checkbox w-5 h-5 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500';
                 checkbox.dataset.ticketId = ticketId;
+                checkbox.checked = true;
                 checkboxContainer.appendChild(checkbox);
                 ticketCard.appendChild(checkboxContainer);
             }
 
             const namePara = document.createElement('p');
-            namePara.className = 'text-lg font-semibold text-gray-800 mb-2 mt-4'; // Added mt-4 for checkbox spacing
+            namePara.className = 'text-lg font-semibold text-gray-800 mb-2 mt-4';
             namePara.textContent = `Titular: ${name}`;
 
             const idPara = document.createElement('p');
@@ -483,7 +774,7 @@
             idPara.textContent = `ID: ${ticketId}`;
 
             const qrImage = document.createElement('img');
-            qrImage.src = finalQrDataURL; // Use the composite image
+            qrImage.src = finalQrDataURL;
             qrImage.alt = `QR Code for ${name}`;
             qrImage.style.width = isBatch ? '150px' : '200px';
             qrImage.style.height = isBatch ? '150px' : '200px';
@@ -494,6 +785,7 @@
             shareButton.textContent = 'Compartir QR';
             shareButton.onclick = () => shareQrCode(ticketId);
 
+
             ticketCard.appendChild(namePara);
             ticketCard.appendChild(idPara);
             ticketCard.appendChild(qrImage);
@@ -502,7 +794,19 @@
             containerElement.appendChild(ticketCard);
 
             console.log('Ticket generado:', ticketsDB[ticketId]);
-            return ticketId; // Return the generated ID
+            return ticketId;
+        }
+
+        // Function to update ticket counts display
+        function updateTicketCounts() {
+            const singleTickets = Object.values(ticketsDB).filter(ticket => 
+                !document.querySelector(`.ticket-card[data-ticket-id="${ticket.id}"] .checkbox-container`)
+            ).length;
+            
+            const batchTickets = Object.values(ticketsDB).length - singleTickets;
+            
+            singleCountSpan.textContent = singleTickets;
+            batchCountSpan.textContent = batchTickets;
         }
 
         // Function to handle individual ticket generation
@@ -516,8 +820,11 @@
             const generatedId = await createAndDisplayTicket(ticketHolderName, qrcodeSingleDiv);
             ticketIdDisplay.textContent = generatedId;
             generatedTicketInfo.classList.remove('hidden');
-            ticketHolderNameInput.value = ''; // Clear input after generation
+            ticketHolderNameInput.value = '';
             displayMessage('¡Entrada Generada Exitosamente!', 'success');
+
+            // Update the onclick handler for the main single share button with the correct ID
+            shareSingleQrBtn.onclick = () => shareQrCode(generatedId);
         }
 
         // Function to handle batch ticket generation
@@ -549,7 +856,7 @@
             displayMessage(`¡Se generaron ${generatedCount} entradas exitosamente!`, 'success');
         }
 
-        // Function to share a single QR code
+        // Function to share a single QR code (now always shares the composite image)
         async function shareQrCode(ticketId) {
             const ticket = ticketsDB[ticketId];
             if (!ticket || !ticket.qrDataURL) {
@@ -834,39 +1141,13 @@
         function displayMessage(message, type) {
             const messageBox = document.createElement('div');
             messageBox.textContent = message;
-            messageBox.style.padding = '1rem';
-            messageBox.style.borderRadius = '0.5rem';
-            messageBox.style.marginTop = '1rem';
-            messageBox.style.textAlign = 'center';
-            messageBox.style.fontWeight = '600';
-            messageBox.style.transition = 'opacity 0.5s ease-out';
-            messageBox.style.opacity = '1';
-            messageBox.style.position = 'fixed'; // Fixed position
-            messageBox.style.top = '20px'; // From top
-            messageBox.style.left = '50%'; // Center horizontally
-            messageBox.style.transform = 'translateX(-50%)'; // Adjust for centering
-            messageBox.style.zIndex = '1000'; // Ensure it's on top
-            messageBox.style.minWidth = '300px'; // Minimum width
-            messageBox.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'; // Subtle shadow
-
-            if (type === 'success') {
-                messageBox.style.backgroundColor = '#d1fae5'; /* Green 100 */
-                messageBox.style.color = '#065f46'; /* Green 800 */
-            } else if (type === 'error') {
-                messageBox.style.backgroundColor = '#fee2e2'; /* Red 100 */
-                messageBox.style.color = '#991b1b'; /* Red 800 */
-            } else {
-                messageBox.style.backgroundColor = '#fef3c7'; /* Yellow 100 */
-                messageBox.style.color = '#92400e'; /* Yellow 800 */
-            }
-
+            messageBox.className = `floating-notification notification-${type}`;
             document.body.appendChild(messageBox);
 
             // Eliminar el mensaje después de un tiempo
             setTimeout(() => {
-                messageBox.style.opacity = '0';
-                messageBox.addEventListener('transitionend', () => messageBox.remove());
-            }, 3000);
+                messageBox.remove();
+            }, 3000); // Matches CSS animation duration
         }
 
 
@@ -877,6 +1158,7 @@
         generateTicketBtn.addEventListener('click', generateIndividualTicket);
         generateBatchTicketsBtn.addEventListener('click', generateBatchTickets);
         markUsedBtn.addEventListener('click', markTicketAsUsed);
+        restartScannerBtn.addEventListener('click', startQrScanner); // Added restart scanner button listener
 
         // New event listeners for batch actions
         selectAllQRsBtn.addEventListener('click', toggleSelectAllQRs);
