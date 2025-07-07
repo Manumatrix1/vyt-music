@@ -46,7 +46,7 @@
             right: 0;
             bottom: 0;
             left: 0;
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGV4dCB4PSIxNTAiIHk9IjE1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgwIiBmaWxsPSIjZjBmMjY1IiBvcGFjaXR5PSIwLjEiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5WTVVTPC90ZXh0Pjwvc3ZnPg==');
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGV4dCB4PSIxNTAiIHk9IjE1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgwIiBmaWxsPSIjZjBmMjY1IiBvcGFjaXR5PSIwLjEiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB2bXVzPC90ZXh0Pjwvc3ZnPg==');
             background-size: 200px;
             background-position: center;
             background-repeat: no-repeat;
@@ -578,6 +578,7 @@
 
         // Function to switch between sections
         function switchSection(sectionId) {
+            console.log(`Switching to section: ${sectionId}`); // Debug log
             hideAllSections();
             resetButtonStyles();
 
@@ -661,8 +662,6 @@
             currentY += logoHeight + marginBetweenElements;
 
             // 1. Draw Logo
-            // Choose which logo to draw. For now, we'll use logoNegro.
-            // You can add logic here to choose logoBlanco based on context if needed.
             const logoToDraw = logoNegro; // Default to black logo
             // const logoToDraw = logoBlanco; // Uncomment to use white logo
 
@@ -674,8 +673,7 @@
                 compositeCtx.drawImage(logoToDraw, drawLogoX, currentY, drawLogoWidth, drawLogoHeight);
                 currentY += drawLogoHeight + marginBetweenElements;
             } else {
-                // Fallback if logo not loaded (should be rare now with Promise.all)
-                console.warn("Logo no cargado, usando texto de fallback.");
+                console.warn("Logo no cargado, usando texto de fallback."); // Debug log
                 compositeCtx.fillStyle = '#1f2937';
                 compositeCtx.font = 'bold 20px Inter, sans-serif';
                 compositeCtx.textAlign = 'center';
@@ -733,6 +731,7 @@
 
         // Function to generate a single QR code and update DB
         async function createAndDisplayTicket(name, containerElement, isBatch = false) {
+            console.log(`Creating and displaying ticket for: ${name}, isBatch: ${isBatch}`); // Debug log
             const ticketId = generateUniqueTicketId();
             const finalQrDataURL = await createCompositeQrImage(ticketId, name, isBatch);
             
@@ -793,7 +792,7 @@
 
             containerElement.appendChild(ticketCard);
 
-            console.log('Ticket generado:', ticketsDB[ticketId]);
+            console.log('Ticket generado:', ticketsDB[ticketId]); // Debug log
             return ticketId;
         }
 
@@ -807,10 +806,12 @@
             
             singleCountSpan.textContent = singleTickets;
             batchCountSpan.textContent = batchTickets;
+            generatedCountSpan.textContent = batchTickets; // Update generated count for batch section
         }
 
         // Function to handle individual ticket generation
         async function generateIndividualTicket() {
+            console.log('Generate Individual Ticket button clicked.'); // Debug log
             const ticketHolderName = ticketHolderNameInput.value.trim();
             if (!ticketHolderName) {
                 displayMessage('Por favor, ingresa el nombre del titular de la entrada.', 'error');
@@ -829,6 +830,7 @@
 
         // Function to handle batch ticket generation
         async function generateBatchTickets() {
+            console.log('Generate Batch Tickets button clicked.'); // Debug log
             const namesInput = batchTicketNamesTextarea.value.trim();
             if (!namesInput) {
                 displayMessage('Por favor, ingresa al menos un nombre para generar entradas.', 'error');
@@ -858,6 +860,7 @@
 
         // Function to share a single QR code (now always shares the composite image)
         async function shareQrCode(ticketId) {
+            console.log(`Sharing QR code for ticket ID: ${ticketId}`); // Debug log
             const ticket = ticketsDB[ticketId];
             if (!ticket || !ticket.qrDataURL) {
                 displayMessage('Error: QR no encontrado para compartir.', 'error');
@@ -890,6 +893,7 @@
 
         // Function to select/deselect all checkboxes
         function toggleSelectAllQRs() {
+            console.log('Toggle Select All QRs button clicked.'); // Debug log
             const checkboxes = document.querySelectorAll('.ticket-checkbox');
             const allSelected = Array.from(checkboxes).every(cb => cb.checked);
             checkboxes.forEach(cb => {
@@ -899,6 +903,7 @@
 
         // Function to share selected QR codes (as a ZIP file)
         async function shareSelectedQRs() {
+            console.log('Share Selected QRs button clicked.'); // Debug log
             const selectedCheckboxes = document.querySelectorAll('.ticket-checkbox:checked');
             if (selectedCheckboxes.length === 0) {
                 displayMessage('Por favor, selecciona al menos una entrada para compartir.', 'info');
@@ -949,6 +954,7 @@
 
         // Function to generate and download a ZIP file of selected QR codes
         async function downloadSelectedQRs() {
+            console.log('Download Selected QRs button clicked.'); // Debug log
             const selectedCheckboxes = document.querySelectorAll('.ticket-checkbox:checked');
             if (selectedCheckboxes.length === 0) {
                 displayMessage('Por favor, selecciona al menos una entrada para descargar.', 'info');
@@ -986,6 +992,7 @@
 
         // Function to start the QR scanner
         async function startQrScanner() {
+            console.log('Starting QR scanner.'); // Debug log
             stopQrScanner(); // Ensure any existing stream is stopped
 
             scannedResultDiv.classList.add('hidden');
@@ -1042,6 +1049,7 @@
 
         // Function to stop the QR scanner
         function stopQrScanner() {
+            console.log('Stopping QR scanner.'); // Debug log
             scanning = false;
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
@@ -1096,7 +1104,7 @@
 
         // Callback function for successful QR scan (from jsQR)
         function onScanSuccess(decodedText) {
-            console.log(`QR code detected: ${decodedText}`);
+            console.log(`QR code detected: ${decodedText}`); // Debug log
             currentScannedTicketId = decodedText;
             scannedResultDiv.classList.remove('hidden');
             scannedResultDiv.textContent = `Código Escaneado: ${decodedText}`;
@@ -1126,6 +1134,7 @@
 
         // Function to mark ticket as used
         function markTicketAsUsed() {
+            console.log('Mark Used button clicked.'); // Debug log
             if (currentScannedTicketId && ticketsDB[currentScannedTicketId] && ticketsDB[currentScannedTicketId].status === 'valid') {
                 ticketsDB[currentScannedTicketId].status = 'used';
                 ticketStatusDiv.textContent = `Estado: Marcada como Usada (${ticketsDB[currentScannedTicketId].name})`;
@@ -1158,7 +1167,7 @@
         generateTicketBtn.addEventListener('click', generateIndividualTicket);
         generateBatchTicketsBtn.addEventListener('click', generateBatchTickets);
         markUsedBtn.addEventListener('click', markTicketAsUsed);
-        restartScannerBtn.addEventListener('click', startQrScanner); // Added restart scanner button listener
+        restartScannerBtn.addEventListener('click', startQrScanner);
 
         // New event listeners for batch actions
         selectAllQRsBtn.addEventListener('click', toggleSelectAllQRs);
@@ -1169,6 +1178,7 @@
         // Initial setup: show generator section by default
         window.onload = () => {
             switchSection('ticket-generator-section');
+            updateTicketCounts(); // Initialize counts on load
         };
     </script>
 </body>
