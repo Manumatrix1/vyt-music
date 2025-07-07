@@ -682,7 +682,7 @@
             let ticketsDB = {};
             let currentScannedTicketId = null;
             
-            // Obtener elementos del DOM para el escáner de QR
+            // --- Obtener elementos del DOM para el escáner de QR (MOVIDO DENTRO DE DOMContentLoaded) ---
             const video = document.getElementById('video-preview');
             const canvasElement = document.getElementById('qr-canvas');
             const canvas = canvasElement ? canvasElement.getContext('2d') : null; // Asegurarse de que canvasElement exista
@@ -691,10 +691,11 @@
 
             // URL del logo para el QR
             // IMPORTANTE: Las URLs con el prefijo 'uploaded:' (como 'uploaded:LOGO NEGRO.jpg-...')
-            // no pueden ser cargadas directamente por `new Image()` en el navegador para dibujar en un canvas
-            // debido a restricciones de seguridad (CORS).
+            // NO pueden ser cargadas directamente por `new Image()` en el navegador para dibujar en un canvas
+            // debido a restricciones de seguridad (CORS - Cross-Origin Resource Sharing).
             // Para que tu logo real aparezca, debes subirlo a un servicio de alojamiento de imágenes público
-            // (por ejemplo, Google Cloud Storage, Imgur, tu propio servidor web) y usar su URL pública aquí.
+            // (por ejemplo, Google Cloud Storage, Imgur, tu propio servidor web, etc.) y usar su URL pública aquí.
+            // Por ahora, se usará texto de respaldo si la imagen no se carga.
             const logoUrl = 'uploaded:image_8bf34f.jpg-1059de73-997b-48d3-a7fe-db6f042e9072'; 
             let logoImage = new Image();
             logoImage.crossOrigin = "Anonymous"; 
@@ -737,7 +738,7 @@
             const whatsappSingleQrBtn = document.getElementById('whatsapp-single-qr-btn'); // Nuevo botón de WhatsApp
 
             const batchTicketNamesTextarea = document.getElementById('batch-ticket-names');
-            const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
+            const generateBatchTicketsBtn = document = document.getElementById('generate-batch-tickets-btn');
             const generatedBatchTicketsInfo = document.getElementById('generated-batch-tickets-info');
             const batchQRCodesDisplay = document.getElementById('batch-qrcodes-display');
             const selectAllQRsBtn = document.getElementById('select-all-qrs-btn'); 
@@ -1353,7 +1354,7 @@
                     return;
                 }
 
-                // Establecer las dimensiones del canvas dinámicamente según el video
+                // Establecer las dimensiones del canvas para que coincidan con el video después de que se cargue
                 canvasElement.width = video.videoWidth;
                 canvasElement.height = video.videoHeight;
 
