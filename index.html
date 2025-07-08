@@ -153,28 +153,28 @@
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // UI Elements
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const messageContainer = document.getElementById('message-container');
-        const qrScannerSection = document.getElementById('qr-scanner-section');
-        const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
-        const scanHistorySection = document.getElementById('scan-history-section');
-        const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
-        const showScannerBtn = document.getElementById('show-scanner-btn');
-        const showHistoryBtn = document.getElementById('show-history-btn');
-        const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
-        const numTicketsInput = document.getElementById('num-tickets');
-        const ticketPrefixInput = document.getElementById('ticket-prefix');
-        const generatedTicketsContainer = document.getElementById('generated-tickets-container');
-        const qrCodeReader = document.getElementById('qr-code-reader');
-        const scannedTicketInfo = document.getElementById('scanned-ticket-info');
-        const markUsedBtn = document.getElementById('mark-used-btn');
-        const currentScannedTicketId = document.getElementById('current-scanned-ticket-id');
-        const currentScannedTicketStatus = document.getElementById('current-scanned-ticket-status');
-        const currentScannedTicketPrefix = document.getElementById('current-scanned-ticket-prefix');
-        const scanHistoryList = document.getElementById('scan-history-list');
-        const shareAllTicketsBtn = document.getElementById('share-all-tickets-btn');
-        const currentUserIdDisplay = document.getElementById('current-user-id');
+        // UI Elements (declared here, assigned in window.onload)
+        let loadingOverlay;
+        let messageContainer;
+        let qrScannerSection;
+        let batchTicketGeneratorSection;
+        let scanHistorySection;
+        let showBatchGeneratorBtn;
+        let showScannerBtn;
+        let showHistoryBtn;
+        let generateBatchTicketsBtn;
+        let numTicketsInput;
+        let ticketPrefixInput;
+        let generatedTicketsContainer;
+        let qrCodeReader;
+        let scannedTicketInfo;
+        let markUsedBtn;
+        let currentScannedTicketId;
+        let currentScannedTicketStatus;
+        let currentScannedTicketPrefix;
+        let scanHistoryList;
+        let shareAllTicketsBtn;
+        let currentUserIdDisplay;
 
         let html5QrCodeScanner; // Declare the scanner globally
 
@@ -182,6 +182,10 @@
 
         // Function to display messages to the user
         function displayMessage(message, type = 'info') {
+            if (!messageContainer) {
+                console.error('Message container not initialized.');
+                return;
+            }
             messageContainer.innerHTML = `<div class="message-box ${type}">${message}</div>`;
             messageContainer.classList.remove('hidden');
             setTimeout(() => {
@@ -200,7 +204,7 @@
             // Stop QR scanner if switching away from scanner section
             if (sectionId !== 'qr-scanner-section' && html5QrCodeScanner) {
                 // Attempt to stop any running scanner instance gracefully
-                if (html5QrCodeScanner.isScanning) {
+                if (html5QrCodeScanner.isScanning()) { // Use isScanning() method
                     html5QrCodeScanner.stop().then(() => {
                         console.log("QR scanner stopped.");
                     }).catch((err) => {
@@ -432,7 +436,7 @@
             if (html5QrCodeScanner) {
                 try {
                     // Attempt to stop any running scanner instance gracefully
-                    if (html5QrCodeScanner.isScanning) {
+                    if (html5QrCodeScanner.isScanning()) { // Use isScanning() method
                         await html5QrCodeScanner.stop();
                         console.log("Existing QR scanner stopped.");
                     }
@@ -462,8 +466,17 @@
 
         // Function to generate batch tickets
         async function generateBatchTickets() {
+            // Ensure inputs are correctly referenced
+            if (!numTicketsInput || !ticketPrefixInput) {
+                displayMessage('Error: Los campos de entrada no están inicializados. Recarga la página.', 'error');
+                console.error('numTicketsInput or ticketPrefixInput is null. DOM elements not found.');
+                return;
+            }
+
             const numTickets = parseInt(numTicketsInput.value);
             const ticketPrefix = ticketPrefixInput.value.trim();
+
+            console.log(`Intentando generar ${numTickets} tickets con prefijo "${ticketPrefix}"`); // Debugging log
 
             if (isNaN(numTickets) || numTickets <= 0) {
                 displayMessage('Por favor, introduce un número válido de tickets.', 'warning');
@@ -545,6 +558,49 @@
 
         // Initialize App on window load
         window.onload = async () => {
+            // Assign UI elements here to ensure DOM is ready
+            loadingOverlay = document.getElementById('loading-overlay');
+            messageContainer = document.getElementById('message-container');
+            qrScannerSection = document.getElementById('qr-scanner-section');
+            batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
+            scanHistorySection = document.getElementById('scan-history-section');
+            showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
+            showScannerBtn = document.getElementById('show-scanner-btn');
+            showHistoryBtn = document.getElementById('show-history-btn');
+            generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
+            numTicketsInput = document.getElementById('num-tickets');
+            ticketPrefixInput = document.getElementById('ticket-prefix');
+            generatedTicketsContainer = document.getElementById('generated-tickets-container');
+            qrCodeReader = document.getElementById('qr-code-reader');
+            scannedTicketInfo = document.getElementById('scanned-ticket-info');
+            markUsedBtn = document.getElementById('mark-used-btn');
+            currentScannedTicketId = document.getElementById('current-scanned-ticket-id');
+            currentScannedTicketStatus = document.getElementById('current-scanned-ticket-status');
+            currentScannedTicketPrefix = document.getElementById('current-scanned-ticket-prefix');
+            scanHistoryList = document.getElementById('scan-history-list');
+            shareAllTicketsBtn = document.getElementById('share-all-tickets-btn');
+            currentUserIdDisplay = document.getElementById('current-user-id');
+
+            console.log('UI Elements assigned:', { numTicketsInput, ticketPrefixInput, generateBatchTicketsBtn });
+
+            // Add debug listeners to inputs
+            if (numTicketsInput) {
+                numTicketsInput.addEventListener('input', (e) => {
+                    console.log('Num Tickets Input:', e.target.value);
+                });
+            }
+            if (ticketPrefixInput) {
+                ticketPrefixInput.addEventListener('input', (e) => {
+                    console.log('Ticket Prefix Input:', e.target.value);
+                });
+            }
+            if (generateBatchTicketsBtn) {
+                generateBatchTicketsBtn.addEventListener('click', () => {
+                    console.log('Generate Batch Tickets button clicked.');
+                });
+            }
+
+
             loadingOverlay.classList.remove('hidden'); // Show loading overlay initially
 
             if (firebaseConfig) {
