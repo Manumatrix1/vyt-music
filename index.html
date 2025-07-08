@@ -123,10 +123,10 @@
     </style>
     <!-- Firebase SDKs -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js"; // Import getAnalytics
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"; // Updated to 11.10.0
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js"; // Updated to 11.10.0
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"; // Updated to 11.10.0
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"; // Updated to 11.10.0
 
         // QR Scanner Library
         import { Html5QrcodeScanner } from "https://unpkg.com/html5-qrcode@2.3.8/esm/html5-qrcode-scanner.js";
@@ -198,14 +198,17 @@
             document.getElementById(sectionId).classList.add('active');
 
             // Stop QR scanner if switching away from scanner section
-            if (sectionId !== 'qr-scanner-section' && html5QrCodeScanner && html5QrCodeScanner.isScanning) {
-                html5QrCodeScanner.stop().then(() => {
-                    console.log("QR scanner stopped.");
-                }).catch((err) => {
-                    console.error("Error stopping QR scanner:", err);
-                });
-            } else if (sectionId === 'qr-scanner-section' && !html5QrCodeScanner.isScanning) {
-                // Start QR scanner if switching to scanner section and not already scanning
+            if (sectionId !== 'qr-scanner-section' && html5QrCodeScanner) {
+                // Attempt to stop any running scanner instance gracefully
+                if (html5QrCodeScanner.isScanning) {
+                    html5QrCodeScanner.stop().then(() => {
+                        console.log("QR scanner stopped.");
+                    }).catch((err) => {
+                        console.error("Error stopping QR scanner:", err);
+                    });
+                }
+            } else if (sectionId === 'qr-scanner-section') {
+                // Start QR scanner if switching to scanner section
                 startQrScanner();
             }
 
@@ -424,27 +427,36 @@
             // console.warn(`QR Code scan error: ${error}`); // Too noisy for console
         }
 
-        // Function to start the QR scanner
-        function startQrScanner() {
+        // Function to start the QR scanner (more robust)
+        async function startQrScanner() {
             if (html5QrCodeScanner) {
-                // Ensure scanner is stopped before starting again
-                if (html5QrCodeScanner.isScanning) {
-                    html5QrCodeScanner.stop().then(() => {
-                        console.log("Existing scanner stopped before restart.");
-                        html5QrCodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure);
-                    }).catch((err) => {
-                        console.error("Error stopping existing scanner:", err);
-                    });
-                } else {
-                    html5QrCodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure);
+                try {
+                    // Attempt to stop any running scanner instance gracefully
+                    if (html5QrCodeScanner.isScanning) {
+                        await html5QrCodeScanner.stop();
+                        console.log("Existing QR scanner stopped.");
+                    }
+                } catch (err) {
+                    // Log error but proceed, as stopping might fail if scanner wasn't properly started
+                    console.warn("Could not stop existing QR scanner (may not have been running):", err);
                 }
             } else {
+                // Initialize scanner only once
                 html5QrCodeScanner = new Html5QrcodeScanner(
                     "qr-code-reader",
                     { fps: 10, qrbox: { width: 250, height: 250 }, rememberLastUsedCamera: true },
                     /* verbose= */ false
                 );
-                html5QrCodeScanner.render(onScanSuccess, onScanFailure);
+            }
+
+            // Always attempt to render/start the scanner
+            try {
+                // Render will start the scanning process if not already started
+                await html5QrCodeScanner.render(onScanSuccess, onScanFailure);
+                console.log("QR scanner started/rendered.");
+            } catch (err) {
+                console.error("Error starting/rendering QR scanner:", err);
+                displayMessage(`Error al iniciar el escáner QR: ${err.message}. Asegúrate de que tu dispositivo tenga cámara y permisos.`, 'error');
             }
         }
 
@@ -559,7 +571,7 @@
                             isFirebaseReady = true; // Firebase is ready for operations
                             loadingOverlay.classList.add('hidden'); // Hide loading overlay on successful auth
                             switchSection('qr-scanner-section'); // Show scanner after auth
-                            startQrScanner(); // Start scanner once Firebase is ready
+                            // startQrScanner(); // Moved this call into switchSection for better control
                         } else {
                             userId = null; // User signed out or auth fails
                             isFirebaseReady = false; // Firebase not fully ready for operations
