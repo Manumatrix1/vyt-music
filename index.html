@@ -8,10 +8,652 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         // Mover la configuración de Tailwind después de que el CDN de Tailwind se haya cargado.
-…            shareAllTicketsBtn.addEventListener('click', shareAllTicketsOnWhatsApp);
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // Define un color celeste personalizado basado en el logo
+                        'vyt-celeste': '#87CEEB', // Un celeste claro, puedes ajustarlo si tienes un código HEX específico del logo
+                        'vyt-dark-blue': '#4682B4', // Un azul más oscuro para contrastes
+                        'vyt-darker-blue': '#36648B', // Un azul aún más oscuro para el hover
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Fondo negro */
+            color: #f7fafc; /* Letras blancas */
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .btn {
+            @apply px-4 py-2 rounded-md font-bold transition-colors duration-200;
+        }
+        .btn-primary {
+            @apply bg-vyt-dark-blue text-white hover:bg-vyt-darker-blue;
+        }
+        .btn-secondary {
+            @apply bg-gray-600 text-white hover:bg-gray-700;
+        }
+        .btn-danger {
+            @apply bg-red-600 text-white hover:bg-red-700;
+        }
+        .input-field {
+            @apply w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-vyt-celeste;
+        }
+        .message-box {
+            @apply p-4 rounded-md mb-4 text-sm;
+        }
+        .message-box.success {
+            @apply bg-green-500 text-white;
+        }
+        .message-box.error {
+            @apply bg-red-500 text-white;
+        }
+        .message-box.warning {
+            @apply bg-yellow-500 text-white;
+        }
+        #qr-video {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .ticket-card {
+            @apply bg-gray-800 p-4 rounded-lg shadow-md mb-4 flex items-center justify-between;
+        }
+        .ticket-card.used {
+            @apply opacity-60 line-through;
+        }
+        .ticket-card .qr-code-display {
+            @apply w-24 h-24 bg-white p-1 rounded-md;
+        }
+        .ticket-card .ticket-info {
+            @apply flex-grow ml-4;
+        }
+        .ticket-card .ticket-actions {
+            @apply flex flex-col space-y-2;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #87CEEB;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // QR Scanner Library
+        import { Html5QrcodeScanner } from "https://unpkg.com/html5-qrcode@2.3.8/esm/html5-qrcode-scanner.js";
+
+        let app;
+        let db;
+        let auth;
+        let userId;
+        let isFirebaseReady = false; // Flag to indicate if Firebase is fully initialized and authenticated
+
+        // Global variables for Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // UI Elements
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const messageContainer = document.getElementById('message-container');
+        const qrScannerSection = document.getElementById('qr-scanner-section');
+        const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
+        const scanHistorySection = document.getElementById('scan-history-section');
+        const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
+        const showScannerBtn = document.getElementById('show-scanner-btn');
+        const showHistoryBtn = document.getElementById('show-history-btn');
+        const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
+        const numTicketsInput = document.getElementById('num-tickets');
+        const ticketPrefixInput = document.getElementById('ticket-prefix');
+        const generatedTicketsContainer = document.getElementById('generated-tickets-container');
+        const qrCodeReader = document.getElementById('qr-code-reader');
+        const scannedTicketInfo = document.getElementById('scanned-ticket-info');
+        const markUsedBtn = document.getElementById('mark-used-btn');
+        const currentScannedTicketId = document.getElementById('current-scanned-ticket-id');
+        const currentScannedTicketStatus = document.getElementById('current-scanned-ticket-status');
+        const currentScannedTicketPrefix = document.getElementById('current-scanned-ticket-prefix');
+        const scanHistoryList = document.getElementById('scan-history-list');
+        const shareAllTicketsBtn = document.getElementById('share-all-tickets-btn');
+        const currentUserIdDisplay = document.getElementById('current-user-id');
+
+        let html5QrCodeScanner; // Declare the scanner globally
+
+        // --- Utility Functions ---
+
+        // Function to display messages to the user
+        function displayMessage(message, type = 'info') {
+            messageContainer.innerHTML = `<div class="message-box ${type}">${message}</div>`;
+            messageContainer.classList.remove('hidden');
+            setTimeout(() => {
+                messageContainer.classList.add('hidden');
+                messageContainer.innerHTML = '';
+            }, 5000); // Hide after 5 seconds
+        }
+
+        // Function to switch between sections
+        function switchSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            // Stop QR scanner if switching away from scanner section
+            if (sectionId !== 'qr-scanner-section' && html5QrCodeScanner && html5QrCodeScanner.is
+            Scanning) {
+                html5QrCodeScanner.stop().then(() => {
+                    console.log("QR scanner stopped.");
+                }).catch((err) => {
+                    console.error("Error stopping QR scanner:", err);
+                });
+            } else if (sectionId === 'qr-scanner-section' && !html5QrCodeScanner.isScanning) {
+                // Start QR scanner if switching to scanner section and not already scanning
+                startQrScanner();
+            }
+
+            // Update history if switching to history section
+            if (sectionId === 'scan-history-section') {
+                loadScanHistory();
+            }
+        }
+
+        // Function to generate a unique ticket ID
+        function generateTicketId(prefix) {
+            return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        }
+
+        // Function to render QR code using qrcode.js
+        function renderQRCode(elementId, text) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = ''; // Clear previous QR code
+                new QRCode(element, {
+                    text: text,
+                    width: 96,
+                    height: 96,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+        }
+
+        // --- Firebase Functions ---
+
+        // Function to save a ticket to Firestore
+        async function saveTicket(ticketId, prefix) {
+            if (!isFirebaseReady) {
+                displayMessage('Firebase no está listo. No se puede guardar el ticket.', 'error');
+                return;
+            }
+            try {
+                // Public data: /artifacts/{appId}/public/data/tickets/{ticketId}
+                const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticketId);
+                await setDoc(ticketRef, {
+                    id: ticketId,
+                    prefix: prefix,
+                    used: false,
+                    generatedAt: new Date().toISOString(),
+                    usedAt: null,
+                    generatedBy: userId
+                });
+                displayMessage(`Ticket ${ticketId} generado y guardado.`, 'success');
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                displayMessage(`Error al guardar el ticket ${ticketId}: ${e.message}`, 'error');
+            }
+        }
+
+        // Function to get a ticket from Firestore
+        async function getTicket(ticketId) {
+            if (!isFirebaseReady) {
+                displayMessage('Firebase no está listo. No se puede obtener el ticket.', 'error');
+                return null;
+            }
+            try {
+                const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticketId);
+                const ticketSnap = await getDoc(ticketRef);
+                if (ticketSnap.exists()) {
+                    return ticketSnap.data();
+                } else {
+                    return null;
+                }
+            } catch (e) {
+                console.error("Error getting document: ", e);
+                displayMessage(`Error al obtener el ticket ${ticketId}: ${e.message}`, 'error');
+                return null;
+            }
+        }
+
+        // Function to update a ticket in Firestore
+        async function updateTicket(ticketId, data) {
+            if (!isFirebaseReady) {
+                displayMessage('Firebase no está listo. No se puede actualizar el ticket.', 'error');
+                return false;
+            }
+            try {
+                const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticketId);
+                await updateDoc(ticketRef, data);
+                displayMessage(`Ticket ${ticketId} actualizado.`, 'success');
+                return true;
+            } catch (e) {
+                console.error("Error updating document: ", e);
+                displayMessage(`Error al actualizar el ticket ${ticketId}: ${e.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Function to save a scan event to Firestore (private data)
+        async function saveScanEvent(ticketData, scanStatus) {
+            if (!isFirebaseReady) {
+                displayMessage('Firebase no está listo. No se puede guardar el evento de escaneo.', 'error');
+                return;
+            }
+            try {
+                // Private data: /artifacts/{appId}/users/{userId}/scanHistory
+                const scanHistoryCollection = collection(db, `artifacts/${appId}/users/${userId}/scanHistory`);
+                await addDoc(scanHistoryCollection, {
+                    ticketId: ticketData.id,
+                    prefix: ticketData.prefix,
+                    status: scanStatus, // e.g., 'valid', 'used', 'invalid'
+                    scannedAt: new Date().toISOString(),
+                    scannedBy: userId,
+                    ticketUsed: ticketData.used,
+                    ticketGeneratedAt: ticketData.generatedAt,
+                    ticketUsedAt: ticketData.usedAt
+                });
+                console.log("Scan event saved to history.");
+            } catch (e) {
+                console.error("Error saving scan event: ", e);
+                displayMessage(`Error al guardar el evento de escaneo: ${e.message}`, 'error');
+            }
+        }
+
+        // Function to load scan history from Firestore (private data)
+        async function loadScanHistory() {
+            if (!isFirebaseReady) {
+                displayMessage('Firebase no está listo. No se puede cargar el historial de escaneo.', 'error');
+                scanHistoryList.innerHTML = '<li class="text-center text-gray-400">Firebase no está configurado.</li>';
+                return;
+            }
+            scanHistoryList.innerHTML = '<li class="text-center text-gray-400">Cargando historial...</li>';
+            try {
+                const scanHistoryCollection = collection(db, `artifacts/${appId}/users/${userId}/scanHistory`);
+                const q = query(scanHistoryCollection); // No orderBy to avoid index issues
+                const querySnapshot = await getDocs(q);
+
+                scanHistoryList.innerHTML = ''; // Clear previous list
+                if (querySnapshot.empty) {
+                    scanHistoryList.innerHTML = '<li class="text-center text-gray-400">No hay historial de escaneo.</li>';
+                    return;
+                }
+
+                const historyItems = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    historyItems.push(data);
+                });
+
+                // Sort in memory by scannedAt in descending order
+                historyItems.sort((a, b) => new Date(b.scannedAt) - new Date(a.scannedAt));
+
+                historyItems.forEach(data => {
+                    const li = document.createElement('li');
+                    li.className = `p-3 rounded-md mb-2 ${data.status === 'valid' ? 'bg-green-700' : data.status === 'used' ? 'bg-yellow-700' : 'bg-red-700'}`;
+                    li.innerHTML = `
+                        <p class="font-bold">Ticket ID: ${data.ticketId}</p>
+                        <p>Prefijo: ${data.prefix}</p>
+                        <p>Estado: <span class="font-semibold">${data.status === 'valid' ? 'Válido' : data.status === 'used' ? 'Usado' : 'Inválido'}</span></p>
+                        <p>Escaneado en: ${new Date(data.scannedAt).toLocaleString()}</p>
+                        ${data.ticketUsed ? `<p>Usado en: ${new Date(data.ticketUsedAt).toLocaleString()}</p>` : ''}
+                    `;
+                    scanHistoryList.appendChild(li);
+                });
+            } catch (e) {
+                console.error("Error loading scan history: ", e);
+                displayMessage(`Error al cargar el historial de escaneo: ${e.message}`, 'error');
+                scanHistoryList.innerHTML = '<li class="text-center text-gray-400">Error al cargar el historial.</li>';
+            }
+        }
+
+
+        // --- Event Handlers / Main Logic ---
+
+        // Handles the result from the QR scanner
+        async function onScanSuccess(decodedText, decodedResult) {
+            console.log(`QR Code detected: ${decodedText}`);
+            // Stop the scanner after a successful scan to prevent multiple reads
+            html5QrCodeScanner.stop().then(() => {
+                console.log("QR scanner stopped after successful scan.");
+            }).catch((err) => {
+                console.error("Error stopping QR scanner after scan:", err);
+            });
+
+            displayMessage(`Código QR escaneado: ${decodedText}`, 'info');
+
+            const ticketData = await getTicket(decodedText);
+
+            if (ticketData) {
+                currentScannedTicketId.textContent = ticketData.id;
+                currentScannedTicketPrefix.textContent = ticketData.prefix;
+                if (ticketData.used) {
+                    currentScannedTicketStatus.textContent = 'USADO';
+                    currentScannedTicketStatus.className = 'text-red-500 font-bold';
+                    markUsedBtn.classList.add('hidden');
+                    displayMessage('Este ticket ya ha sido usado.', 'error');
+                    saveScanEvent(ticketData, 'used');
+                } else {
+                    currentScannedTicketStatus.textContent = 'VÁLIDO';
+                    currentScannedTicketStatus.className = 'text-green-500 font-bold';
+                    markUsedBtn.classList.remove('hidden');
+                    displayMessage('Ticket válido. Puedes marcarlo como usado.', 'success');
+                    saveScanEvent(ticketData, 'valid');
+                }
+            } else {
+                currentScannedTicketId.textContent = 'N/A';
+                currentScannedTicketPrefix.textContent = 'N/A';
+                currentScannedTicketStatus.textContent = 'INVÁLIDO';
+                currentScannedTicketStatus.className = 'text-red-500 font-bold';
+                markUsedBtn.classList.add('hidden');
+                displayMessage('Ticket no encontrado o inválido.', 'error');
+                // For invalid tickets, we create a dummy object to save to history
+                saveScanEvent({ id: decodedText, prefix: 'UNKNOWN', used: false, generatedAt: null, usedAt: null }, 'invalid');
+            }
+            scannedTicketInfo.classList.remove('hidden');
+        }
+
+        function onScanFailure(error) {
+            // console.warn(`QR Code scan error: ${error}`); // Too noisy for console
+        }
+
+        // Function to start the QR scanner
+        function startQrScanner() {
+            if (html5QrCodeScanner) {
+                // Ensure scanner is stopped before starting again
+                if (html5QrCodeScanner.isScanning) {
+                    html5QrCodeScanner.stop().then(() => {
+                        console.log("Existing scanner stopped before restart.");
+                        html5QrCodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure);
+                    }).catch((err) => {
+                        console.error("Error stopping existing scanner:", err);
+                    });
+                } else {
+                    html5QrCodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure);
+                }
+            } else {
+                html5QrCodeScanner = new Html5QrcodeScanner(
+                    "qr-code-reader",
+                    { fps: 10, qrbox: { width: 250, height: 250 }, rememberLastUsedCamera: true },
+                    /* verbose= */ false
+                );
+                html5QrCodeScanner.render(onScanSuccess, onScanFailure);
+            }
+        }
+
+        // Function to generate batch tickets
+        async function generateBatchTickets() {
+            const numTickets = parseInt(numTicketsInput.value);
+            const ticketPrefix = ticketPrefixInput.value.trim();
+
+            if (isNaN(numTickets) || numTickets <= 0) {
+                displayMessage('Por favor, introduce un número válido de tickets.', 'warning');
+                return;
+            }
+            if (!ticketPrefix) {
+                displayMessage('Por favor, introduce un prefijo para los tickets.', 'warning');
+                return;
+            }
+
+            generatedTicketsContainer.innerHTML = ''; // Clear previous tickets
+            const ticketsToShare = [];
+
+            for (let i = 0; i < numTickets; i++) {
+                const ticketId = generateTicketId(ticketPrefix);
+                await saveTicket(ticketId, ticketPrefix);
+
+                const ticketCard = document.createElement('div');
+                ticketCard.id = `ticket-${ticketId}`;
+                ticketCard.className = 'ticket-card';
+                ticketCard.innerHTML = `
+                    <div class="qr-code-display" id="qr-${ticketId}"></div>
+                    <div class="ticket-info">
+                        <p class="font-bold text-lg">${ticketPrefix}</p>
+                        <p class="text-sm text-gray-400 break-all">${ticketId}</p>
+                        <p class="text-sm text-gray-400" id="status-${ticketId}">Estado: <span class="text-green-400">Activo</span></p>
+                    </div>
+                `;
+                generatedTicketsContainer.appendChild(ticketCard);
+                renderQRCode(`qr-${ticketId}`, ticketId);
+                ticketsToShare.push(ticketId);
+            }
+            displayMessage(`${numTickets} tickets generados y guardados.`, 'success');
+
+            // Store ticketsToShare in a data attribute or global variable for later use
+            shareAllTicketsBtn.dataset.tickets = JSON.stringify(ticketsToShare);
+            shareAllTicketsBtn.classList.remove('hidden'); // Show share button
+        }
+
+        // Function to mark a scanned ticket as used
+        async function markTicketAsUsed() {
+            const ticketId = currentScannedTicketId.textContent;
+            if (ticketId === 'N/A' || !ticketId) {
+                displayMessage('No hay un ticket escaneado para marcar como usado.', 'warning');
+                return;
+            }
+
+            const success = await updateTicket(ticketId, { used: true, usedAt: new Date().toISOString() });
+            if (success) {
+                currentScannedTicketStatus.textContent = 'USADO';
+                currentScannedTicketStatus.className = 'text-red-500 font-bold';
+                markUsedBtn.classList.add('hidden');
+                displayMessage(`Ticket ${ticketId} marcado como usado.`, 'success');
+                // Update the scan history entry for this ticket
+                const ticketData = await getTicket(ticketId); // Get updated data
+                if (ticketData) {
+                    saveScanEvent(ticketData, 'used'); // Save with updated status
+                }
+            }
+        }
+
+        // Function to share all generated tickets via WhatsApp
+        function shareAllTicketsOnWhatsApp() {
+            const tickets = JSON.parse(shareAllTicketsBtn.dataset.tickets || '[]');
+            if (tickets.length === 0) {
+                displayMessage('No hay tickets generados para compartir.', 'warning');
+                return;
+            }
+
+            let message = "¡Aquí están tus tickets para VYTMUSIC!\n\n";
+            tickets.forEach((ticket, index) => {
+                message += `Ticket ${index + 1}: ${ticket}\n`;
+            });
+            message += "\n¡Disfruta del evento!";
+
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Initialize App on window load
+        window.onload = async () => {
+            loadingOverlay.classList.remove('hidden'); // Show loading overlay
+
+            if (firebaseConfig) {
+                try {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    // Sign in using custom token if provided, otherwise anonymously
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        displayMessage('Autenticación exitosa con token personalizado.', 'success');
+                    } else {
+                        await signInAnonymously(auth);
+                        displayMessage('Autenticación anónima exitosa.', 'success');
+                    }
+
+                    // Listen for auth state changes to set userId and readiness flag
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            currentUserIdDisplay.textContent = `ID de Usuario: ${userId}`;
+                            isFirebaseReady = true; // Firebase is ready for operations
+                            loadingOverlay.classList.add('hidden');
+                            switchSection('qr-scanner-section'); // Show scanner after auth
+                            startQrScanner(); // Start scanner once Firebase is ready
+                        } else {
+                            userId = null; // User signed out or auth fails
+                            isFirebaseReady = false; // Firebase not fully ready for operations
+                            switchSection('qr-scanner-section');
+                        }
+                    });
+                } catch (error) {
+                    console.error("Error initializing Firebase or signing in:", error);
+                    displayMessage(`Error de inicialización de Firebase: ${error.message}. Funcionando en modo limitado.`, 'error');
+                    isFirebaseReady = false; // Explicitly set to false if init fails
+                    loadingOverlay.classList.add('hidden');
+                    switchSection('qr-scanner-section'); // Fallback to in-memory if Firebase init fails
+                }
+            } else {
+                console.warn("Firebase config not fully provided. Running in-memory mode (data will not be saved).");
+                displayMessage('Configuración de Firebase incompleta. Los datos no se guardarán permanentemente.', 'warning');
+                isFirebaseReady = false; // Explicitly set to false for in-memory mode
+                loadingOverlay.classList.add('hidden');
+                switchSection('qr-scanner-section'); // Fallback to in-memory if no Firebase
+            }
+
+            // Event Listeners
+            showBatchGeneratorBtn.addEventListener('click', () => switchSection('batch-ticket-generator-section'));
+            showScannerBtn.addEventListener('click', () => switchSection('qr-scanner-section'));
+            showHistoryBtn.addEventListener('click', () => switchSection('scan-history-section'));
+            generateBatchTicketsBtn.addEventListener('click', generateBatchTickets);
+            markUsedBtn.addEventListener('click', markTicketAsUsed);
+            shareAllTicketsBtn.addEventListener('click', shareAllTicketsOnWhatsApp);
 
             // Initial setup: show scanner section by default (handled after Firebase init)
         };
     </script>
+    <!-- qrcode.js library for QR code generation -->
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p class="text-white ml-4">Cargando aplicación...</p>
+    </div>
+
+    <div class="container mx-auto p-4 flex-grow">
+        <h1 class="text-4xl font-bold text-center mb-8 text-vyt-celeste">Control de Entradas VYTMUSIC</h1>
+
+        <!-- Message Container -->
+        <div id="message-container" class="hidden"></div>
+
+        <!-- Navigation Buttons -->
+        <nav class="flex justify-center space-x-4 mb-8">
+            <button id="show-scanner-btn" class="btn btn-primary">Escanear QR</button>
+            <button id="show-batch-generator-btn" class="btn btn-primary">Generar Tickets</button>
+            <button id="show-history-btn" class="btn btn-primary">Historial de Escaneo</button>
+        </nav>
+
+        <p id="current-user-id" class="text-sm text-gray-400 text-center mb-4">ID de Usuario: Cargando...</p>
+
+        <!-- QR Scanner Section -->
+        <section id="qr-scanner-section" class="section active bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-vyt-celeste">Escanear Código QR</h2>
+            <div id="qr-code-reader" class="w-full h-auto max-w-md mx-auto bg-gray-700 rounded-lg overflow-hidden"></div>
+
+            <div id="scanned-ticket-info" class="hidden mt-6 p-4 bg-gray-700 rounded-lg">
+                <h3 class="text-xl font-semibold mb-2">Información del Ticket Escaneado:</h3>
+                <p>ID: <span id="current-scanned-ticket-id" class="font-mono break-all"></span></p>
+                <p>Prefijo: <span id="current-scanned-ticket-prefix" class="font-semibold"></span></p>
+                <p>Estado: <span id="current-scanned-ticket-status" class="font-bold"></span></p>
+                <button id="mark-used-btn" class="btn btn-danger mt-4 hidden">Marcar como Usado</button>
+            </div>
+        </section>
+
+        <!-- Batch Ticket Generator Section -->
+        <section id="batch-ticket-generator-section" class="section bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-vyt-celeste">Generar Tickets por Lotes</h2>
+            <div class="mb-4">
+                <label for="num-tickets" class="block text-sm font-medium text-gray-300 mb-2">Número de Tickets:</label>
+                <input type="number" id="num-tickets" class="input-field" placeholder="Ej: 10" value="1">
+            </div>
+            <div class="mb-6">
+                <label for="ticket-prefix" class="block text-sm font-medium text-gray-300 mb-2">Prefijo del Ticket (Ej: VYTMUSIC):</label>
+                <input type="text" id="ticket-prefix" class="input-field" placeholder="Ej: VYTMUSIC" value="VYTMUSIC">
+            </div>
+            <button id="generate-batch-tickets-btn" class="btn btn-primary w-full mb-6">Generar Tickets</button>
+
+            <div id="generated-tickets-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Generated tickets will be appended here -->
+            </div>
+
+            <button id="share-all-tickets-btn" class="btn btn-secondary w-full mt-6 hidden">Compartir Todos los Tickets (WhatsApp)</button>
+        </section>
+
+        <!-- Scan History Section -->
+        <section id="scan-history-section" class="section bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-vyt-celeste">Historial de Escaneo</h2>
+            <ul id="scan-history-list" class="space-y-3">
+                <!-- Scan history items will be loaded here -->
+                <li class="text-center text-gray-400">Cargando historial...</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <footer class="text-center py-4 text-gray-500 text-sm mt-8">
+        © 2024 VYTMUSIC. Todos los derechos reservados.
+    </footer>
+
 </body>
 </html>
