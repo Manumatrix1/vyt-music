@@ -268,7 +268,7 @@
         import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
-          apiKey: "AIzaSyC_2Ukoxf_ryQfKtou1Cz6nY-qTVw4qTU",
+          apiKey: "", // Se cambió la clave API a una cadena vacía para que el sistema la inyecte automáticamente
           authDomain: "vyt-music.firebaseapp.com",
           projectId: "vyt-music",
           storageBucket: "vyt-music.appspot.com",
@@ -337,8 +337,8 @@
             showBatchGeneratorBtn.classList.remove('button-primary');
             showScannerBtn.classList.add('button-secondary');
             showScannerBtn.classList.remove('button-primary');
-            showHistoryBtn.classList.add('button-secondary');
-            showHistoryBtn.classList.remove('button-primary');
+            // showHistoryBtn.classList.add('button-secondary'); // Removed as requested
+            // showHistoryBtn.classList.remove('button-primary'); // Removed as requested
         }
 
         // Function to switch between sections
@@ -863,7 +863,7 @@
             // Firebase Initialization for Netlify
             // REEMPLAZA ESTA CONFIGURACIÓN CON LA TUYA DE FIREBASE
             const firebaseConfig = {
-              apiKey: "AIzaSyC_2Ukoxf_ryQfKtou1Cz6nY-qTVw4qTU",
+              apiKey: "", // Se cambió la clave API a una cadena vacía para que el sistema la inyecte automáticamente
               authDomain: "vyt-music.firebaseapp.com",
               projectId: "vyt-music",
               storageBucket: "vyt-music.firebasestorage.app",
