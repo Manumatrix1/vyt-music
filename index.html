@@ -124,6 +124,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js"; // Import getAnalytics
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -134,11 +135,22 @@
         let db;
         let auth;
         let userId;
+        let analytics; // Declare analytics globally
         let isFirebaseReady = false; // Flag to indicate if Firebase is fully initialized and authenticated
 
         // Global variables for Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        // Use the provided firebaseConfig if __firebase_config is not defined by the Canvas environment
+        const defaultFirebaseConfig = {
+            apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
+            authDomain: "vyt-music.firebaseapp.com",
+            projectId: "vyt-music",
+            storageBucket: "vyt-music.firebasestorage.app",
+            messagingSenderId: "574981837817",
+            appId: "1:574981837817:web:a29933a22bbfd51a086328",
+            measurementId: "G-8QCQF3HWEJ"
+        };
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         // UI Elements
@@ -186,8 +198,7 @@
             document.getElementById(sectionId).classList.add('active');
 
             // Stop QR scanner if switching away from scanner section
-            if (sectionId !== 'qr-scanner-section' && html5QrCodeScanner && html5QrCodeScanner.is
-            Scanning) {
+            if (sectionId !== 'qr-scanner-section' && html5QrCodeScanner && html5QrCodeScanner.isScanning) {
                 html5QrCodeScanner.stop().then(() => {
                     console.log("QR scanner stopped.");
                 }).catch((err) => {
@@ -522,11 +533,12 @@
 
         // Initialize App on window load
         window.onload = async () => {
-            loadingOverlay.classList.remove('hidden'); // Show loading overlay
+            loadingOverlay.classList.remove('hidden'); // Show loading overlay initially
 
             if (firebaseConfig) {
                 try {
                     app = initializeApp(firebaseConfig);
+                    analytics = getAnalytics(app); // Initialize analytics
                     db = getFirestore(app);
                     auth = getAuth(app);
 
@@ -545,27 +557,30 @@
                             userId = user.uid;
                             currentUserIdDisplay.textContent = `ID de Usuario: ${userId}`;
                             isFirebaseReady = true; // Firebase is ready for operations
-                            loadingOverlay.classList.add('hidden');
+                            loadingOverlay.classList.add('hidden'); // Hide loading overlay on successful auth
                             switchSection('qr-scanner-section'); // Show scanner after auth
                             startQrScanner(); // Start scanner once Firebase is ready
                         } else {
                             userId = null; // User signed out or auth fails
                             isFirebaseReady = false; // Firebase not fully ready for operations
-                            switchSection('qr-scanner-section');
+                            console.warn("No user authenticated. Functioning in limited mode.");
+                            displayMessage('No se pudo autenticar. Algunas funciones pueden estar limitadas.', 'warning');
+                            loadingOverlay.classList.add('hidden'); // Hide loading overlay even if auth fails
+                            switchSection('qr-scanner-section'); // Fallback to scanner section
                         }
                     });
                 } catch (error) {
                     console.error("Error initializing Firebase or signing in:", error);
                     displayMessage(`Error de inicialización de Firebase: ${error.message}. Funcionando en modo limitado.`, 'error');
                     isFirebaseReady = false; // Explicitly set to false if init fails
-                    loadingOverlay.classList.add('hidden');
+                    loadingOverlay.classList.add('hidden'); // Hide loading overlay on Firebase init error
                     switchSection('qr-scanner-section'); // Fallback to in-memory if Firebase init fails
                 }
             } else {
                 console.warn("Firebase config not fully provided. Running in-memory mode (data will not be saved).");
                 displayMessage('Configuración de Firebase incompleta. Los datos no se guardarán permanentemente.', 'warning');
                 isFirebaseReady = false; // Explicitly set to false for in-memory mode
-                loadingOverlay.classList.add('hidden');
+                loadingOverlay.classList.add('hidden'); // Hide loading overlay if no Firebase config
                 switchSection('qr-scanner-section'); // Fallback to in-memory if no Firebase
             }
 
