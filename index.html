@@ -51,8 +51,8 @@
             background-color: #36648B; /* Un azul aún más oscuro al pasar el ratón (vyt-darker-blue) */
         }
         .button-secondary {
-            background-color: #4a5568; /* Gris oscuro para botones secundarios/inactivos */
-            color: #f7fafc; /* Letras blancas */
+            background-color: #87CEEB; /* Celeste del logo (vyt-celeste) */
+            color: #1a202c; /* Texto oscuro para contraste */
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
             font-weight: 600;
@@ -60,7 +60,7 @@
             cursor: pointer;
         }
         .button-secondary:hover {
-            background-color: #6a7280; /* Un gris más claro al pasar el ratón */
+            background-color: #4682B4; /* Celeste oscuro del logo (vyt-dark-blue) */
         }
         .section-header {
             font-size: 1.875rem; /* text-3xl */
@@ -203,6 +203,11 @@
     </style>
 </head>
 <body class="font-inter antialiased">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="text-white text-xl p-4 rounded-lg bg-gray-700">Cargando sistema... Por favor, espera.</div>
+    </div>
+
     <div class="container">
         <h1 class="text-4xl font-extrabold text-center text-indigo-700 mb-6">VYTMUSIC</h1>
         <p class="text-lg text-center text-gray-600 mb-8">Sistema de Control de Entradas con QR</p>
@@ -210,7 +215,8 @@
         <!-- Navigation Buttons -->
         <div class="flex justify-center space-x-4 mb-8">
             <button id="show-batch-generator-btn" class="button-secondary">Generar Entradas</button>
-            <button id="show-scanner-btn" class="button-primary">Controlar Entradas</button>
+            <button id="show-scanner-btn" class="button-primary">Lector de QR</button>
+            <button id="show-history-btn" class="button-secondary">Historial de Escaneos</button>
         </div>
 
         <!-- Batch Ticket Generator Section (now for single or multiple) -->
@@ -238,34 +244,59 @@
 
         <!-- QR Scanner Section -->
         <div id="qr-scanner-section" class="p-6 border border-gray-200 rounded-lg shadow-sm">
-            <h2 class="section-header">Controlar Entrada</h2>
+            <h2 class="section-header">Lector de QR</h2>
             <div id="reader" class="mb-4"></div>
             <div id="scanned-result" class="hidden"></div>
             <div id="ticket-status" class="hidden"></div>
             <button id="mark-used-btn" class="button-primary w-full mt-4 hidden">Marcar como Usada</button>
         </div>
+
+        <!-- Scan History Section -->
+        <div id="scan-history-section" class="p-6 border border-gray-200 rounded-lg shadow-sm hidden">
+            <h2 class="section-header">Historial de Escaneos</h2>
+            <div id="scan-history-display" class="mt-4">
+                <p class="text-center text-gray-500" id="history-loading">Cargando historial...</p>
+                <!-- Scan history will be dynamically inserted here -->
+            </div>
+        </div>
     </div>
 
-    <!-- QR Code Generator Library -->
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-    <!-- HTML5-QR Code Scanner Library -->
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <script>
-        // In-memory database for tickets (for demonstration purposes only)
-        // In a real application, this would be a backend database like Firestore.
+        // QR Code Generator Library
+        // This is a global library, no import needed here.
+        // <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+
+        // HTML5-QR Code Scanner Library
+        // This is a global library, no import needed here.
+        // <script src="https://unpkg.com/html5-qrcode"></script>
+
+        // Global Firebase instances
+        let app;
+        let db;
+        let auth;
+        let userId;
+        let isFirebaseReady = false;
+
+        // In-memory database for tickets (local cache, synced with Firestore)
         let ticketsDB = {};
         let currentScannedTicketId = null;
         let html5QrCodeScanner = null; // Declare scanner instance globally
 
         // Function to hide all sections
         function hideAllSections() {
-            // Ensure these elements are defined before accessing them
             const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
             const qrScannerSection = document.getElementById('qr-scanner-section');
+            const scanHistorySection = document.getElementById('scan-history-section');
 
             batchTicketGeneratorSection.classList.add('hidden');
             qrScannerSection.classList.add('hidden');
+            scanHistorySection.classList.add('hidden');
+
             // Stop scanner if it's running when switching away from scanner section
             if (html5QrCodeScanner && html5QrCodeScanner.isScanning) {
                 html5QrCodeScanner.stop().then(() => {
@@ -278,14 +309,16 @@
 
         // Function to reset button styles
         function resetButtonStyles() {
-            // Ensure these elements are defined before accessing them
             const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
             const showScannerBtn = document.getElementById('show-scanner-btn');
+            const showHistoryBtn = document.getElementById('show-history-btn');
 
             showBatchGeneratorBtn.classList.add('button-secondary');
             showBatchGeneratorBtn.classList.remove('button-primary');
             showScannerBtn.classList.add('button-secondary');
             showScannerBtn.classList.remove('button-primary');
+            showHistoryBtn.classList.add('button-secondary');
+            showHistoryBtn.classList.remove('button-primary');
         }
 
         // Function to switch between sections
@@ -293,11 +326,12 @@
             hideAllSections();
             resetButtonStyles();
 
-            // Ensure these elements are defined before accessing them
             const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
             const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
             const qrScannerSection = document.getElementById('qr-scanner-section');
             const showScannerBtn = document.getElementById('show-scanner-btn');
+            const scanHistorySection = document.getElementById('scan-history-section');
+            const showHistoryBtn = document.getElementById('show-history-btn');
 
 
             if (sectionId === 'batch-ticket-generator-section') {
@@ -307,6 +341,10 @@
                 qrScannerSection.classList.remove('hidden');
                 showScannerBtn.classList.add('button-primary');
                 startQrScanner(); // Start scanner when switching to scanner section
+            } else if (sectionId === 'scan-history-section') {
+                scanHistorySection.classList.remove('hidden');
+                showHistoryBtn.classList.add('button-primary');
+                // The onSnapshot listener for scanLogs will automatically update the history display
             }
         }
 
@@ -315,13 +353,36 @@
             return 'VYTMUSIC-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9).toUpperCase();
         }
 
+        // Helper to get Firestore collections
+        // NOTA: Para Netlify, 'appId' debería ser el projectId de tu Firebase.
+        // Si usas un projectId diferente para 'appId' aquí, asegúrate de que tus reglas de seguridad de Firestore lo reflejen.
+        const getTicketsCollection = () => collection(db, `artifacts/${appId}/public/data/tickets`);
+        const getScanLogsCollection = () => collection(db, `artifacts/${appId}/public/data/scanLogs`);
+
         // Function to generate a single QR code and update DB
-        function createAndDisplayTicket(name, containerElement) {
+        async function createAndDisplayTicket(name, containerElement) {
             const ticketId = generateUniqueTicketId();
-            ticketsDB[ticketId] = {
+            const newTicket = {
+                name: name,
                 status: 'valid',
-                name: name
+                generatedAt: serverTimestamp() // Firestore timestamp
             };
+
+            if (isFirebaseReady) {
+                try {
+                    await setDoc(doc(getTicketsCollection(), ticketId), newTicket);
+                    ticketsDB[ticketId] = { ...newTicket, id: ticketId }; // Update local cache
+                    displayMessage('Entrada guardada en la base de datos.', 'success');
+                } catch (e) {
+                    console.error("Error adding document to Firestore: ", e);
+                    displayMessage('Error al guardar entrada en la base de datos (modo offline).', 'error');
+                    // Fallback to in-memory if Firestore fails for this ticket
+                    ticketsDB[ticketId] = { ...newTicket, id: ticketId };
+                }
+            } else {
+                ticketsDB[ticketId] = { ...newTicket, id: ticketId }; // Use in-memory if Firebase not ready
+                displayMessage('Firebase no está listo. Entrada guardada solo en memoria.', 'warning');
+            }
 
             // Create a new div for the QR code and text
             const ticketCard = document.createElement('div');
@@ -344,6 +405,43 @@
             ticketCard.appendChild(idPara);
             ticketCard.appendChild(qrCodeWrapper);
 
+            containerElement.appendChild(ticketCard);
+
+            new QRCode(qrCodeWrapper, {
+                text: ticketId,
+                width: 150,
+                height: 150,
+                colorDark: "#000000", // Color oscuro del QR
+                colorLight: "#ffffff", // Color claro del QR (blanco)
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // After QRCode is generated, it will append an <img> or <canvas> element to qrCodeWrapper
+            // We need to get the data URL from the generated element
+            setTimeout(() => {
+                const qrImageElement = qrCodeWrapper.querySelector('img');
+                let qrDataUrl = '';
+                if (qrImageElement) {
+                    qrDataUrl = qrImageElement.src;
+                } else {
+                    // Fallback if qrcode.js generates a canvas
+                    const qrCanvasElement = qrCodeWrapper.querySelector('canvas');
+                    if (qrCanvasElement) {
+                        qrDataUrl = qrCanvasElement.toDataURL("image/png");
+                    }
+                }
+
+                // Add Download QR Image button only if qrDataUrl is available
+                if (qrDataUrl) {
+                    const downloadQrButton = document.createElement('a'); // Use <a> tag for download
+                    downloadQrButton.className = 'button-secondary mt-2 w-full text-center'; // Tailwind classes
+                    downloadQrButton.textContent = 'Descargar QR (Imagen)';
+                    downloadQrButton.href = qrDataUrl;
+                    downloadQrButton.download = `QR_VYTMUSIC_${name.replace(/\s/g, '_')}_${ticketId.substring(ticketId.length - 7)}.png`; // Suggest a filename
+                    ticketCard.appendChild(downloadQrButton); // Append the download button to the card
+                }
+            }, 100); // Small delay to ensure QR is rendered
+
             // Add WhatsApp share button for individual ticket
             const whatsappButton = document.createElement('button');
             whatsappButton.className = 'whatsapp-button';
@@ -358,26 +456,16 @@
             whatsappButton.addEventListener('click', shareTicketOnWhatsApp);
 
             ticketCard.appendChild(whatsappButton);
-            containerElement.appendChild(ticketCard);
-
-            new QRCode(qrCodeWrapper, {
-                text: ticketId,
-                width: 150,
-                height: 150,
-                colorDark: "#000000", // Color oscuro del QR
-                colorLight: "#ffffff", // Color claro del QR (blanco)
-                correctLevel: QRCode.CorrectLevel.H
-            });
 
             console.log('Ticket generado:', ticketsDB[ticketId]);
-            return ticketId; // Return the generated ID
+            return ticketId;
         }
 
         // Function to handle batch ticket generation (now for single or multiple)
-        function generateBatchTickets() {
-            const batchTicketNamesTextarea = document.getElementById('batch-ticket-names'); // Define here
-            const generatedBatchTicketsInfo = document.getElementById('generated-batch-tickets-info'); // Define here
-            const batchQRCodesDisplay = document.getElementById('batch-qrcodes-display'); // Define here
+        async function generateBatchTickets() {
+            const batchTicketNamesTextarea = document.getElementById('batch-ticket-names');
+            const generatedBatchTicketsInfo = document.getElementById('generated-batch-tickets-info');
+            const batchQRCodesDisplay = document.getElementById('batch-qrcodes-display');
 
             const namesInput = batchTicketNamesTextarea.value.trim();
             if (!namesInput) {
@@ -396,10 +484,10 @@
             batchQRCodesDisplay.innerHTML = ''; // Clear previous batch QRs
             let generatedCount = 0;
 
-            names.forEach(name => {
-                createAndDisplayTicket(name, batchQRCodesDisplay);
+            for (const name of names) { // Use for...of for async/await
+                await createAndDisplayTicket(name, batchQRCodesDisplay);
                 generatedCount++;
-            });
+            }
 
             generatedBatchTicketsInfo.classList.remove('hidden');
             batchTicketNamesTextarea.value = ''; // Clear textarea
@@ -411,7 +499,8 @@
             const ticketId = event.currentTarget.getAttribute('data-ticket-id');
             const ticketName = event.currentTarget.getAttribute('data-ticket-name');
 
-            const message = encodeURIComponent(`¡Hola! Aquí tienes tu entrada para VYTMUSIC.\n\nNombre: ${ticketName}\nID de Entrada: ${ticketId}\n\nPresenta este ID en la entrada para escanear tu QR. ¡Nos vemos en el evento!`);
+            // Mensaje actualizado para aclarar el uso del ID o la captura de pantalla del QR
+            const message = encodeURIComponent(`¡Hola! Aquí tienes tu entrada para VYTMUSIC.\n\nNombre: ${ticketName}\nID de Entrada: ${ticketId}\n\nPara escanear tu QR en la puerta, por favor, muestra este ID. Si necesitas la imagen del QR, puedes descargarla usando el botón "Descargar QR (Imagen)" en la aplicación y luego enviarla. ¡Nos vemos en el evento!`);
             const whatsappUrl = `https://wa.me/?text=${message}`;
 
             window.open(whatsappUrl, '_blank');
@@ -436,7 +525,8 @@
                 return;
             }
 
-            allTicketsMessage += "Presenta estos IDs en la entrada para escanear tu QR. ¡Nos vemos en el evento!";
+            // Mensaje actualizado para aclarar el uso del ID o la captura de pantalla del QR
+            allTicketsMessage += "Para escanear tus QRs en la puerta, por favor, muestra estos IDs. Si necesitas las imágenes de los QRs, puedes descargarlas usando los botones \"Descargar QR (Imagen)\" en la aplicación y luego enviarlas. ¡Nos vemos en el evento!";
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(allTicketsMessage)}`;
 
             window.open(whatsappUrl, '_blank');
@@ -444,7 +534,6 @@
 
         // Function to start the QR scanner
         function startQrScanner() {
-            // Ensure these elements are defined before accessing them
             const scannedResultDiv = document.getElementById('scanned-result');
             const ticketStatusDiv = document.getElementById('ticket-status');
             const markUsedBtn = document.getElementById('mark-used-btn');
@@ -465,7 +554,6 @@
         }
 
         function initializeScanner() {
-            // Ensure these elements are defined before accessing them
             const scannedResultDiv = document.getElementById('scanned-result');
             const ticketStatusDiv = document.getElementById('ticket-status');
             const markUsedBtn = document.getElementById('mark-used-btn');
@@ -493,77 +581,109 @@
             );
 
             html5QrCodeScanner.render(
-                (decodedText, decodedResult) => {
-                    // Callback de éxito de escaneo
-                    onScanSuccess(decodedText, decodedResult);
+                async (decodedText, decodedResult) => { // Made async to await Firestore calls
+                    console.log(`QR code detected: ${decodedText}`, decodedResult);
+                    currentScannedTicketId = decodedText;
+                    scannedResultDiv.classList.remove('hidden');
+                    scannedResultDiv.textContent = `Código Escaneado: ${decodedText}`;
+
+                    let ticket = ticketsDB[decodedText];
+                    let statusAtScan = 'invalid';
+                    let ticketName = 'Desconocido';
+
+                    if (isFirebaseReady) {
+                        const ticketRef = doc(getTicketsCollection(), decodedText);
+                        try {
+                            const ticketDoc = await getDoc(ticketRef);
+                            if (ticketDoc.exists()) {
+                                ticket = { ...ticketDoc.data(), id: ticketDoc.id };
+                                ticketsDB[decodedText] = ticket; // Update local cache
+                                statusAtScan = ticket.status;
+                                ticketName = ticket.name;
+                            }
+                        } catch (error) {
+                            console.error("Error fetching ticket from Firestore during scan:", error);
+                            displayMessage('Error al obtener estado de entrada desde la base de datos.', 'error');
+                        }
+                    } else {
+                        // Fallback to in-memory if Firebase not ready
+                        if (ticket) {
+                            statusAtScan = ticket.status;
+                            ticketName = ticket.name;
+                        }
+                    }
+
+                    ticketStatusDiv.classList.remove('hidden');
+                    markUsedBtn.classList.add('hidden'); // Hide by default
+
+                    if (ticket && ticket.status === 'valid') {
+                        ticketStatusDiv.textContent = `Estado: Válida (${ticketName})`;
+                        ticketStatusDiv.classList.remove('status-used', 'status-invalid');
+                        ticketStatusDiv.classList.add('status-valid');
+                        markUsedBtn.classList.remove('hidden');
+                    } else if (ticket && ticket.status === 'used') {
+                        ticketStatusDiv.textContent = `Estado: Ya Utilizada (${ticketName})`;
+                        ticketStatusDiv.classList.remove('status-valid', 'status-invalid');
+                        ticketStatusDiv.classList.add('status-used');
+                    } else {
+                        ticketStatusDiv.textContent = 'Estado: Entrada Inválida o No Encontrada';
+                        ticketStatusDiv.classList.remove('status-valid', 'status-used');
+                        ticketStatusDiv.classList.add('status-invalid');
+                    }
+
+                    // Log the scan event to Firestore
+                    if (isFirebaseReady) {
+                        try {
+                            await addDoc(getScanLogsCollection(), {
+                                ticketId: decodedText,
+                                scanTime: serverTimestamp(),
+                                statusAtScan: statusAtScan,
+                                scannerUserId: userId || 'anonymous' // Use anonymous if userId not set
+                            });
+                            displayMessage('Escaneo registrado en el historial.', 'info');
+                        } catch (e) {
+                            console.error("Error adding scan log: ", e);
+                            displayMessage('Error al registrar escaneo en la base de datos.', 'error');
+                        }
+                    }
                 },
                 (errorMessage) => {
-                    // Callback de error de escaneo
-                    // console.warn(`QR scan error: ${errorMessage}`); // Descomentar para depuración
                     if (errorMessage.includes("NotAllowedError") || errorMessage.includes("NotFoundError") || errorMessage.includes("NotReadableError") || errorMessage.includes("AbortError")) {
                         qrReaderDiv.innerHTML = '<p class="text-center text-red-400">Error al acceder a la cámara. Por favor, asegúrate de que tienes una cámara conectada y que has concedido los permisos necesarios.</p>';
-                    } else if (errorMessage.includes("Checksum error")) {
-                        // Errores de lectura de QR (no es necesario mostrarlos al usuario, ya que es un proceso continuo)
                     }
                 }
             );
         }
 
-        // Callback function for successful QR scan
-        function onScanSuccess(decodedText, decodedResult) {
-            // Ensure these elements are defined before accessing them
-            const scannedResultDiv = document.getElementById('scanned-result');
-            const ticketStatusDiv = document.getElementById('ticket-status');
-            const markUsedBtn = document.getElementById('mark-used-btn');
-
-            console.log(`QR code detected: ${decodedText}`, decodedResult);
-            currentScannedTicketId = decodedText;
-            scannedResultDiv.classList.remove('hidden');
-            scannedResultDiv.textContent = `Código Escaneado: ${decodedText}`;
-
-            const ticket = ticketsDB[decodedText];
-
-            ticketStatusDiv.classList.remove('hidden');
-            markUsedBtn.classList.add('hidden'); // Hide by default
-
-            if (ticket) {
-                if (ticket.status === 'valid') {
-                    ticketStatusDiv.textContent = `Estado: Válida (${ticket.name})`;
-                    ticketStatusDiv.classList.remove('status-used', 'status-invalid');
-                    ticketStatusDiv.classList.add('status-valid');
-                    markUsedBtn.classList.remove('hidden');
-                } else if (ticket.status === 'used') {
-                    ticketStatusDiv.textContent = `Estado: Ya Utilizada (${ticket.name})`;
-                    ticketStatusDiv.classList.remove('status-valid', 'status-invalid');
-                    ticketStatusDiv.classList.add('status-used');
-                }
-            } else {
-                ticketStatusDiv.textContent = 'Estado: Entrada Inválida o No Encontrada';
-                ticketStatusDiv.classList.remove('status-valid', 'status-used');
-                ticketStatusDiv.classList.add('status-invalid');
-            }
-        }
-
-        // Callback function for QR scan error
-        function onScanError(errorMessage) {
-            // This function is now mostly handled inline within initializeScanner's render method
-            // console.warn(`QR scan error: ${errorMessage}`);
-        }
-
         // Function to mark ticket as used
-        function markTicketAsUsed() {
-            // Ensure these elements are defined before accessing them
+        async function markTicketAsUsed() {
             const ticketStatusDiv = document.getElementById('ticket-status');
             const markUsedBtn = document.getElementById('mark-used-btn');
 
             if (currentScannedTicketId && ticketsDB[currentScannedTicketId] && ticketsDB[currentScannedTicketId].status === 'valid') {
-                ticketsDB[currentScannedTicketId].status = 'used';
+                if (isFirebaseReady) {
+                    const ticketRef = doc(getTicketsCollection(), currentScannedTicketId);
+                    try {
+                        await setDoc(ticketRef, { status: 'used' }, { merge: true });
+                        ticketsDB[currentScannedTicketId].status = 'used'; // Update local cache
+                        displayMessage('Entrada marcada como usada en la base de datos.', 'success');
+                    } catch (e) {
+                        console.error("Error updating ticket status in Firestore: ", e);
+                        displayMessage('Error al marcar entrada como usada en la base de datos (modo offline).', 'error');
+                        // Fallback to in-memory if Firestore fails
+                        ticketsDB[currentScannedTicketId].status = 'used';
+                    }
+                } else {
+                    ticketsDB[currentScannedTicketId].status = 'used'; // Use in-memory if Firebase not ready
+                    displayMessage('Firebase no está listo. Entrada marcada como usada solo en memoria.', 'warning');
+                }
+
+                // Update UI
                 ticketStatusDiv.textContent = `Estado: Marcada como Usada (${ticketsDB[currentScannedTicketId].name})`;
                 ticketStatusDiv.classList.remove('status-valid');
                 ticketStatusDiv.classList.add('status-used');
                 markUsedBtn.classList.add('hidden');
                 console.log('Ticket marcado como usado:', currentScannedTicketId);
-                displayMessage('Entrada marcada como usada.', 'success');
             }
         }
 
@@ -604,14 +724,106 @@
             }, 3000);
         }
 
+        // Function to set up Firestore listeners
+        function setupFirestoreListeners() {
+            const scanHistoryDisplay = document.getElementById('scan-history-display');
+            const historyLoading = document.getElementById('history-loading');
+
+            if (!isFirebaseReady) return;
+
+            // Listen for changes in tickets (for local cache)
+            onSnapshot(getTicketsCollection(), (snapshot) => {
+                snapshot.docChanges().forEach(change => {
+                    const ticketData = change.doc.data();
+                    if (change.type === "added" || change.type === "modified") {
+                        ticketsDB[change.doc.id] = { ...ticketData, id: change.doc.id };
+                    } else if (change.type === "removed") {
+                        delete ticketsDB[change.doc.id];
+                    }
+                });
+                console.log("Tickets DB updated from Firestore:", ticketsDB);
+            }, (error) => {
+                console.error("Error listening to tickets:", error);
+                displayMessage('Error al cargar datos de entradas desde la base de datos.', 'error');
+            });
+
+            // Listen for changes in scan logs to update history UI
+            onSnapshot(query(getScanLogsCollection()), async (snapshot) => {
+                historyLoading.classList.add('hidden');
+                scanHistoryDisplay.innerHTML = ''; // Clear current history
+
+                if (snapshot.empty) {
+                    scanHistoryDisplay.innerHTML = '<p class="text-center text-gray-500">No hay registros de escaneos aún.</p>';
+                    return;
+                }
+
+                const historyItems = [];
+                for (const docChange of snapshot.docChanges()) {
+                    if (docChange.type === "added" || docChange.type === "modified") {
+                        const log = docChange.doc.data();
+                        const ticketId = log.ticketId;
+                        let ticketName = 'Desconocido';
+
+                        // Fetch ticket name from local cache or Firestore if not found
+                        if (ticketsDB[ticketId]) {
+                            ticketName = ticketsDB[ticketId].name;
+                        } else {
+                            // If not in local cache, try fetching from Firestore directly
+                            try {
+                                const ticketDoc = await getDoc(doc(getTicketsCollection(), ticketId));
+                                if (ticketDoc.exists()) {
+                                    ticketName = ticketDoc.data().name;
+                                    ticketsDB[ticketId] = { ...ticketDoc.data(), id: ticketId }; // Add to cache
+                                }
+                            } catch (error) {
+                                console.error("Error fetching ticket for scan log:", ticketId, error);
+                            }
+                        }
+
+                        const scanTime = log.scanTime ? new Date(log.scanTime.seconds * 1000).toLocaleString() : 'N/A';
+                        historyItems.push({
+                            ticketId: ticketId,
+                            ticketName: ticketName,
+                            statusAtScan: log.statusAtScan,
+                            scanTime: scanTime,
+                            rawScanTime: log.scanTime ? log.scanTime.seconds : 0 // For sorting
+                        });
+                    }
+                }
+
+                // Sort history items by rawScanTime descending (most recent first)
+                historyItems.sort((a, b) => b.rawScanTime - a.rawScanTime);
+
+                historyItems.forEach(item => {
+                    const historyCard = document.createElement('div');
+                    historyCard.className = 'ticket-card mb-2';
+                    historyCard.innerHTML = `
+                        <p class="font-semibold">ID: ${item.ticketId}</p>
+                        <p>Titular: ${item.ticketName}</p>
+                        <p>Estado al Escanear: <span class="font-bold ${item.statusAtScan === 'valid' ? 'text-green-400' : item.statusAtScan === 'used' ? 'text-red-400' : 'text-yellow-400'}">${item.statusAtScan.toUpperCase()}</span></p>
+                        <p class="text-sm text-gray-400">Hora de Escaneo: ${item.scanTime}</p>
+                    `;
+                    scanHistoryDisplay.appendChild(historyCard);
+                });
+
+            }, (error) => {
+                console.error("Error listening to scan logs:", error);
+                displayMessage('Error al cargar historial de escaneos.', 'error');
+                historyLoading.classList.add('hidden');
+                scanHistoryDisplay.innerHTML = '<p class="text-center text-red-400">Error al cargar historial.</p>';
+            });
+        }
+
         // Initial setup and Event Listeners
-        window.onload = () => {
+        window.onload = async () => {
             // Get DOM elements inside window.onload
             const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
             const showScannerBtn = document.getElementById('show-scanner-btn');
+            const showHistoryBtn = document.getElementById('show-history-btn');
 
             const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
             const qrScannerSection = document.getElementById('qr-scanner-section');
+            const scanHistorySection = document.getElementById('scan-history-section');
 
             const batchTicketNamesTextarea = document.getElementById('batch-ticket-names');
             const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
@@ -623,16 +835,76 @@
             const ticketStatusDiv = document.getElementById('ticket-status');
             const markUsedBtn = document.getElementById('mark-used-btn');
             const qrReaderDiv = document.getElementById('reader');
+            const scanHistoryDisplay = document.getElementById('scan-history-display');
+            const historyLoading = document.getElementById('history-loading');
+
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            // Firebase Initialization for Netlify
+            // REEMPLAZA ESTA CONFIGURACIÓN CON LA TUYA DE FIREBASE
+            const firebaseConfig = {
+              apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
+              authDomain: "vyt-music.firebaseapp.com",
+              projectId: "vyt-music",
+              storageBucket: "vyt-music.firebasestorage.app",
+              messagingSenderId: "574981837817",
+              appId: "1:574981837817:web:2960ce81378a76dd086328",
+              measurementId: "G-4CHPWQM8TW"
+            };
+
+            // Usamos el projectId de tu configuración de Firebase como appId para las colecciones
+            // Asegúrate de que tus reglas de seguridad de Firestore permitan el acceso a
+            // /artifacts/{tu_project_id}/public/data/tickets y /artifacts/{tu_project_id}/public/data/scanLogs
+            const appId = firebaseConfig.projectId;
+
+
+            if (firebaseConfig.apiKey && firebaseConfig.projectId) { // Basic check if config is provided
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isFirebaseReady = true;
+                        loadingOverlay.classList.add('hidden');
+                        console.log("Firebase initialized and user signed in:", userId);
+                        // After Firebase is ready, switch to the default section
+                        switchSection('qr-scanner-section');
+                        // Start listening to data changes
+                        setupFirestoreListeners();
+                    } else {
+                        // Sign in anonymously if not already signed in
+                        try {
+                            // En Netlify, no tendrás __initial_auth_token. Inicia sesión anónimamente directamente.
+                            await signInAnonymously(auth);
+                        } catch (error) {
+                            console.error("Error during anonymous sign-in:", error);
+                            displayMessage('Error al iniciar sesión en Firebase. Algunas funciones podrían no estar disponibles.', 'error');
+                            loadingOverlay.classList.add('hidden');
+                            // Allow partial functionality even if auth fails
+                            isFirebaseReady = false; // Firebase not fully ready for operations
+                            switchSection('qr-scanner-section');
+                        }
+                    }
+                });
+            } else {
+                console.warn("Firebase config not fully provided. Running in-memory mode (data will not be saved).");
+                displayMessage('Configuración de Firebase incompleta. Los datos no se guardarán permanentemente.', 'warning');
+                isFirebaseReady = false; // Explicitly set to false for in-memory mode
+                loadingOverlay.classList.add('hidden');
+                switchSection('qr-scanner-section'); // Fallback to in-memory if no Firebase
+            }
 
             // Event Listeners
             showBatchGeneratorBtn.addEventListener('click', () => switchSection('batch-ticket-generator-section'));
             showScannerBtn.addEventListener('click', () => switchSection('qr-scanner-section'));
+            showHistoryBtn.addEventListener('click', () => switchSection('scan-history-section'));
             generateBatchTicketsBtn.addEventListener('click', generateBatchTickets);
             markUsedBtn.addEventListener('click', markTicketAsUsed);
             shareAllTicketsBtn.addEventListener('click', shareAllTicketsOnWhatsApp);
 
-            // Initial setup: show scanner section by default
-            switchSection('qr-scanner-section');
+            // Initial setup: show scanner section by default (handled after Firebase init)
         };
     </script>
 </body>
