@@ -532,17 +532,17 @@
     -->
     <script>
         // ID de tu aplicación (ej. '1:1234567890:web:abcdef1234567890abcdef')
-        window.__app_id = 'TU_APP_ID_DE_FIREBASE'; 
+        window.__app_id = 'default-app-id'; 
         
         // Objeto de configuración de Firebase. Copia y pega esto desde la consola de Firebase.
         window.__firebase_config = JSON.stringify({
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_PROYECTO_ID.firebaseapp.com",
-            projectId: "TU_PROYECTO_ID",
-            storageBucket: "TU_PROYECTO_ID.appspot.com",
-            messagingSenderId: "TU_MESSAGING_SENDER_ID",
-            appId: "TU_APP_ID",
-            measurementId: "TU_MEASUREMENT_ID"
+            apiKey: "TU_API_KEY", // Reemplaza con tu API Key
+            authDomain: "TU_PROYECTO_ID.firebaseapp.com", // Reemplaza con tu Project ID
+            projectId: "TU_PROYECTO_ID", // Reemplaza con tu Project ID
+            storageBucket: "TU_PROYECTO_ID.appspot.com", // Reemplaza con tu Project ID
+            messagingSenderId: "TU_MESSAGING_SENDER_ID", // Reemplaza con tu Messaging Sender ID
+            appId: "TU_APP_ID", // Reemplaza con tu App ID
+            measurementId: "TU_MEASUREMENT_ID" // Reemplaza con tu Measurement ID
         });
         
         // Token de autenticación proporcionado por el entorno de Canvas.
@@ -556,6 +556,8 @@
         import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, increment, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import jsQR from "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.mjs";
         
+        // Envuelve la lógica principal en una función y llámala con un timeout para dar tiempo a que el DOM se cargue.
+        // Esto también ayuda a aislar errores que puedan surgir de extensiones del navegador.
         function main() {
             // --- Inicialización de Firebase ---
             const appId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
@@ -587,6 +589,16 @@
                         userId = user.uid;
                         if (userIdDisplay) userIdDisplay.textContent = `ID de Usuario: ${userId}`;
                         setupFirestoreListeners();
+                    } else {
+                        // Inicia sesión de forma anónima si no se proporciona un token de autenticación inicial o el usuario no está autenticado
+                        signInAnonymously(auth).then(anonUser => {
+                            userId = anonUser.user.uid;
+                            if (userIdDisplay) userIdDisplay.textContent = `ID de Usuario: ${userId}`;
+                            setupFirestoreListeners();
+                        }).catch(error => {
+                            console.error("Error al iniciar sesión de forma anónima:", error);
+                            displayMessage("Error al iniciar sesión de forma anónima.", "error");
+                        });
                     }
                 });
                 
@@ -594,7 +606,7 @@
                     if (initialAuthToken) {
                         await signInWithCustomToken(auth, initialAuthToken);
                     } else {
-                        await signInAnonymously(auth);
+                        // onAuthStateChanged se encargará del inicio de sesión anónimo si es necesario
                     }
                 })();
 
@@ -656,7 +668,10 @@
 
             // --- Listeners de Firestore ---
             function setupFirestoreListeners() {
-                if (!db || !userId || userId === 'cargando...') return;
+                if (!db || !userId || userId === 'cargando...') {
+                    console.warn("Firestore o ID de usuario no listos para los listeners.");
+                    return;
+                }
 
                 const ticketsCollectionRef = collection(db, `artifacts/${appId}/public/data/vytmusic_tickets`);
                 onSnapshot(ticketsCollectionRef, (snapshot) => {
@@ -724,7 +739,7 @@
             function displayMessage(text, type = 'success') {
                 const container = document.getElementById('notification-container');
                 if (!container) {
-                    console.error('Notification container #notification-container not found in the DOM.');
+                    console.error('No se encontró el contenedor de notificaciones #notification-container en el DOM.');
                     return;
                 }
                 const messageBox = document.createElement('div');
@@ -742,6 +757,13 @@
             async function createCompositeQrImage(ticketId, name) {
                 const qrCanvas = document.createElement('canvas');
                 return new Promise(resolve => {
+                    // Verifica si QRCode está disponible
+                    if (typeof QRCode === 'undefined') {
+                        console.error("La librería QRCode.js no está cargada.");
+                        displayMessage("Error: La librería de códigos QR no está cargada.", "error");
+                        resolve(null);
+                        return;
+                    }
                     QRCode.toCanvas(qrCanvas, ticketId, { width: 256, margin: 2, errorCorrectionLevel: 'H' }, async (error) => {
                         if (error) {
                             console.error(error);
@@ -1104,9 +1126,21 @@
             switchSection(ticketGeneratorSection, showGeneratorBtn);
         }
 
-        // FIX: Wrap the main logic in a function and call it with a timeout.
-        // This delays the execution slightly, which can prevent race conditions with browser extensions.
-        setTimeout(main, 0);
+        // Envuelve la lógica principal en un try-catch para capturar errores generales durante la ejecución.
+        try {
+            setTimeout(main, 0);
+        } catch (error) {
+            console.error("Error en la inicialización global de la aplicación:", error);
+            // Si el contenedor de notificaciones no está disponible, al menos se registra en la consola.
+            const container = document.getElementById('notification-container');
+            if (container) {
+                const messageBox = document.createElement('div');
+                messageBox.textContent = `Error crítico: ${error.message}. Revisa la consola.`;
+                messageBox.className = `floating-notification notification-error`;
+                container.appendChild(messageBox);
+                setTimeout(() => messageBox.remove(), 5000);
+            }
+        }
 
     </script>
 </body>
