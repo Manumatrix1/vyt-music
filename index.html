@@ -19,22 +19,24 @@
         }
     </script>
     <style>
+        /* Estilos base para un tema oscuro y coherente */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
+            background-color: #111827; /* Azul-gris muy oscuro para el fondo */
+            color: #e2e8f0;
         }
         .container {
             max-width: 900px;
             margin: 2rem auto;
             padding: 1.5rem;
-            background-color: rgba(255, 255, 255, 0.95);
+            background-color: #1f2937; /* Contenedor oscuro */
             border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             position: relative;
             overflow: hidden;
         }
         .button-primary {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
@@ -49,24 +51,25 @@
             box-shadow: 0 7px 14px rgba(79, 70, 229, 0.3);
         }
         .button-secondary {
-            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-            color: #4f46e5;
+            background: #374151; /* Gris oscuro para botones secundarios */
+            color: #e2e8f0;
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
             font-weight: 600;
             transition: all 0.3s ease;
             cursor: pointer;
-            border: none;
-            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.1);
+            border: 1px solid #4b5563;
         }
         .button-secondary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 7px 14px rgba(99, 102, 241, 0.15);
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.2);
         }
         .section-header {
             font-size: 1.875rem;
             font-weight: 700;
-            color: #1f2937;
+            color: #e2e8f0;
             margin-bottom: 1.5rem;
             text-align: center;
             position: relative;
@@ -80,17 +83,18 @@
             transform: translateX(-50%);
             width: 100px;
             height: 4px;
-            background: linear-gradient(90deg, #6366f1, #4f46e5);
+            background: linear-gradient(90deg, #4f46e5, #6366f1);
             border-radius: 2px;
         }
         .input-field {
             width: 100%;
             padding: 0.75rem 1rem;
-            border: 1px solid #d1d5db;
+            border: 1px solid #4b5563; /* Borde gris oscuro */
+            background-color: #1f2937; /* Fondo oscuro */
+            color: #e2e8f0; /* Texto claro */
             border-radius: 0.5rem;
             margin-bottom: 1rem;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            font-family: 'Inter', sans-serif;
         }
         .input-field:focus {
             outline: none;
@@ -102,25 +106,26 @@
             justify-content: center;
             align-items: center;
             padding: 1.5rem;
-            background-color: #f9fafb;
+            background-color: #111827;
             border-radius: 0.75rem;
             margin-top: 1.5rem;
             min-height: 200px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #4b5563;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         .qrcode-container img {
             max-width: 100%;
             height: auto;
             border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: white; /* Fondo blanco para el QR para asegurar legibilidad */
+            padding: 10px;
         }
 
         #reader {
             width: 100%;
             max-width: 400px;
             margin: 0 auto;
-            border: 1px solid #d1d5db;
+            border: 1px solid #4b5563;
             border-radius: 0.75rem;
             overflow: hidden;
             position: relative;
@@ -129,7 +134,7 @@
             justify-content: center;
             align-items: center;
             background-color: #111827;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
         }
         #video-preview {
             width: 100%;
@@ -143,15 +148,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            display: none; /* Hidden by default, shown when scanner is active */
-        }
-        .scanner-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
+            display: none;
         }
         .scanner-frame {
             position: absolute;
@@ -170,66 +167,32 @@
             height: 30px;
             border: 3px solid #4f46e5;
         }
-        .corner-tl {
-            top: -3px;
-            left: -3px;
-            border-right: none;
-            border-bottom: none;
-            border-top-left-radius: 0.5rem;
-        }
-        .corner-tr {
-            top: -3px;
-            right: -3px;
-            border-left: none;
-            border-bottom: none;
-            border-top-right-radius: 0.5rem;
-        }
-        .corner-bl {
-            bottom: -3px;
-            left: -3px;
-            border-right: none;
-            border-top: none;
-            border-bottom-left-radius: 0.5rem;
-        }
-        .corner-br {
-            bottom: -3px;
-            right: -3px;
-            border-left: none;
-            border-top: none;
-            border-bottom-right-radius: 0.5rem;
-        }
+        .corner-tl { top: -3px; left: -3px; border-right: none; border-bottom: none; border-top-left-radius: 0.5rem; }
+        .corner-tr { top: -3px; right: -3px; border-left: none; border-bottom: none; border-top-right-radius: 0.5rem; }
+        .corner-bl { bottom: -3px; left: -3px; border-right: none; border-top: none; border-bottom-left-radius: 0.5rem; }
+        .corner-br { bottom: -3px; right: -3px; border-left: none; border-top: none; border-bottom-right-radius: 0.5rem; }
+        
         #scanned-result, #ticket-status {
             margin-top: 1rem;
             padding: 1rem;
             border-radius: 0.5rem;
             font-weight: 600;
             text-align: center;
+            color: white;
         }
-        .status-valid {
-            background-color: #d1fae5;
-            color: #065f46;
-            border: 1px solid #34d399;
-        }
-        .status-used {
-            background-color: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #f87171;
-        }
-        .status-invalid {
-            background-color: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fbbf24;
-        }
-        .hidden {
-            display: none;
-        }
+        .status-valid { background-color: #16a34a; border: 1px solid #22c55e; }
+        .status-used { background-color: #dc2626; border: 1px solid #ef4444; }
+        .status-invalid { background-color: #d97706; border: 1px solid #f59e0b; }
+        
+        .hidden { display: none; }
+        
         .ticket-card {
-            border: 1px solid #e5e7eb;
+            border: 1px solid #4b5563;
             border-radius: 0.75rem;
             padding: 1.5rem;
             margin-bottom: 1rem;
-            background-color: #f9fafb;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background-color: #374151;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -238,13 +201,12 @@
         }
         .ticket-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
-        .ticket-card p {
-            text-decoration: none; /* Elimina cualquier tachado */
-        }
+        .ticket-card p { color: #e2e8f0; }
+        
         .share-button {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #059669, #10b981);
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
@@ -253,76 +215,44 @@
             cursor: pointer;
             margin-top: 1rem;
             border: none;
-            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-        }
-        .share-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
         }
         .whatsapp-button {
-            background: linear-gradient(135deg, #25D366, #128C7E);
+            background: linear-gradient(135deg, #128C7E, #25D366);
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             font-weight: 600;
             transition: all 0.3s ease;
             cursor: pointer;
-            margin-top: 0.5rem; /* Ajuste para espaciado */
+            margin-top: 0.5rem;
             border: none;
-            box-shadow: 0 2px 4px rgba(37, 211, 102, 0.2);
-            display: flex; /* Añadido para flexbox */
-            flex-direction: column; /* Añadido para apilar el texto */
-            align-items: center; /* Centrar el texto apilado */
-            line-height: 1.2; /* Ajuste de interlineado */
-        }
-        .whatsapp-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3);
-        }
-        .whatsapp-button .main-text {
-            font-size: 1.125rem; /* text-lg */
-            font-weight: 700; /* font-bold */
-        }
-        .whatsapp-button .sub-text {
-            font-size: 0.75rem; /* text-xs */
-        }
-        .checkbox-container {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-        }
-        .batch-action-buttons {
             display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.2;
         }
-        .app-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            position: relative;
-        }
+        .whatsapp-button .main-text { font-size: 1.125rem; font-weight: 700; }
+        .whatsapp-button .sub-text { font-size: 0.75rem; }
+        
+        .checkbox-container { position: absolute; top: 10px; left: 10px; }
+        
+        .batch-action-buttons { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        
+        .app-header { text-align: center; margin-bottom: 2rem; position: relative; }
         .app-logo {
             width: 120px;
             height: 120px;
             margin: 0 auto 1rem;
             border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 10px 15px rgba(99, 102, 241, 0.3);
             overflow: hidden;
-            border: 4px solid white;
+            border: 4px solid #e2e8f0;
         }
-        .app-logo::before {
-            content: "VYT";
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: white;
-            letter-spacing: 1px;
-        }
+        .app-logo::before { content: "VYT"; font-size: 2.5rem; font-weight: 800; color: white; letter-spacing: 1px; }
         .app-title {
             font-size: 2.25rem;
             font-weight: 800;
@@ -331,22 +261,13 @@
             background-clip: text;
             color: transparent;
             margin-bottom: 0.5rem;
-            letter-spacing: -0.5px;
         }
-        .app-subtitle {
-            color: #6b7280;
-            font-size: 1.125rem;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .scanner-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 1rem;
-        }
+        .app-subtitle { color: #9ca3af; font-size: 1.125rem; max-width: 500px; margin: 0 auto; }
+        
+        .scanner-actions { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; }
+        
         .restart-scanner-btn {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #d97706, #f59e0b);
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
@@ -354,14 +275,10 @@
             transition: all 0.3s ease;
             cursor: pointer;
             border: none;
-            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
         }
-        .restart-scanner-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
-        }
+        
         .ticket-count {
-            background-color: #6366f1;
+            background-color: #4338ca;
             color: white;
             border-radius: 9999px;
             padding: 0.25rem 0.75rem;
@@ -369,6 +286,7 @@
             font-weight: 600;
             margin-left: 0.5rem;
         }
+        
         .floating-notification {
             position: fixed;
             top: 20px;
@@ -380,101 +298,44 @@
             z-index: 1000;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-in 2.5s forwards;
-        }
-        @keyframes slideIn {
-            from { top: -100px; opacity: 0; }
-            to { top: 20px; opacity: 1; }
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; visibility: hidden; }
-        }
-        .notification-success {
-            background-color: #10b981;
             color: white;
         }
-        .notification-error {
-            background-color: #ef4444;
-            color: white;
-        }
-        .notification-info {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .notification-warning {
-            background-color: #f59e0b;
-            color: white;
-        }
-        /* Estilos para la tabla de entradas registradas */
+        @keyframes slideIn { from { top: -100px; opacity: 0; } to { top: 20px; opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
+        .notification-success { background-color: #10b981; }
+        .notification-error { background-color: #ef4444; }
+        .notification-info { background-color: #3b82f6; }
+        .notification-warning { background-color: #f59e0b; }
+        
         .tickets-table-container {
             margin-top: 1.5rem;
-            background-color: #f9fafb;
+            background-color: #1f2937;
             border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            overflow-x: auto; /* Para tablas responsivas */
+            border: 1px solid #4b5563;
+            overflow-x: auto;
         }
-        .tickets-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .tickets-table th, .tickets-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .tickets-table th {
-            background-color: #eff6ff;
-            color: #1f2937;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.875rem;
-        }
-        .tickets-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-        .tickets-table tbody tr:hover {
-            background-color: #f3f4f6;
-        }
-        .status-cell {
-            font-weight: 600;
-        }
-        .status-cell.valid {
-            color: #065f46; /* green-700 */
-        }
-        .status-cell.used {
-            color: #991b1b; /* red-700 */
-        }
-        .summary-cards {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
+        .tickets-table { width: 100%; border-collapse: collapse; }
+        .tickets-table th, .tickets-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #4b5563; color: #e2e8f0; }
+        .tickets-table th { background-color: #374151; font-weight: 600; text-transform: uppercase; font-size: 0.875rem; }
+        .tickets-table tbody tr:last-child td { border-bottom: none; }
+        .tickets-table tbody tr:hover { background-color: #374151; }
+        .status-cell { font-weight: 600; }
+        .status-cell.valid { color: #22c55e; }
+        .status-cell.used { color: #ef4444; }
+        
+        .summary-cards { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
         .summary-card {
-            background-color: #ffffff;
+            background-color: #374151;
             padding: 1rem 1.5rem;
             border-radius: 0.75rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
             text-align: center;
             min-width: 150px;
+            color: #e2e8f0;
         }
-        .summary-card .count {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        .summary-card .label {
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-        .summary-card.valid .count {
-            color: #10b981; /* green-500 */
-        }
-        .summary-card.used .count {
-            color: #ef4444; /* red-500 */
-        }
+        .summary-card .count { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .summary-card .label { font-size: 0.9rem; color: #9ca3af; }
+        .summary-card.valid .count { color: #22c55e; }
+        .summary-card.used .count { color: #ef4444; }
     </style>
 </head>
 <body class="font-inter antialiased">
@@ -483,39 +344,40 @@
             <div class="app-logo"></div>
             <h1 class="app-title">VYTMUSIC</h1>
             <p class="app-subtitle">Sistema profesional de gestión de entradas con tecnología QR</p>
-            <p id="user-id-display" class="text-sm text-gray-500 mt-2">ID de Usuario: Cargando...</p>
+            <p id="user-id-display" class="text-sm text-gray-400 mt-2">ID de Usuario: Cargando...</p>
         </div>
 
-        <!-- Navigation Buttons -->
+        <!-- Botones de Navegación -->
         <div class="flex justify-center flex-wrap gap-4 mb-8">
             <button id="show-generator-btn" class="button-primary">
-                Generar Entrada Individual
+                Generar Entrada
                 <span id="single-count" class="ticket-count">0</span>
             </button>
             <button id="show-batch-generator-btn" class="button-secondary">
-                Generar Múltiples Entradas
+                Generar Lote
                 <span id="batch-count" class="ticket-count">0</span>
             </button>
-            <button id="show-scanner-btn" class="button-secondary">Escanear Entrada</button>
+            <button id="show-scanner-btn" class="button-secondary">Escanear</button>
             <button id="show-registered-tickets-btn" class="button-secondary">
-                Ver Entradas Registradas
+                Ver Registros
                 <span id="total-tickets-count" class="ticket-count">0</span>
             </button>
+            <button id="show-counter-btn" class="button-secondary">Contador</button>
         </div>
-
-        <!-- Ticket Generator Section (Individual) -->
-        <div id="ticket-generator-section" class="p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
+        
+        <!-- Sección Generador de Entradas (Individual) -->
+        <div id="ticket-generator-section" class="p-6 border border-gray-700 rounded-lg shadow-sm">
             <h2 class="section-header">Generar Nueva Entrada Individual</h2>
             <div class="mb-4">
-                <label for="ticket-holder-name" class="block text-gray-700 text-sm font-bold mb-2">Nombre del Titular:</label>
+                <label for="ticket-holder-name" class="block text-gray-300 text-sm font-bold mb-2">Nombre del Titular:</label>
                 <input type="text" id="ticket-holder-name" class="input-field" placeholder="Ej: Juan Pérez">
             </div>
             <button id="generate-ticket-btn" class="button-primary w-full">Generar Entrada QR</button>
 
-            <div id="generated-ticket-info" class="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-center hidden">
-                <p class="text-indigo-800 font-semibold mb-2">¡Entrada Generada Exitosamente!</p>
-                <p class="text-gray-700 text-sm">ID de la Entrada:</p>
-                <p id="ticket-id-display" class="text-xl font-bold text-indigo-700 break-words"></p>
+            <div id="generated-ticket-info" class="mt-6 p-4 bg-gray-800 border border-gray-700 rounded-lg text-center hidden">
+                <p class="text-indigo-400 font-semibold mb-2">¡Entrada Generada Exitosamente!</p>
+                <p class="text-gray-300 text-sm">ID de la Entrada:</p>
+                <p id="ticket-id-display" class="text-xl font-bold text-indigo-400 break-words"></p>
                 <div id="qrcode-single" class="qrcode-container"></div>
                 <button id="share-single-qr-btn" class="share-button">Compartir QR</button>
                 <a id="whatsapp-single-qr-btn" href="https://wa.link/yv77yc" target="_blank" class="whatsapp-button inline-flex items-center justify-center">
@@ -525,17 +387,17 @@
             </div>
         </div>
 
-        <!-- Batch Ticket Generator Section -->
-        <div id="batch-ticket-generator-section" class="p-6 border border-gray-200 rounded-lg shadow-sm bg-white hidden">
+        <!-- Sección Generador de Entradas por Lote -->
+        <div id="batch-ticket-generator-section" class="p-6 border border-gray-700 rounded-lg shadow-sm hidden">
             <h2 class="section-header">Generar Múltiples Entradas</h2>
             <div class="mb-4">
-                <label for="batch-ticket-names" class="block text-gray-700 text-sm font-bold mb-2">Nombres de los Titulares (uno por línea o separados por comas):</label>
+                <label for="batch-ticket-names" class="block text-gray-300 text-sm font-bold mb-2">Nombres (uno por línea o separados por comas):</label>
                 <textarea id="batch-ticket-names" class="input-field h-32" placeholder="Ej:&#10;Mauro&#10;Ana&#10;Carlos&#10;Sofía"></textarea>
             </div>
             <button id="generate-batch-tickets-btn" class="button-primary w-full">Generar Entradas QR por Lotes</button>
 
             <div id="generated-batch-tickets-info" class="mt-6 hidden">
-                <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">Entradas Generadas: <span id="generated-count" class="text-indigo-500">0</span></h3>
+                <h3 class="text-xl font-bold text-indigo-400 mb-4 text-center">Entradas Generadas: <span id="generated-count" class="text-indigo-400">0</span></h3>
                 <div class="batch-action-buttons">
                     <button id="select-all-qrs-btn" class="button-secondary">Seleccionar Todos</button>
                     <button id="share-selected-qrs-btn" class="share-button">Compartir Seleccionados</button>
@@ -547,8 +409,8 @@
             </div>
         </div>
 
-        <!-- QR Scanner Section -->
-        <div id="qr-scanner-section" class="p-6 border border-gray-200 rounded-lg shadow-sm bg-white hidden">
+        <!-- Sección Escáner QR -->
+        <div id="qr-scanner-section" class="p-6 border border-gray-700 rounded-lg shadow-sm hidden">
             <h2 class="section-header">Escanear Entrada</h2>
             <div id="reader">
                 <video id="video-preview" autoplay playsinline></video>
@@ -570,12 +432,12 @@
             <div id="ticket-status" class="hidden"></div>
         </div>
 
-        <!-- Registered Tickets Section -->
-        <div id="registered-tickets-section" class="p-6 border border-gray-200 rounded-lg shadow-sm bg-white hidden">
+        <!-- Sección Entradas Registradas -->
+        <div id="registered-tickets-section" class="p-6 border border-gray-700 rounded-lg shadow-sm hidden">
             <h2 class="section-header">Entradas Registradas</h2>
             <div class="mb-4">
-                <label for="ticket-search-input" class="block text-gray-700 text-sm font-bold mb-2">Buscar por Nombre o ID:</label>
-                <input type="text" id="ticket-search-input" class="input-field" placeholder="Ej: Juan Pérez o VYTMUSIC-..."></input>
+                <label for="ticket-search-input" class="block text-gray-300 text-sm font-bold mb-2">Buscar por Nombre o ID:</label>
+                <input type="text" id="ticket-search-input" class="input-field" placeholder="Ej: Juan Pérez o VYTMUSIC-...">
             </div>
             <div class="summary-cards">
                 <div class="summary-card valid">
@@ -606,598 +468,405 @@
                 </table>
             </div>
         </div>
+
+        <!-- Sección Contador -->
+        <div id="counter-section" class="p-6 border border-gray-700 rounded-lg shadow-sm hidden">
+            <header class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-cyan-400">Contador de Entradas</h1>
+                <p class="text-lg text-gray-400 mt-2">Control de Entradas en Tiempo Real</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg text-center">
+                    <h2 class="text-xl font-semibold text-gray-300 mb-2">Entradas Generales</h2>
+                    <p id="general-count-display" class="text-5xl font-bold text-cyan-400">0</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg text-center">
+                    <h2 class="text-xl font-semibold text-gray-300 mb-2">Entradas VIP</h2>
+                    <p id="vip-count-display" class="text-5xl font-bold text-purple-400">0</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg text-center">
+                    <h2 class="text-xl font-semibold text-gray-300 mb-2">Total Ingresado</h2>
+                    <p id="total-entered-count" class="text-5xl font-bold text-green-400">0</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+                <h3 class="text-2xl font-bold text-center mb-6 text-gray-300">Panel de Control</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-3">
+                        <button id="add-general" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                            Registrar Entrada General (+)
+                        </button>
+                        <button id="remove-general" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">
+                            Anular General (-)
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <button id="add-vip" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                            Registrar Entrada VIP (+)
+                        </button>
+                        <button id="remove-vip" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">
+                            Anular VIP (-)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- QR Code Generator Library -->
+    <!-- Contenedor para notificaciones flotantes -->
+    <div id="notification-container"></div>
+
+    <!-- Librerías Externas -->
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-    <!-- JSZip Library for creating ZIP files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- FileSaver.js for saving files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // IMPORTANT: These variables (__app_id, __firebase_config, __initial_auth_token) are expected
-        // to be provided by the Canvas environment as global variables.
-        // Do NOT declare them with 'const' or 'let' at the top level of this module script,
-        // as that can cause a 'ReferenceError' if they are also defined globally elsewhere.
+    <!--
+        *********************************************************************************
+        * ¡¡¡ACCIÓN REQUERIDA!!!                                                        *
+        * REEMPLAZA LOS VALORES "TU_..." CON TUS CREDENCIALES REALES DE FIREBASE.       *
+        * Sin esto, la aplicación NO funcionará.                                        *
+        *********************************************************************************
+    -->
+    <script>
+        // ID de tu aplicación (ej. '1:1234567890:web:abcdef1234567890abcdef')
+        window.__app_id = 'TU_APP_ID_DE_FIREBASE'; 
+        
+        // Objeto de configuración de Firebase. Copia y pega esto desde la consola de Firebase.
+        window.__firebase_config = JSON.stringify({
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO_ID.firebaseapp.com",
+            projectId: "TU_PROYECTO_ID",
+            storageBucket: "TU_PROYECTO_ID.appspot.com",
+            messagingSenderId: "TU_MESSAGING_SENDER_ID",
+            appId: "TU_APP_ID",
+            measurementId: "TU_MEASUREMENT_ID"
+        });
+        
+        // Token de autenticación proporcionado por el entorno de Canvas.
+        window.__initial_auth_token = ''; 
+    </script>
 
+    <!-- Lógica Principal de la Aplicación -->
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // jsQR Library for QR code scanning
-        // Note: For module imports like this, jsQR might not be globally available.
-        // If you encounter 'jsQR is not defined', you might need to adjust how it's imported
-        // or ensure the CDN explicitly makes it global.
-        import "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+        import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, increment, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import jsQR from "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.mjs";
         
-        console.log("JavaScript is running!"); // Debug: Script loaded
-
-        // Envuelve todo el código JavaScript en DOMContentLoaded para asegurar que el HTML esté completamente cargado.
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log("DOM fully loaded and parsed. Initializing script...");
-
-            // --- Firebase Initialization ---
-            // Access global variables provided by the Canvas environment
-            // Ensure these global variables are defined in a non-module script tag before this module script.
+        function main() {
+            // --- Inicialización de Firebase ---
             const appId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
             const firebaseConfig = typeof window.__firebase_config !== 'undefined' ? JSON.parse(window.__firebase_config) : {};
             const initialAuthToken = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : '';
 
-
             let app;
             let db;
             let auth;
-            let userId = 'cargando...'; // Default value until authenticated
+            let userId = 'cargando...';
 
             const userIdDisplay = document.getElementById('user-id-display');
             if (userIdDisplay) userIdDisplay.textContent = `ID de Usuario: ${userId}`;
 
+            // Verificación crítica de la configuración de Firebase
+            if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "TU_API_KEY") {
+                console.error("Firebase: La clave API no es válida. Actualiza '__firebase_config' con tus credenciales.");
+                displayMessage("ERROR: Configuración de Firebase inválida. Revisa las credenciales.", "error");
+                return; 
+            }
+            
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // Authenticate user
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                    console.log("Signed in with custom token.");
-                } else {
-                    await signInAnonymously(auth);
-                    console.log("Signed in anonymously.");
-                }
-
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         userId = user.uid;
-                        console.log("User authenticated:", userId);
                         if (userIdDisplay) userIdDisplay.textContent = `ID de Usuario: ${userId}`;
-                        // Start listening to Firestore changes after authentication
-                        setupFirestoreListener();
-                    } else {
-                        console.log("No user is signed in.");
-                        userId = 'no-autenticado';
-                        if (userIdDisplay) userIdDisplay.textContent = `ID de Usuario: ${userId}`;
+                        setupFirestoreListeners();
                     }
                 });
+                
+                (async () => {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                })();
 
             } catch (error) {
-                console.error("Error initializing Firebase or authenticating:", error);
-                // Añadido para dar más detalles al usuario en la consola
-                console.error("Nombre del error:", error.name);
-                console.error("Mensaje del error:", error.message);
-                displayMessage("Error al iniciar la aplicación. Por favor, recarga. Revisa la consola para más detalles.", "error");
+                console.error("Error al inicializar Firebase:", error);
+                displayMessage("Error crítico al iniciar la aplicación. Revisa la consola.", "error");
             }
 
-            // In-memory cache for tickets (will be synchronized with Firestore)
+            // --- Variables y Elementos del DOM ---
             let ticketsDB = {};
             let currentScannedTicketId = null;
-            
-            // --- Obtener elementos del DOM para el escáner de QR (MOVIDO DENTRO DE DOMContentLoaded) ---
-            const video = document.getElementById('video-preview');
-            const canvasElement = document.getElementById('qr-canvas');
-            const canvas = canvasElement ? canvasElement.getContext('2d') : null; // Asegurarse de que canvasElement exista
             let scanning = false;
             let videoStream = null;
+            
+            const video = document.getElementById('video-preview');
+            const canvasElement = document.getElementById('qr-canvas');
+            const canvas = canvasElement ? canvasElement.getContext('2d') : null;
 
-            // URL del logo para el QR
-            // IMPORTANTE: Las URLs con el prefijo 'uploaded:' (como 'uploaded:LOGO NEGRO.jpg-...')
-            // NO pueden ser cargadas directamente por `new Image()` en el navegador para dibujar en un canvas
-            // debido a restricciones de seguridad (CORS - Cross-Origin Resource Sharing).
-            // Para que tu logo real aparezca, debes subirlo a un servicio de alojamiento de imágenes público
-            // (por ejemplo, Google Cloud Storage, Imgur, tu propio servidor web, etc.) y usar su URL pública aquí.
-            // Por ahora, se usará una URL de placeholder.
-            const logoUrl = 'https://placehold.co/50x50/000000/FFFFFF?text=LOGO'; 
-            let logoImage = new Image();
-            logoImage.crossOrigin = "Anonymous"; 
-
-            // Promesa para asegurar que el logo se cargue antes de usarlo.
-            const loadLogoPromise = new Promise(resolve => {
-                logoImage.onload = () => {
-                    console.log("Logo cargado exitosamente.");
-                    resolve();
-                };
-                logoImage.onerror = () => {
-                    console.error("Error al cargar el logo. Se usará texto de respaldo o se omitirá el logo.");
-                    logoImage = null; // Establecer a null para indicar que la carga falló
-                    resolve(); // Resolver la promesa de todos modos para que la aplicación no se cuelgue
-                };
-                logoImage.src = logoUrl;
-            });
-
-            // Número de teléfono de VYTMUSIC
-            const VYTMUSIC_PHONE = '34177422062';
-            const WHATSAPP_LINK = 'https://wa.link/yv77yc'; // Enlace de WhatsApp
-
-            // Obtener elementos del DOM
             const showGeneratorBtn = document.getElementById('show-generator-btn');
             const showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
             const showScannerBtn = document.getElementById('show-scanner-btn');
-            const showRegisteredTicketsBtn = document.getElementById('show-registered-tickets-btn'); // Nuevo botón
+            const showRegisteredTicketsBtn = document.getElementById('show-registered-tickets-btn');
+            const showCounterBtn = document.getElementById('show-counter-btn');
 
             const ticketGeneratorSection = document.getElementById('ticket-generator-section');
             const batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
             const qrScannerSection = document.getElementById('qr-scanner-section');
-            const registeredTicketsSection = document.getElementById('registered-tickets-section'); // Nueva sección
-
+            const registeredTicketsSection = document.getElementById('registered-tickets-section');
+            const counterSection = document.getElementById('counter-section');
+            
             const ticketHolderNameInput = document.getElementById('ticket-holder-name');
             const generateTicketBtn = document.getElementById('generate-ticket-btn');
             const generatedTicketInfo = document.getElementById('generated-ticket-info');
             const ticketIdDisplay = document.getElementById('ticket-id-display');
             const qrcodeSingleDiv = document.getElementById('qrcode-single');
-            const shareSingleQrBtn = document.getElementById('share-single-qr-btn'); 
-            const whatsappSingleQrBtn = document.getElementById('whatsapp-single-qr-btn'); // Nuevo botón de WhatsApp
+            const shareSingleQrBtn = document.getElementById('share-single-qr-btn');
 
             const batchTicketNamesTextarea = document.getElementById('batch-ticket-names');
             const generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
             const generatedBatchTicketsInfo = document.getElementById('generated-batch-tickets-info');
             const batchQRCodesDisplay = document.getElementById('batch-qrcodes-display');
-            const selectAllQRsBtn = document.getElementById('select-all-qrs-btn'); 
-            const shareSelectedQRsBtn = document.getElementById('share-selected-qrs-btn'); 
-            const downloadSelectedQRsBtn = document.getElementById('download-selected-qrs-btn'); 
-            const generatedCountSpan = document.getElementById('generated-count');
-
+            const selectAllQRsBtn = document.getElementById('select-all-qrs-btn');
+            const shareSelectedQRsBtn = document.getElementById('share-selected-qrs-btn');
+            const downloadSelectedQRsBtn = document.getElementById('download-selected-qrs-btn');
+            
             const scannedResultDiv = document.getElementById('scanned-result');
             const ticketStatusDiv = document.getElementById('ticket-status');
             const markUsedBtn = document.getElementById('mark-used-btn');
             const restartScannerBtn = document.getElementById('restart-scanner-btn');
-            const singleCountSpan = document.getElementById('single-count');
-            const batchCountSpan = document.getElementById('batch-count');
-            const totalTicketsCountSpan = document.getElementById('total-tickets-count'); // Nuevo span para el conteo total en el botón
 
-            // Elementos de la nueva sección de tickets registrados
             const ticketSearchInput = document.getElementById('ticket-search-input');
             const ticketsTableBody = document.getElementById('tickets-table-body');
-            const validTicketsCountDisplay = document.getElementById('valid-tickets-count');
-            const usedTicketsCountDisplay = document.getElementById('used-tickets-count');
-            const totalTicketsDisplay = document.getElementById('total-tickets-display');
+            
+            const addGeneralBtn = document.getElementById('add-general');
+            const removeGeneralBtn = document.getElementById('remove-general');
+            const addVipBtn = document.getElementById('add-vip');
+            const removeVipBtn = document.getElementById('remove-vip');
+            let countsDocRef;
 
+            // --- Listeners de Firestore ---
+            function setupFirestoreListeners() {
+                if (!db || !userId || userId === 'cargando...') return;
 
-            // --- Firestore Listener Setup ---
-            function setupFirestoreListener() {
-                if (!db || !userId || userId === 'cargando...') {
-                    console.warn("Firestore o userId no están listos para configurar el listener.");
-                    return;
-                }
-
-                // Public collection for tickets
-                // IMPORTANT: Ensure your Firestore security rules allow read/write for authenticated users
-                // for this path: `artifacts/{appId}/public/data/vytmusic_tickets`
                 const ticketsCollectionRef = collection(db, `artifacts/${appId}/public/data/vytmusic_tickets`);
-                
                 onSnapshot(ticketsCollectionRef, (snapshot) => {
-                    console.log("Firestore snapshot received.");
-                    ticketsDB = {}; // Clear existing tickets
+                    ticketsDB = {};
                     snapshot.forEach(doc => {
-                        const ticketData = doc.data();
-                        ticketsDB[doc.id] = { ...ticketData, id: doc.id };
+                        ticketsDB[doc.id] = { ...doc.data(), id: doc.id };
                     });
-                    console.log("Tickets actualizados desde Firestore:", ticketsDB);
-                    renderAllTickets(); // Re-render all tickets based on updated DB
-                    updateTicketCounts(); // Update counts
-                    // If currently scanning, re-evaluate the scanned ticket status
+                    renderAllTickets();
+                    updateTicketCounts();
                     if (currentScannedTicketId && qrScannerSection && !qrScannerSection.classList.contains('hidden')) {
-                        onScanSuccess(currentScannedTicketId); // Re-evaluate the status of the currently scanned ticket
+                        onScanSuccess(currentScannedTicketId);
                     }
-                    // Re-render registered tickets table
-                    filterAndRenderRegisteredTickets();
+                    if (registeredTicketsSection && !registeredTicketsSection.classList.contains('hidden')){
+                        filterAndRenderRegisteredTickets();
+                    }
                 }, (error) => {
-                    console.error("Error listening to Firestore:", error);
-                    displayMessage("Error al sincronizar tickets con la nube.", "error");
+                    console.error("Error en listener de tickets:", error);
+                    displayMessage("Error al sincronizar tickets.", "error");
+                });
+
+                const countsDocPath = `/artifacts/${appId}/public/data/vytmusic_counts/main_counts`;
+                countsDocRef = doc(db, countsDocPath);
+                onSnapshot(countsDocRef, (doc) => {
+                    if (doc.exists()) {
+                        updateUICounters(doc.data());
+                    } else {
+                        updateUICounters({ general: 0, vip: 0 });
+                        setDoc(countsDocRef, { general: 0, vip: 0, lastUpdated: serverTimestamp() }, { merge: true });
+                    }
+                }, (error) => {
+                    console.error("Error en listener de contadores:", error);
+                    displayMessage("Error al sincronizar contadores.", "error");
                 });
             }
 
-            // Function to render all tickets from ticketsDB (for batch display)
-            function renderAllTickets() {
-                if (batchQRCodesDisplay) batchQRCodesDisplay.innerHTML = ''; // Clear current display
-
-                const batchTickets = Object.values(ticketsDB).filter(ticket => ticket.name && ticket.name.trim().length > 0);
-                
-                batchTickets.forEach(ticket => {
-                    const ticketCard = document.createElement('div');
-                    ticketCard.className = 'ticket-card text-center';
-                    ticketCard.dataset.ticketId = ticket.id;
-                    
-                    const checkboxContainer = document.createElement('div');
-                    checkboxContainer.className = 'checkbox-container';
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.className = 'ticket-checkbox w-5 h-5 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500';
-                    checkbox.dataset.ticketId = ticket.id;
-                    checkbox.checked = false; // Default to unchecked on re-render
-
-                    checkboxContainer.appendChild(checkbox);
-                    ticketCard.appendChild(checkboxContainer);
-
-                    const namePara = document.createElement('p');
-                    namePara.className = 'text-lg font-semibold text-gray-800 mb-2 mt-4';
-                    namePara.textContent = `Titular: ${ticket.name}`;
-
-                    const idPara = document.createElement('p');
-                    idPara.className = 'text-sm text-gray-600 mb-2 break-words';
-                    idPara.textContent = `ID: ${ticket.id}`;
-
-                    const qrImage = document.createElement('img');
-                    qrImage.src = ticket.qrDataURL; // Use the stored Data URL
-                    qrImage.alt = `Código QR para ${ticket.name}`;
-                    qrImage.style.width = '150px';
-                    qrImage.style.height = '150px';
-                    qrImage.className = 'mx-auto';
-
-                    const shareButton = document.createElement('button');
-                    shareButton.className = 'share-button';
-                    shareButton.textContent = 'Compartir QR';
-                    shareButton.onclick = () => shareQrCode(ticket.id);
-
-                    const whatsappButton = document.createElement('a');
-                    whatsappButton.href = WHATSAPP_LINK;
-                    whatsappButton.target = "_blank";
-                    whatsappButton.className = 'whatsapp-button inline-flex items-center justify-center';
-                    whatsappButton.innerHTML = `
-                        <span class="main-text">Inscribite</span>
-                        <span class="sub-text">al Certamen de Canto</span>
-                    `;
-
-                    ticketCard.appendChild(namePara);
-                    ticketCard.appendChild(idPara);
-                    ticketCard.appendChild(qrImage);
-                    ticketCard.appendChild(shareButton);
-                    ticketCard.appendChild(whatsappButton); // Añadir el botón de WhatsApp
-
-                    batchQRCodesDisplay.appendChild(ticketCard);
-                });
-            }
-
-            // Función para ocultar todas las secciones y detener el escáner
+            // --- Lógica de la UI ---
             function hideAllSections() {
-                if (ticketGeneratorSection) ticketGeneratorSection.classList.add('hidden');
-                if (batchTicketGeneratorSection) batchTicketGeneratorSection.classList.add('hidden');
-                if (qrScannerSection) qrScannerSection.classList.add('hidden');
-                if (registeredTicketsSection) registeredTicketsSection.classList.add('hidden'); // Ocultar nueva sección
+                [ticketGeneratorSection, batchTicketGeneratorSection, qrScannerSection, registeredTicketsSection, counterSection].forEach(section => {
+                    if(section) section.classList.add('hidden');
+                });
                 stopQrScanner();
             }
 
-            // Función para restablecer los estilos de los botones de navegación
             function resetButtonStyles() {
-                [showGeneratorBtn, showBatchGeneratorBtn, showScannerBtn, showRegisteredTicketsBtn].forEach(btn => {
-                    if (btn) {
+                 [showGeneratorBtn, showBatchGeneratorBtn, showScannerBtn, showRegisteredTicketsBtn, showCounterBtn].forEach(btn => {
+                    if(btn) {
                         btn.classList.remove('button-primary');
                         btn.classList.add('button-secondary');
                     }
                 });
             }
 
-            // Función para cambiar entre secciones
-            function switchSection(sectionId) {
-                console.log(`Cambiando a la sección: ${sectionId}`); // Log de depuración
+            function switchSection(sectionToShow, buttonToHighlight) {
                 hideAllSections();
                 resetButtonStyles();
-
-                let targetSection, targetButton;
-                if (sectionId === 'ticket-generator-section') {
-                    targetSection = ticketGeneratorSection;
-                    targetButton = showGeneratorBtn;
-                } else if (sectionId === 'batch-ticket-generator-section') {
-                    targetSection = batchTicketGeneratorSection;
-                    targetButton = showBatchGeneratorBtn;
-                } else if (sectionId === 'qr-scanner-section') {
-                    targetSection = qrScannerSection;
-                    targetButton = showScannerBtn;
-                    startQrScanner(); // Iniciar escáner solo si se va a la sección del escáner
-                } else if (sectionId === 'registered-tickets-section') { // Nueva sección
-                    targetSection = registeredTicketsSection;
-                    targetButton = showRegisteredTicketsBtn;
-                    filterAndRenderRegisteredTickets(); // Renderizar tickets al mostrar la sección
+                if (sectionToShow) sectionToShow.classList.remove('hidden');
+                if (buttonToHighlight) {
+                    buttonToHighlight.classList.remove('button-secondary');
+                    buttonToHighlight.classList.add('button-primary');
                 }
-
-                if(targetSection && targetButton) {
-                    targetSection.classList.remove('hidden');
-                    targetButton.classList.remove('button-secondary');
-                    targetButton.classList.add('button-primary');
-                }
+                if (sectionToShow === qrScannerSection) startQrScanner();
+                if (sectionToShow === registeredTicketsSection) filterAndRenderRegisteredTickets();
             }
 
-            // Función para generar un ID de ticket único
-            // Firestore will generate its own ID, but we'll still use this for the QR content
+            function displayMessage(text, type = 'success') {
+                const container = document.getElementById('notification-container');
+                if (!container) {
+                    console.error('Notification container #notification-container not found in the DOM.');
+                    return;
+                }
+                const messageBox = document.createElement('div');
+                messageBox.textContent = text;
+                messageBox.className = `floating-notification notification-${type}`;
+                container.appendChild(messageBox);
+                setTimeout(() => messageBox.remove(), 3000);
+            }
+
+            // --- Lógica de Generación de QR ---
             function generateUniqueTicketId() {
                 return 'VYTMUSIC-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9).toUpperCase();
             }
 
-            // Función para crear una imagen QR compuesta con detalles
             async function createCompositeQrImage(ticketId, name) {
-                const qrText = ticketId;
+                const qrCanvas = document.createElement('canvas');
+                return new Promise(resolve => {
+                    QRCode.toCanvas(qrCanvas, ticketId, { width: 256, margin: 2, errorCorrectionLevel: 'H' }, async (error) => {
+                        if (error) {
+                            console.error(error);
+                            resolve(null);
+                        }
+                        
+                        const compositeCanvas = document.createElement('canvas');
+                        const ctx = compositeCanvas.getContext('2d');
+                        const padding = 20;
+                        const textHeight = 80;
+                        compositeCanvas.width = qrCanvas.width + padding * 2;
+                        compositeCanvas.height = qrCanvas.height + padding * 2 + textHeight;
 
-                // Esperar a que el logo se cargue antes de continuar
-                await loadLogoPromise;
-
-                // Crear un canvas temporal para la imagen compuesta
-                const compositeCanvas = document.createElement('canvas');
-                const compositeCtx = compositeCanvas.getContext('2d');
-
-                // Definir dimensiones para la imagen compuesta
-                const qrSize = 200; // Tamaño fijo para el QR en la imagen compuesta
-                const textLineHeight = 20;
-                const padding = 15;
-                const marginBetweenElements = 10;
-                const phoneToQRMargin = 30; // Margen adicional entre QR y teléfono
-                const logoInQrSize = 50; // Tamaño del logo dentro del QR
-
-                // Ajustar la altura del canvas
-                const headerTextHeight = 28; // Altura para el título "VYTMUSIC"
-                const subHeaderTextHeight = 20; // Altura para "Certamen de Canto"
-                const canvasWidth = Math.max(qrSize + padding * 2, 300);
-                // Calcular la altura del canvas basándose en todos los elementos
-                const canvasHeight = padding + headerTextHeight + subHeaderTextHeight + marginBetweenElements + (textLineHeight * 2) + marginBetweenElements + qrSize + phoneToQRMargin + textLineHeight + padding;
-
-
-                compositeCanvas.width = canvasWidth;
-                compositeCanvas.height = canvasHeight;
-
-                // Dibujar fondo blanco simple
-                compositeCtx.fillStyle = '#FFFFFF';
-                compositeCtx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-                let currentY = padding;
-
-                // Dibujar texto "VYTMUSIC" como título principal
-                compositeCtx.fillStyle = '#1f2937';
-                compositeCtx.font = 'bold 24px Inter, sans-serif'; 
-                compositeCtx.textAlign = 'center';
-                compositeCtx.fillText('VYTMUSIC', canvasWidth / 2, currentY + (headerTextHeight / 2));
-                currentY += headerTextHeight;
-
-                // Dibujar "Certamen de Canto"
-                compositeCtx.font = 'bold 16px Inter, sans-serif';
-                compositeCtx.fillStyle = '#4f46e5'; // Color para el subtítulo
-                compositeCtx.textAlign = 'center'; // Asegurarse de que esté centrado
-                compositeCtx.fillText('Certamen de Canto', canvasWidth / 2, currentY + (subHeaderTextHeight / 2));
-                currentY += subHeaderTextHeight + marginBetweenElements; // Eliminar la línea decorativa
-
-                // 1. Dibujar Nombre del Titular del Ticket
-                compositeCtx.fillStyle = '#1f2937'; // Gris 900
-                compositeCtx.font = 'bold 18px Inter, sans-serif';
-                compositeCtx.textAlign = 'center';
-                compositeCtx.fillText(`Titular: ${name}`, canvasWidth / 2, currentY);
-                currentY += textLineHeight;
-
-                // 2. Dibujar ID del Ticket
-                compositeCtx.font = '14px Inter, sans-serif';
-                compositeCtx.fillText(`ID: ${ticketId}`, canvasWidth / 2, currentY);
-                currentY += textLineHeight + marginBetweenElements;
-
-                // 3. Dibujar Código QR
-                const qrTempDiv = document.createElement('div');
-                new QRCode(qrTempDiv, {
-                    text: qrText,
-                    width: qrSize,
-                    height: qrSize,
-                    colorDark: "#000000",
-                    colorLight: "transparent",
-                    correctLevel: QRCode.CorrectLevel.H
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
+                        ctx.fillStyle = '#1f2937';
+                        ctx.font = 'bold 24px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(name, compositeCanvas.width / 2, padding + 20);
+                        ctx.font = '16px Inter, sans-serif';
+                        ctx.fillStyle = '#6b7280';
+                        ctx.fillText(ticketId, compositeCanvas.width / 2, padding + 50);
+                        
+                        ctx.drawImage(qrCanvas, padding, padding + textHeight);
+                        
+                        resolve(compositeCanvas.toDataURL('image/png'));
+                    });
                 });
-
-                // Esperar a que el código QR se renderice en el div temporal
-                await new Promise(resolve => setTimeout(resolve, 100));
-                const qrImageElement = qrTempDiv.querySelector('canvas') || qrTempDiv.querySelector('img');
-                if (qrImageElement) {
-                    const qrX = (canvasWidth - qrSize) / 2;
-                    compositeCtx.fillStyle = '#ffffff'; // Fondo blanco para el QR
-                    compositeCtx.fillRect(qrX - 5, currentY - 5, qrSize + 10, qrSize + 10);
-                    compositeCtx.drawImage(qrImageElement, qrX, currentY, qrSize, qrSize);
-
-                    // Dibujar el logo dentro del área del código QR, en la esquina inferior derecha
-                    if (logoImage && logoImage.complete && logoImage.naturalHeight !== 0) {
-                        const logoAspectRatio = logoImage.width / logoImage.height;
-                        const drawLogoHeight = logoInQrSize;
-                        const drawLogoWidth = logoInQrSize * logoAspectRatio;
-                        // Posición en la esquina inferior derecha del área del QR
-                        const logoX = qrX + qrSize - drawLogoWidth - 5; // 5px de padding desde el borde derecho del QR
-                        const logoY = currentY + qrSize - drawLogoHeight - 5; // 5px de padding desde el borde inferior del QR
-                        compositeCtx.drawImage(logoImage, logoX, logoY, drawLogoWidth, drawLogoHeight);
-                    }
-                    currentY += qrSize + phoneToQRMargin; // Añadir el margen adicional aquí
-                }
-
-                // 4. Dibujar Número de Teléfono
-                compositeCtx.font = 'bold 16px Inter, sans-serif';
-                compositeCtx.fillStyle = '#6366f1'; // Indigo 500
-                compositeCtx.textAlign = 'center';
-                compositeCtx.fillText(`Tel: ${VYTMUSIC_PHONE}`, canvasWidth / 2, currentY);
-                currentY += textLineHeight;
-
-                // Dibujar borde decorativo
-                compositeCtx.strokeStyle = '#d1d5db';
-                compositeCtx.lineWidth = 1;
-                compositeCtx.strokeRect(1, 1, canvasWidth - 2, canvasHeight - 2);
-
-                return compositeCanvas.toDataURL('image/png');
             }
 
-            // Función para generar un ticket individual y actualizar la DB
-            async function createAndDisplayTicket(name, containerElement, isBatch = false) {
-                console.log(`Creando y mostrando ticket para: ${name}, esLote: ${isBatch}`); // Log de depuración
+            async function createAndSaveTicket(name) {
                 if (!db) {
-                    displayMessage("Base de datos no inicializada. Intenta recargar la página.", "error");
-                    return;
+                    displayMessage("Base de datos no inicializada.", "error");
+                    return null;
                 }
-
-                const ticketId = generateUniqueTicketId(); // Still generate a unique ID for QR content
+                const ticketId = generateUniqueTicketId();
                 const finalQrDataURL = await createCompositeQrImage(ticketId, name);
+                if (!finalQrDataURL) {
+                    displayMessage("Error al crear la imagen del QR.", "error");
+                    return null;
+                }
                 
                 try {
-                    // Add ticket to Firestore
-                    const ticketsCollectionRef = collection(db, `artifacts/${appId}/public/data/vytmusic_tickets`);
-                    await setDoc(doc(ticketsCollectionRef, ticketId), { // Use setDoc with custom ID
+                    const ticketDocRef = doc(db, `artifacts/${appId}/public/data/vytmusic_tickets`, ticketId);
+                    await setDoc(ticketDocRef, {
                         name: name,
                         status: 'valid',
                         qrDataURL: finalQrDataURL,
                         timestamp: Date.now(),
-                        generatedBy: userId // Store who generated the ticket
+                        generatedBy: userId
                     });
-                    console.log("Ticket added to Firestore with ID:", ticketId);
-
-                    // UI update logic (will be handled by onSnapshot listener)
-                    if (containerElement === qrcodeSingleDiv) {
-                        containerElement.innerHTML = `<img src="${finalQrDataURL}" alt="QR Code for ${name}" class="rounded-md shadow-lg">`;
-                        if (ticketIdDisplay) ticketIdDisplay.textContent = ticketId;
-                        if (generatedTicketInfo) generatedTicketInfo.classList.remove('hidden');
-                    }
-                    // For batch, the renderAllTickets() from onSnapshot will handle it.
-
                     displayMessage('¡Entrada Generada Exitosamente!', 'success');
-                    return ticketId;
-
+                    return { ticketId, finalQrDataURL };
                 } catch (error) {
-                    console.error("Error adding ticket to Firestore:", error);
-                    displayMessage("Error al generar la entrada. Intenta de nuevo.", "error");
+                    console.error("Error al guardar ticket en Firestore:", error);
+                    displayMessage("Error al guardar la entrada.", "error");
                     return null;
                 }
             }
 
-            // Función para actualizar la visualización de los recuentos de tickets
-            function updateTicketCounts() {
-                const allTickets = Object.values(ticketsDB);
-                const validCount = allTickets.filter(ticket => ticket.status === 'valid').length;
-                const usedCount = allTickets.filter(ticket => ticket.status === 'used').length;
-                const totalCount = allTickets.length;
-                
-                if (singleCountSpan) singleCountSpan.textContent = totalCount; // Mostrar total en generador individual
-                if (batchCountSpan) batchCountSpan.textContent = totalCount; // Mostrar total en generador por lotes
-                if (generatedCountSpan) generatedCountSpan.textContent = totalCount; // Mostrar total en sección de lotes
-                if (totalTicketsCountSpan) totalTicketsCountSpan.textContent = totalCount; // Mostrar total en el botón de la nueva sección
-
-                // Actualizar los conteos en la sección de entradas registradas
-                if (validTicketsCountDisplay) validTicketsCountDisplay.textContent = validCount;
-                if (usedTicketsCountDisplay) usedTicketsCountDisplay.textContent = usedCount;
-                if (totalTicketsDisplay) totalTicketsDisplay.textContent = totalCount;
-            }
-
-            // Función para manejar la generación de tickets individuales
             async function generateIndividualTicket() {
-                console.log('Botón "Generar Entrada Individual" clickeado.'); // Log de depuración
-                const ticketHolderName = ticketHolderNameInput.value.trim();
-                if (!ticketHolderName) {
-                    displayMessage('Por favor, ingresa el nombre del titular de la entrada.', 'error');
+                if (!ticketHolderNameInput) return;
+                const name = ticketHolderNameInput.value.trim();
+                if (!name) {
+                    displayMessage('Por favor, ingresa un nombre.', 'warning');
                     return;
                 }
-
-                const generatedId = await createAndDisplayTicket(ticketHolderName, qrcodeSingleDiv, false); 
-                if (generatedId && shareSingleQrBtn) {
-                    shareSingleQrBtn.onclick = () => shareQrCode(generatedId);
+                const result = await createAndSaveTicket(name);
+                if (result) {
+                    if(qrcodeSingleDiv) qrcodeSingleDiv.innerHTML = `<img src="${result.finalQrDataURL}" alt="QR Code for ${name}">`;
+                    if(ticketIdDisplay) ticketIdDisplay.textContent = result.ticketId;
+                    if(generatedTicketInfo) generatedTicketInfo.classList.remove('hidden');
+                    if(shareSingleQrBtn) shareSingleQrBtn.onclick = () => shareQrCode(result.ticketId);
+                    ticketHolderNameInput.value = '';
                 }
-                ticketHolderNameInput.value = '';
             }
 
-            // Función para manejar la generación de tickets por lotes
             async function generateBatchTickets() {
-                console.log('Botón "Generar Entradas por Lotes" clickeado.'); // Log de depuración
+                if (!batchTicketNamesTextarea) return;
                 const namesInput = batchTicketNamesTextarea.value.trim();
                 if (!namesInput) {
-                    displayMessage('Por favor, ingresa al menos un nombre para generar entradas.', 'error');
+                    displayMessage('Ingresa al menos un nombre.', 'warning');
                     return;
                 }
-
-                // Dividir nombres por salto de línea o coma, filtrar cadenas vacías
-                const names = namesInput.split(/[\n,]+/).map(name => name.trim()).filter(name => name.length > 0);
-
-                if (names.length === 0) {
-                    displayMessage('No se encontraron nombres válidos para generar entradas.', 'error');
-                    return;
-                }
-
-                if (batchQRCodesDisplay) batchQRCodesDisplay.innerHTML = ''; // Limpiar QRs de lotes anteriores
-                let generatedCount = 0;
-
-                for (const name of names) { // Usar for...of con await
-                    const generatedId = await createAndDisplayTicket(name, batchQRCodesDisplay, true); 
-                    if (generatedId) {
-                        generatedCount++;
-                    }
-                }
+                const names = namesInput.split(/[\n,]+/).map(name => name.trim()).filter(Boolean);
+                if (names.length === 0) return;
 
                 if (generatedBatchTicketsInfo) generatedBatchTicketsInfo.classList.remove('hidden');
-                batchTicketNamesTextarea.value = ''; // Limpiar textarea
-                displayMessage(`¡Se generaron ${generatedCount} entradas exitosamente!`, 'success');
+                displayMessage(`Generando ${names.length} entradas...`, 'info');
+                for (const name of names) {
+                    await createAndSaveTicket(name);
+                }
+                batchTicketNamesTextarea.value = '';
             }
 
-            // Función para compartir un solo código QR (ahora siempre comparte la imagen compuesta)
+            // --- Lógica de Compartir y Descargar ---
             async function shareQrCode(ticketId) {
-                console.log(`Compartiendo código QR para el ID de ticket: ${ticketId}`); // Log de depuración
                 const ticket = ticketsDB[ticketId];
-                if (!ticket || !ticket.qrDataURL) {
-                    displayMessage('Error: QR no encontrado para compartir.', 'error');
-                    return;
-                }
+                if (!ticket || !ticket.qrDataURL) return;
 
-                // Convertir URL de datos a Blob para compartir
                 const blob = await (await fetch(ticket.qrDataURL)).blob();
                 const file = new File([blob], `${ticket.name}_${ticketId}.png`, { type: 'image/png' });
 
                 if (navigator.share && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: `Entrada VYTMUSIC para ${ticket.name}`,
-                            text: `Aquí tienes tu entrada para VYTMUSIC. ID: ${ticketId}`
-                        });
-                        displayMessage('QR compartido exitosamente.', 'success');
-                    } catch (error) {
-                        console.error('Error al compartir QR:', error);
-                        displayMessage('No se pudo compartir el QR. Intenta descargarlo.', 'error');
-                        // Fallback para descargar si el compartir falla
-                        saveAs(file, `${ticket.name}_${ticketId}.png`);
-                    }
+                    await navigator.share({
+                        files: [file],
+                        title: `Entrada VYTMUSIC para ${ticket.name}`,
+                        text: `ID: ${ticketId}`
+                    });
                 } else {
-                    displayMessage('Tu navegador no soporta la función de compartir. Descargando el QR...', 'info');
-                    saveAs(file, `${ticket.name}_${ticketId}.png`);
+                    displayMessage('Función de compartir no soportada. Descargando...', 'info');
+                    saveAs(file);
                 }
             }
-
-            // Función para seleccionar/deseleccionar todas las casillas de verificación
-            function toggleSelectAllQRs() {
-                console.log('Botón "Seleccionar Todos los QRs" clickeado.'); // Log de depuración
-                const checkboxes = document.querySelectorAll('.ticket-checkbox');
-                const allSelected = Array.from(checkboxes).every(cb => cb.checked);
-                checkboxes.forEach(cb => {
-                    cb.checked = !allSelected;
-                });
-            }
-
-            // Función para compartir códigos QR seleccionados (como archivo ZIP)
-            async function shareSelectedQRs() {
-                console.log('Botón "Compartir QRs Seleccionados" clickeado.'); // Log de depuración
+            
+            async function processSelectedQRs(action) {
                 const selectedCheckboxes = document.querySelectorAll('.ticket-checkbox:checked');
                 if (selectedCheckboxes.length === 0) {
-                    displayMessage('Por favor, selecciona al menos una entrada para compartir.', 'info');
+                    displayMessage('Selecciona al menos una entrada.', 'warning');
                     return;
                 }
-
+                
                 const zip = new JSZip();
                 const filesToShare = [];
-
-                displayMessage('Preparando QRs para compartir...', 'info');
-
+                
                 for (const checkbox of selectedCheckboxes) {
                     const ticketId = checkbox.dataset.ticketId;
                     const ticket = ticketsDB[ticketId];
@@ -1205,372 +874,240 @@
                         const blob = await (await fetch(ticket.qrDataURL)).blob();
                         const fileName = `${ticket.name.replace(/[^a-zA-Z0-9]/g, '_')}_${ticketId}.png`;
                         zip.file(fileName, blob);
-                        filesToShare.push(new File([blob], fileName, { type: 'image/png' }));
+                        if(action === 'share') filesToShare.push(new File([blob], fileName, { type: 'image/png' }));
                     }
                 }
-
-                if (filesToShare.length === 0) {
-                    displayMessage('No se encontraron QRs válidos para compartir.', 'error');
-                    return;
-                }
-
-                // Intentar usar la API Web Share para múltiples archivos si es compatible
-                if (navigator.share && navigator.canShare({ files: filesToShare })) {
-                    try {
-                        await navigator.share({
-                            files: filesToShare,
-                            title: 'Entradas VYTMUSIC Seleccionadas',
-                            text: 'Aquí tienes las entradas seleccionadas para VYTMUSIC.'
-                        });
-                        displayMessage('QRs seleccionados compartidos exitosamente.', 'success');
+                
+                if (action === 'download') {
+                    const content = await zip.generateAsync({ type: "blob" });
+                    saveAs(content, "VYTMUSIC_Entradas.zip");
+                } else if (action === 'share') {
+                     if (navigator.share && navigator.canShare({ files: filesToShare })) {
+                        await navigator.share({ files: filesToShare, title: 'Entradas VYTMUSIC' });
+                    } else {
+                        displayMessage('No se pueden compartir múltiples archivos. Descargando ZIP...', 'info');
+                        const content = await zip.generateAsync({ type: "blob" });
+                        saveAs(content, "VYTMUSIC_Entradas.zip");
                     }
-                    catch (error) {
-                        console.error('Error al compartir QRs seleccionados:', error);
-                        displayMessage('No se pudo compartir los QRs. Generando archivo ZIP...', 'error');
-                        // Fallback para descargar
-                        generateAndZipAndDownload(zip);
-                    }
-                } else {
-                    displayMessage('Tu navegador no soporta compartir múltiples archivos. Generando archivo ZIP...', 'info');
-                    generateAndZipAndDownload(zip);
                 }
             }
 
-            // Función para generar y descargar un archivo ZIP de códigos QR seleccionados
-            async function downloadSelectedQRs() {
-                console.log('Botón "Descargar QRs Seleccionados" clickeado.'); // Log de depuración
-                const selectedCheckboxes = document.querySelectorAll('.ticket-checkbox:checked');
-                if (selectedCheckboxes.length === 0) {
-                    displayMessage('Por favor, selecciona al menos una entrada para descargar.', 'info');
-                    return;
-                }
-
-                const zip = new JSZip();
-                displayMessage('Preparando QRs para descargar...', 'info');
-
-                for (const checkbox of selectedCheckboxes) {
-                    const ticketId = checkbox.dataset.ticketId;
-                    const ticket = ticketsDB[ticketId];
-                    if (ticket && ticket.qrDataURL) {
-                        const blob = await (await fetch(ticket.qrDataURL)).blob();
-                        const fileName = `${ticket.name.replace(/[^a-zA-Z0-9]/g, '_')}_${ticketId}.png`;
-                        zip.file(fileName, blob);
-                    }
-                }
-                generateAndZipAndDownload(zip);
-            }
-
-            function generateAndZipAndDownload(zip) {
-                zip.generateAsync({ type: "blob" })
-                    .then(function (content) {
-                        saveAs(content, "VYTMUSIC_Entradas_QR.zip");
-                        displayMessage('Archivo ZIP de QRs descargado exitosamente.', 'success');
-                    })
-                    .catch(error => {
-                        console.error('Error al generar el ZIP:', error);
-                        displayMessage('Error al generar el archivo ZIP.', 'error');
-                    });
-            }
-
-            // --- Lógica del Escáner QR (usando jsQR) ---
-
-            // Función para iniciar el escáner QR
+            // --- Lógica del Escáner QR ---
             async function startQrScanner() {
-                console.log('Iniciando escáner QR.'); // Log de depuración
-                stopQrScanner(); // Asegurarse de que cualquier flujo existente se detenga
-
+                stopQrScanner();
                 if (scannedResultDiv) scannedResultDiv.classList.add('hidden');
                 if (ticketStatusDiv) ticketStatusDiv.classList.add('hidden');
                 if (markUsedBtn) markUsedBtn.classList.add('hidden');
-                if (scannedResultDiv) scannedResultDiv.textContent = '';
-                if (ticketStatusDiv) ticketStatusDiv.textContent = '';
-                
-                // Asegurarse de que el canvas sea visible para dibujar el cuadro de detección
                 if (canvasElement) canvasElement.style.display = 'block';
 
                 try {
-                    // Solicitar acceso a la cámara
-                    videoStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: "environment", // Preferir cámara trasera
-                            width: { ideal: 640 },
-                            height: { ideal: 480 }
-                        }
-                    });
-                    if (video) video.srcObject = videoStream;
-                    if (video) video.setAttribute("playsinline", true); // Requerido para iOS
-                    
-                    // Esperar a que los metadatos del video se carguen antes de reproducir e iniciar el escaneo
-                    if (video) video.onloadedmetadata = () => {
-                        if (video) video.play();
-                        scanning = true;
-                        // Establecer las dimensiones del canvas para que coincidan con el video después de que se cargue
-                        if (canvasElement && video) {
-                            canvasElement.width = video.videoWidth;
-                            canvasElement.height = video.videoHeight;
-                        }
-                        requestAnimationFrame(tick); // Iniciar bucle de escaneo
-                        displayMessage('Escáner de QR iniciado. Apunta la cámara a un código.', 'info');
-                    };
-
-                } catch (err) {
-                    let userFriendlyMessage = `Error al iniciar la cámara: ${err.message}.`;
-                    if (err.name === 'NotAllowedError') {
-                        userFriendlyMessage = 'Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
-                    } else if (err.name === 'NotFoundError') {
-                        userFriendlyMessage = 'No se encontró una cámara compatible. Asegúrate de que tu dispositivo tenga una cámara.';
-                    } else if (err.name === 'NotReadableError' || err.name === 'OverconstrainedError') {
-                        userFriendlyMessage = 'La cámara está en uso o no se puede acceder a ella. Cierra otras aplicaciones que puedan estar usando la cámara e inténtalo de nuevo.';
-                    } else if (err.name === 'AbortError') {
-                        userFriendlyMessage = 'La operación de la cámara fue abortada. Esto puede ocurrir si cierras rápidamente la sección o si hay un problema interno.';
-                    } else if (err.name === 'NotSupportedError') {
-                        userFriendlyMessage = 'Tu navegador no soporta la API de la cámara o la configuración solicitada.';
+                    videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                    if (video) {
+                        video.srcObject = videoStream;
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            scanning = true;
+                            requestAnimationFrame(tick);
+                        };
                     }
-                    displayMessage(userFriendlyMessage, 'error');
-                    console.error('Error al acceder a la cámara para escanear:', err);
-                    scanning = false;
-                    if (canvasElement) canvasElement.style.display = 'none'; // Ocultar canvas si la cámara falla
+                } catch (err) {
+                    console.error("Error de cámara:", err);
+                    displayMessage("No se pudo acceder a la cámara.", "error");
+                    if (canvasElement) canvasElement.style.display = 'none';
                 }
             }
 
-            // Función para detener el escáner QR
             function stopQrScanner() {
-                console.log('Deteniendo escáner QR.'); // Log de depuración
                 scanning = false;
                 if (videoStream) {
                     videoStream.getTracks().forEach(track => track.stop());
-                    if (video) video.srcObject = null;
-                    videoStream = null;
                 }
-                if (canvas && canvasElement) canvas.clearRect(0, 0, canvasElement.width, canvasElement.height); // Limpiar canvas
-                if (canvasElement) canvasElement.style.display = 'none'; // Ocultar canvas
+                if(video) video.srcObject = null;
+                if (canvasElement) canvasElement.style.display = 'none';
             }
 
-            // Función para dibujar la línea del cuadro delimitador del código QR
-            function drawLine(begin, end, color) {
-                if (!canvas) return; // Asegurarse de que el contexto del canvas exista
-                canvas.beginPath();
-                canvas.moveTo(begin.x, begin.y);
-                canvas.lineTo(end.x, end.y);
-                canvas.lineWidth = 4;
-                canvas.strokeStyle = color;
-                canvas.stroke();
-            }
-
-            // Bucle de escaneo
             function tick() {
-                if (!scanning || (video && video.readyState !== video.HAVE_ENOUGH_DATA)) {
-                    if (scanning) requestAnimationFrame(tick); // Seguir intentando si el escaneo está activo pero el video no está listo
+                if (!scanning || !video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+                    if (scanning) requestAnimationFrame(tick);
                     return;
                 }
-                if (!canvas || !canvasElement || !video) {
-                    console.warn("Canvas, canvasElement o video no disponibles para la función tick.");
-                    return;
-                }
+                if (!canvasElement || !canvas) return;
 
-                // Establecer las dimensiones del canvas para que coincidan con el video después de que se cargue
                 canvasElement.width = video.videoWidth;
                 canvasElement.height = video.videoHeight;
-
                 canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
                 const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                    inversionAttempts: "attemptBoth", // Intentar códigos QR normales e invertidos
-                });
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
 
                 if (code) {
-                    // Código QR encontrado
-                    drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#00FF00");
-                    drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#00FF00");
-                    drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#00FF00");
-                    drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#00FF00");
-
+                    stopQrScanner();
                     onScanSuccess(code.data);
-                    stopQrScanner(); // Detener el escaneo después de una lectura exitosa
                 } else {
-                    // No se encontró ningún código QR, continuar escaneando
                     requestAnimationFrame(tick);
                 }
             }
 
-            // Función de callback para un escaneo QR exitoso (desde jsQR)
             function onScanSuccess(decodedText) {
-                console.log(`Código QR detectado: ${decodedText}`); // Log de depuración
                 currentScannedTicketId = decodedText;
-                if (scannedResultDiv) {
+                if(scannedResultDiv) {
                     scannedResultDiv.classList.remove('hidden');
-                    scannedResultDiv.textContent = `Código Escaneado: ${decodedText}`;
+                    scannedResultDiv.textContent = `Código: ${decodedText}`;
                 }
-
+                
+                if(ticketStatusDiv) ticketStatusDiv.classList.remove('hidden');
                 const ticket = ticketsDB[decodedText];
 
-                if (ticketStatusDiv) ticketStatusDiv.classList.remove('hidden');
-                if (markUsedBtn) markUsedBtn.classList.add('hidden'); // Ocultar por defecto
-
-                if (ticket) {
-                    if (ticket.status === 'valid') {
-                        if (ticketStatusDiv) ticketStatusDiv.textContent = `Estado: Válida (${ticket.name})`;
-                        if (ticketStatusDiv) ticketStatusDiv.classList.remove('status-used', 'status-invalid');
-                        if (ticketStatusDiv) ticketStatusDiv.classList.add('status-valid');
-                        if (markUsedBtn) markUsedBtn.classList.remove('hidden');
-                    } else if (ticket.status === 'used') {
-                        if (ticketStatusDiv) ticketStatusDiv.textContent = `Estado: Ya Utilizada (${ticket.name})`;
-                        if (ticketStatusDiv) ticketStatusDiv.classList.remove('status-valid', 'status-invalid');
-                        if (ticketStatusDiv) ticketStatusDiv.classList.add('status-used');
-                    }
-                } else {
-                    if (ticketStatusDiv) ticketStatusDiv.textContent = 'Estado: Entrada Inválida o No Encontrada';
-                    if (ticketStatusDiv) ticketStatusDiv.classList.remove('status-valid', 'status-used');
-                    if (ticketStatusDiv) ticketStatusDiv.classList.add('status-invalid');
+                if (ticket && ticketStatusDiv) {
+                    ticketStatusDiv.textContent = `Estado: ${ticket.status.toUpperCase()} (${ticket.name})`;
+                    ticketStatusDiv.className = `ticket-status status-${ticket.status}`;
+                    if (ticket.status === 'valid' && markUsedBtn) markUsedBtn.classList.remove('hidden');
+                } else if (ticketStatusDiv) {
+                    ticketStatusDiv.textContent = 'Estado: ENTRADA INVÁLIDA';
+                    ticketStatusDiv.className = 'ticket-status status-invalid';
                 }
             }
 
-            // Función para marcar el ticket como usado
             async function markTicketAsUsed() {
-                console.log('Botón "Marcar como Usada" clickeado.'); // Log de depuración
-                if (!db) {
-                    displayMessage("Base de datos no inicializada. Intenta recargar la página.", "error");
-                    return;
-                }
-
-                if (currentScannedTicketId && ticketsDB[currentScannedTicketId] && ticketsDB[currentScannedTicketId].status === 'valid') {
-                    try {
-                        const ticketDocRef = doc(db, `artifacts/${appId}/public/data/vytmusic_tickets`, currentScannedTicketId);
-                        await updateDoc(ticketDocRef, { status: 'used' });
-                        displayMessage(`Entrada de ${ticketsDB[currentScannedTicketId].name} marcada como usada.`, 'success');
-                        // UI will be updated by the onSnapshot listener
-                    } catch (error) {
-                        console.error("Error updating ticket status in Firestore:", error);
-                        displayMessage("Error al marcar la entrada como usada. Intenta de nuevo.", "error");
-                    }
+                if (currentScannedTicketId && ticketsDB[currentScannedTicketId]?.status === 'valid') {
+                    const ticketDocRef = doc(db, `artifacts/${appId}/public/data/vytmusic_tickets`, currentScannedTicketId);
+                    await updateDoc(ticketDocRef, { status: 'used' });
+                    displayMessage(`Entrada de ${ticketsDB[currentScannedTicketId].name} marcada como usada.`, 'success');
                 }
             }
 
-            // Función para mostrar mensajes al usuario (reemplazo de alert)
-            function displayMessage(message, type) {
-                const messageBox = document.createElement('div');
-                messageBox.textContent = message;
-                messageBox.className = `floating-notification notification-${type}`;
-                document.body.appendChild(messageBox);
-
-                // Eliminar el mensaje después de un tiempo
-                setTimeout(() => {
-                    messageBox.remove();
-                }, 3000); // Coincide con la duración de la animación CSS
+            // --- Renderizado y Filtros ---
+            function renderAllTickets() {
+                if (!batchQRCodesDisplay) return;
+                batchQRCodesDisplay.innerHTML = '';
+                Object.values(ticketsDB).forEach(ticket => {
+                    const ticketCard = document.createElement('div');
+                    ticketCard.className = 'ticket-card text-center';
+                    ticketCard.dataset.ticketId = ticket.id;
+                    ticketCard.innerHTML = `
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="ticket-checkbox w-5 h-5 text-indigo-600 bg-gray-700 border-gray-500 rounded focus:ring-indigo-500" data-ticket-id="${ticket.id}">
+                        </div>
+                        <p class="text-lg font-semibold mb-2 mt-4">${ticket.name}</p>
+                        <p class="text-sm text-gray-400 mb-2 break-words">${ticket.id}</p>
+                        <img src="${ticket.qrDataURL}" alt="QR Code for ${ticket.name}" style="width:150px; height:150px;" class="mx-auto rounded-md">
+                        <button class="share-button" data-ticket-id="${ticket.id}">Compartir</button>
+                    `;
+                    batchQRCodesDisplay.appendChild(ticketCard);
+                });
             }
 
-            // Función para filtrar y renderizar las entradas en la tabla
             function filterAndRenderRegisteredTickets() {
-                if (!ticketsTableBody) return;
-                ticketsTableBody.innerHTML = ''; // Limpiar tabla
+                if (!ticketsTableBody || !ticketSearchInput) return;
+                ticketsTableBody.innerHTML = '';
                 const searchTerm = ticketSearchInput.value.toLowerCase();
                 const filteredTickets = Object.values(ticketsDB).filter(ticket => 
                     ticket.name.toLowerCase().includes(searchTerm) || ticket.id.toLowerCase().includes(searchTerm)
                 );
-
                 filteredTickets.forEach(ticket => {
                     const row = ticketsTableBody.insertRow();
-                    const nameCell = row.insertCell();
-                    const idCell = row.insertCell();
-                    const statusCell = row.insertCell();
-
-                    nameCell.textContent = ticket.name;
-                    idCell.textContent = ticket.id;
-                    statusCell.textContent = ticket.status === 'valid' ? 'Válida' : 'Usada';
-                    statusCell.classList.add('status-cell', ticket.status);
+                    row.innerHTML = `
+                        <td>${ticket.name}</td>
+                        <td>${ticket.id}</td>
+                        <td class="status-cell ${ticket.status}">${ticket.status === 'valid' ? 'Válida' : 'Usada'}</td>
+                    `;
                 });
-                updateTicketCounts(); // Update counts based on current ticketsDB
             }
 
+            // --- Actualización de Contadores ---
+            function updateTicketCounts() {
+                const allTickets = Object.values(ticketsDB);
+                const validCount = allTickets.filter(t => t.status === 'valid').length;
+                const usedCount = allTickets.filter(t => t.status === 'used').length;
+                const totalCount = allTickets.length;
+                
+                const singleCountEl = document.getElementById('single-count');
+                const batchCountEl = document.getElementById('batch-count');
+                const generatedCountEl = document.getElementById('generated-count');
+                const totalTicketsCountEl = document.getElementById('total-tickets-count');
+                const validTicketsCountEl = document.getElementById('valid-tickets-count');
+                const usedTicketsCountEl = document.getElementById('used-tickets-count');
+                const totalTicketsDisplayEl = document.getElementById('total-tickets-display');
 
-            // Añadir Event Listeners
-            console.log("Intentando adjuntar event listeners..."); // Debug: Log de depuración
-
-            if (showGeneratorBtn) {
-                showGeneratorBtn.addEventListener('click', () => { console.log('showGeneratorBtn click'); switchSection('ticket-generator-section'); });
-                console.log("Listener adjuntado a showGeneratorBtn.");
-            } else { console.log("showGeneratorBtn no encontrado."); }
-
-            if (showBatchGeneratorBtn) {
-                showBatchGeneratorBtn.addEventListener('click', () => { console.log('showBatchGeneratorBtn click'); switchSection('batch-ticket-generator-section'); });
-                console.log("Listener adjuntado a showBatchGeneratorBtn.");
-            } else { console.log("showBatchGeneratorBtn no encontrado."); }
-
-            if (showScannerBtn) {
-                showScannerBtn.addEventListener('click', () => { console.log('showScannerBtn click'); switchSection('qr-scanner-section'); });
-                console.log("Listener adjuntado a showScannerBtn.");
-            } else { console.log("showScannerBtn no encontrado."); }
-
-            if (showRegisteredTicketsBtn) { // Nuevo listener para el botón de la nueva sección
-                showRegisteredTicketsBtn.addEventListener('click', () => { console.log('showRegisteredTicketsBtn click'); switchSection('registered-tickets-section'); });
-                console.log("Listener adjuntado a showRegisteredTicketsBtn.");
-            } else { console.log("showRegisteredTicketsBtn no encontrado."); }
-
-            if (generateTicketBtn) {
-                generateTicketBtn.addEventListener('click', generateIndividualTicket);
-                console.log("Listener adjuntado a generateTicketBtn.");
-            } else { console.log("generateTicketBtn no encontrado."); }
-
-            if (generateBatchTicketsBtn) {
-                generateBatchTicketsBtn.addEventListener('click', generateBatchTickets);
-                console.log("Listener adjuntado a generateBatchTicketsBtn.");
-            } else { console.log("generateBatchTicketsBtn no encontrado."); }
-
-            if (markUsedBtn) {
-                markUsedBtn.addEventListener('click', markTicketAsUsed);
-                console.log("Listener adjuntado a markUsedBtn.");
-            } else { console.log("markUsedBtn no encontrado."); }
-
-            if (restartScannerBtn) {
-                restartScannerBtn.addEventListener('click', startQrScanner);
-                console.log("Listener adjuntado a restartScannerBtn.");
-            } else { console.log("restartScannerBtn no encontrado."); }
-
-            if (selectAllQRsBtn) {
-                selectAllQRsBtn.addEventListener('click', toggleSelectAllQRs);
-                console.log("Listener adjuntado a selectAllQRsBtn.");
-            } else { console.log("selectAllQRsBtn no encontrado."); }
-
-            if (shareSelectedQRsBtn) {
-                shareSelectedQRsBtn.addEventListener('click', shareSelectedQRs);
-                console.log("Listener adjuntado a shareSelectedQRsBtn.");
-            } else { console.log("shareSelectedQRsBtn no encontrado."); }
-
-            if (downloadSelectedQRsBtn) {
-                downloadSelectedQRsBtn.addEventListener('click', downloadSelectedQRs);
-                console.log("Listener adjuntado a downloadSelectedQRsBtn.");
-            } else { console.log("downloadSelectedQRsBtn no encontrado."); }
-
-            if (shareSingleQrBtn) {
-                // Este listener se adjunta dinámicamente en generateIndividualTicket, pero lo inicializamos aquí
-                // para evitar errores si se hace clic antes de generar un ticket.
-                shareSingleQrBtn.addEventListener('click', () => {
-                    const ticketId = ticketIdDisplay ? ticketIdDisplay.textContent : '';
-                    if (ticketId) {
-                        shareQrCode(ticketId);
-                    } else {
-                        displayMessage('Primero genera un ticket individual para compartir.', 'info');
-                    }
-                });
-                console.log("Listener inicial adjuntado a shareSingleQrBtn.");
-            } else { console.log("shareSingleQrBtn no encontrado."); }
-
-            // Listener para el campo de búsqueda de tickets registrados
-            if (ticketSearchInput) {
-                ticketSearchInput.addEventListener('input', filterAndRenderRegisteredTickets);
-                console.log("Listener adjuntado a ticketSearchInput.");
-            } else { console.log("ticketSearchInput no encontrado."); }
-
-
-            // Configuración inicial: mostrar la sección del generador por defecto
-            try {
-                switchSection('ticket-generator-section');
-                // Initial update of counts will happen after Firestore data is loaded
-            } catch (e) {
-                console.error("Error durante la inicialización de la aplicación:", e);
-                displayMessage("Un error crítico ha ocurrido durante la inicialización. Por favor, recarga la página.", "error");
+                if (singleCountEl) singleCountEl.textContent = totalCount;
+                if (batchCountEl) batchCountEl.textContent = totalCount;
+                if (generatedCountEl) generatedCountEl.textContent = totalCount;
+                if (totalTicketsCountEl) totalTicketsCountEl.textContent = totalCount;
+                if (validTicketsCountEl) validTicketsCountEl.textContent = validCount;
+                if (usedTicketsCountEl) usedTicketsCountEl.textContent = usedCount;
+                if (totalTicketsDisplayEl) totalTicketsDisplayEl.textContent = totalCount;
             }
-        });
+
+            function updateUICounters(countsData) {
+                const general = countsData.general || 0;
+                const vip = countsData.vip || 0;
+                const generalEl = document.getElementById('general-count-display');
+                const vipEl = document.getElementById('vip-count-display');
+                const totalEl = document.getElementById('total-entered-count');
+
+                if(generalEl) generalEl.textContent = general;
+                if(vipEl) vipEl.textContent = vip;
+                if(totalEl) totalEl.textContent = general + vip;
+            }
+
+            async function updateEntryCount(type, value) {
+                if (!countsDocRef) return;
+                const fieldToUpdate = type === 'general' ? 'general' : 'vip';
+                try {
+                    await runTransaction(db, async (transaction) => {
+                        const countsDoc = await transaction.get(countsDocRef);
+                        const currentCount = countsDoc.exists() ? (countsDoc.data()[fieldToUpdate] || 0) : 0;
+                        if (currentCount + value < 0) throw new Error("El contador no puede ser negativo.");
+                        transaction.set(countsDocRef, { [fieldToUpdate]: increment(value), lastUpdated: serverTimestamp() }, { merge: true });
+                    });
+                    displayMessage(`Entrada ${type} ${value > 0 ? 'registrada' : 'anulada'}.`, 'success');
+                } catch (e) {
+                    console.error("Error al actualizar contador:", e);
+                    displayMessage(e.message, "error");
+                }
+            }
+
+            // --- Event Listeners ---
+            if (showGeneratorBtn) showGeneratorBtn.addEventListener('click', () => switchSection(ticketGeneratorSection, showGeneratorBtn));
+            if (showBatchGeneratorBtn) showBatchGeneratorBtn.addEventListener('click', () => switchSection(batchTicketGeneratorSection, showBatchGeneratorBtn));
+            if (showScannerBtn) showScannerBtn.addEventListener('click', () => switchSection(qrScannerSection, showScannerBtn));
+            if (showRegisteredTicketsBtn) showRegisteredTicketsBtn.addEventListener('click', () => switchSection(registeredTicketsSection, showRegisteredTicketsBtn));
+            if (showCounterBtn) showCounterBtn.addEventListener('click', () => switchSection(counterSection, showCounterBtn));
+
+            if (generateTicketBtn) generateTicketBtn.addEventListener('click', generateIndividualTicket);
+            if (generateBatchTicketsBtn) generateBatchTicketsBtn.addEventListener('click', generateBatchTickets);
+            
+            if (selectAllQRsBtn) selectAllQRsBtn.addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('.ticket-checkbox');
+                const allSelected = Array.from(checkboxes).every(cb => cb.checked);
+                checkboxes.forEach(cb => cb.checked = !allSelected);
+            });
+            
+            if (shareSelectedQRsBtn) shareSelectedQRsBtn.addEventListener('click', () => processSelectedQRs('share'));
+            if (downloadSelectedQRsBtn) downloadSelectedQRsBtn.addEventListener('click', () => processSelectedQRs('download'));
+            
+            if (batchQRCodesDisplay) batchQRCodesDisplay.addEventListener('click', (e) => {
+                if (e.target.classList.contains('share-button')) {
+                    shareQrCode(e.target.dataset.ticketId);
+                }
+            });
+
+            if (restartScannerBtn) restartScannerBtn.addEventListener('click', startQrScanner);
+            if (markUsedBtn) markUsedBtn.addEventListener('click', markTicketAsUsed);
+            if (ticketSearchInput) ticketSearchInput.addEventListener('input', filterAndRenderRegisteredTickets);
+            
+            if (addGeneralBtn) addGeneralBtn.addEventListener('click', () => updateEntryCount('general', 1));
+            if (removeGeneralBtn) removeGeneralBtn.addEventListener('click', () => updateEntryCount('general', -1));
+            if (addVipBtn) addVipBtn.addEventListener('click', () => updateEntryCount('vip', 1));
+            if (removeVipBtn) removeVipBtn.addEventListener('click', () => updateEntryCount('vip', -1));
+
+            // --- Inicialización ---
+            switchSection(ticketGeneratorSection, showGeneratorBtn);
+        }
+
+        // FIX: Wrap the main logic in a function and call it with a timeout.
+        // This delays the execution slightly, which can prevent race conditions with browser extensions.
+        setTimeout(main, 0);
+
     </script>
 </body>
 </html>
