@@ -69,6 +69,28 @@
             border-radius: 0.5rem;
             overflow: hidden;
         }
+        /* Ensure the video element within the scanner is responsive */
+        #qr-code-reader video {
+            width: 100% !important;
+            height: auto !important;
+        }
+        /* Style for the QR box and line, if library doesn't apply them directly */
+        .html5-qrcode-box-focus-area {
+            border: 2px solid #38bdf8 !important; /* Light blue border for the scanning area */
+        }
+        .html5-qrcode-line {
+            background-color: #38bdf8 !important; /* Light blue scanning line */
+        }
+        /* Style for the logo in the QR code */
+        .qr-logo-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 25%; /* Adjust size as needed */
+            max-height: 25%; /* Adjust size as needed */
+            pointer-events: none; /* Allow clicks to pass through to QR code */
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -83,6 +105,7 @@
         
         <!-- Header -->
         <header class="text-center mb-6">
+            <img src="uploaded:LOGO NEGRO.jpg-c3bbab40-b52e-4b3b-8816-63649a23e392" alt="VYTMUSIC Logo" class="mx-auto mb-4" style="max-width: 150px;">
             <h1 class="text-3xl sm:text-4xl font-bold text-sky-400">VYTMUSIC</h1>
             <p class="text-lg text-gray-300">Control de Entradas</p>
             <p class="text-xs text-gray-500 mt-2">ID de Usuario: <span id="current-user-id-display">Cargando...</span></p>
@@ -104,9 +127,12 @@
             <section id="qr-scanner-section" class="section active">
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-bold mb-4 text-center">Escanear Código QR</h2>
+                    <p class="text-sm text-gray-400 text-center mb-4">
+                        Nota: Los navegadores requieren permiso para acceder a la cámara. Por favor, acepta la solicitud de permiso para iniciar el escáner.
+                    </p>
                     <div id="qr-code-reader"></div>
                     <div class="text-center">
-                         <button id="restart-scan-btn" class="hidden mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75 transition-colors">Escanear de Nuevo</button>
+                           <button id="restart-scan-btn" class="hidden mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75 transition-colors">Escanear de Nuevo</button>
                     </div>
                     <div id="scanned-ticket-info" class="hidden mt-6 bg-gray-900 p-4 rounded-lg">
                         <h3 class="text-xl font-bold mb-2">Información del Ticket</h3>
@@ -146,6 +172,7 @@
                     <h2 class="text-2xl font-bold mb-4">Historial de Escaneos</h2>
                     <ul id="scan-history-list" class="space-y-3">
                         <!-- History items will be injected here -->
+                        <li class="text-center text-gray-400">Cargando historial...</li>
                     </ul>
                 </div>
             </section>
@@ -161,7 +188,8 @@
         // --- Global Variables ---
         let app, db, auth, userId;
         let isFirebaseReady = false;
-        let html5QrCodeScanner;
+        let html5QrCodeScanner; // Declare globally for control
+        let logoImage = new Image(); // Create image object for the logo
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -215,375 +243,5 @@
                 if (isScanning) {
                     html5QrCodeScanner.stop().catch(err => console.warn("Scanner could not be stopped:", err));
                 }
-                restartScanBtn.classList.add('hidden');
-            }
-            
-            // Start scanner if entering the scanner section
-            if (sectionId === 'qr-scanner-section') {
-                startQrScanner();
-            }
-
-            if (sectionId === 'scan-history-section') {
-                loadScanHistory();
-            }
-        }
-
-        function generateTicketId(prefix) {
-            return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-        }
-
-        // --- Firebase Functions ---
-        async function saveTicket(ticketId, prefix, name = "Invitado") {
-            if (!isFirebaseReady) return displayMessage('Firebase no está listo.', 'error');
-            try {
-                const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticketId);
-                await setDoc(ticketRef, {
-                    id: ticketId,
-                    prefix: prefix,
-                    name: name,
-                    used: false,
-                    generatedAt: new Date().toISOString(),
-                    usedAt: null,
-                    generatedBy: userId
-                });
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                displayMessage(`Error al guardar el ticket: ${e.message}`, 'error');
-            }
-        }
-
-        async function getTicket(ticketId) {
-            if (!isFirebaseReady) {
-                displayMessage('Firebase no está listo.', 'error');
-                return null;
-            }
-            try {
-                const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticketId);
-                const ticketSnap = await getDoc(ticketRef);
-                return ticketSnap.exists() ? ticketSnap.data() : null;
-            } catch (e) {
-                console.error("Error getting document: ", e);
-                displayMessage(`Error al obtener el ticket: ${e.message}`, 'error');
-                return null;
-            }
-        }
-
-        async function updateTicket(ticketId, data) {
-            if (!isFirebaseReady) return false;
-            try {
-                const ticketRef = doc(db, `artifacts/${appId}/public/data/tickets`, ticketId);
-                await updateDoc(ticketRef, data);
-                return true;
-            } catch (e) {
-                console.error("Error updating document: ", e);
-                displayMessage(`Error al actualizar el ticket: ${e.message}`, 'error');
-                return false;
-            }
-        }
-
-        async function saveScanEvent(ticketData, scanStatus) {
-            if (!isFirebaseReady) return;
-            try {
-                const scanHistoryCollection = collection(db, `artifacts/${appId}/users/${userId}/scanHistory`);
-                await addDoc(scanHistoryCollection, {
-                    ticketId: ticketData.id,
-                    prefix: ticketData.prefix,
-                    name: ticketData.name,
-                    status: scanStatus,
-                    scannedAt: new Date().toISOString(),
-                    scannedBy: userId,
-                    ticketUsed: ticketData.used,
-                    ticketGeneratedAt: ticketData.generatedAt,
-                    ticketUsedAt: ticketData.usedAt
-                });
-            } catch (e) {
-                console.error("Error saving scan event: ", e);
-            }
-        }
-
-        async function loadScanHistory() {
-            if (!isFirebaseReady) {
-                scanHistoryList.innerHTML = '<li class="text-center text-gray-400">Firebase no está listo.</li>';
-                return;
-            }
-            scanHistoryList.innerHTML = '<li class="text-center text-gray-400">Cargando historial...</li>';
-            try {
-                const scanHistoryCollection = collection(db, `artifacts/${appId}/users/${userId}/scanHistory`);
-                const querySnapshot = await getDocs(query(scanHistoryCollection));
-
-                if (querySnapshot.empty) {
-                    scanHistoryList.innerHTML = '<li class="text-center text-gray-400">No hay historial de escaneo.</li>';
-                    return;
-                }
-
-                const historyItems = [];
-                querySnapshot.forEach(doc => historyItems.push(doc.data()));
-                historyItems.sort((a, b) => new Date(b.scannedAt) - new Date(a.scannedAt)); // Sort in memory
-
-                scanHistoryList.innerHTML = '';
-                historyItems.forEach(data => {
-                    const statusClasses = {
-                        valid: 'bg-green-800 border-green-600',
-                        used: 'bg-yellow-800 border-yellow-600',
-                        invalid: 'bg-red-800 border-red-600'
-                    };
-                    const li = document.createElement('li');
-                    li.className = `p-3 rounded-md border ${statusClasses[data.status] || 'bg-gray-700'}`;
-                    li.innerHTML = `
-                        <p class="font-bold">Ticket ID: <span class="font-normal break-all">${data.ticketId}</span></p>
-                        <p><strong>Nombre:</strong> ${data.name || 'N/A'}</p>
-                        <p><strong>Estado:</strong> <span class="font-semibold">${data.status.charAt(0).toUpperCase() + data.status.slice(1)}</span></p>
-                        <p class="text-sm text-gray-400">Escaneado: ${new Date(data.scannedAt).toLocaleString()}</p>
-                    `;
-                    scanHistoryList.appendChild(li);
-                });
-            } catch (e) {
-                console.error("Error loading scan history: ", e);
-                scanHistoryList.innerHTML = '<li class="text-center text-gray-400">Error al cargar el historial.</li>';
-            }
-        }
-
-        // --- Main Logic & Event Handlers ---
-
-        async function onScanSuccess(decodedText, decodedResult) {
-            console.log(`QR Code detected: ${decodedText}`);
-            displayMessage(`Código escaneado: ${decodedText}`, 'info');
-            
-            // Stop the scanner and show the "Scan Again" button
-            html5QrCodeScanner.stop().catch(err => console.error("Failed to stop scanner:", err));
-            restartScanBtn.classList.remove('hidden');
-
-            const ticketData = await getTicket(decodedText);
-            scannedTicketInfo.classList.remove('hidden');
-
-            if (ticketData) {
-                currentScannedTicketId.textContent = ticketData.id;
-                currentScannedTicketPrefix.textContent = ticketData.prefix;
-                currentScannedTicketName.textContent = ticketData.name || 'N/A';
-                if (ticketData.used) {
-                    currentScannedTicketStatus.textContent = 'USADO';
-                    currentScannedTicketStatus.className = 'text-red-500 font-bold';
-                    markUsedBtn.classList.add('hidden');
-                    displayMessage('Este ticket ya ha sido usado.', 'error');
-                    saveScanEvent(ticketData, 'used');
-                } else {
-                    currentScannedTicketStatus.textContent = 'VÁLIDO';
-                    currentScannedTicketStatus.className = 'text-green-500 font-bold';
-                    markUsedBtn.classList.remove('hidden');
-                    displayMessage('Ticket válido. Puedes marcarlo como usado.', 'success');
-                    saveScanEvent(ticketData, 'valid');
-                }
-            } else {
-                currentScannedTicketId.textContent = decodedText;
-                currentScannedTicketPrefix.textContent = 'N/A';
-                currentScannedTicketName.textContent = 'N/A';
-                currentScannedTicketStatus.textContent = 'INVÁLIDO';
-                currentScannedTicketStatus.className = 'text-red-500 font-bold';
-                markUsedBtn.classList.add('hidden');
-                displayMessage('Ticket no encontrado o inválido.', 'error');
-                saveScanEvent({ id: decodedText, prefix: 'UNKNOWN', name: 'N/A', used: false }, 'invalid');
-            }
-        }
-
-        function onScanFailure(error) {
-            // This function is called frequently, so keep console logs to a minimum.
-            // console.warn(`QR Code scan error: ${error}`);
-        }
-
-        function startQrScanner() {
-            // Clear previous results and hide buttons
-            scannedTicketInfo.classList.add('hidden');
-            markUsedBtn.classList.add('hidden');
-            restartScanBtn.classList.add('hidden');
-
-            if (!html5QrCodeScanner) {
-                // The library is loaded globally via script tag, so we can use it directly.
-                html5QrCodeScanner = new Html5QrcodeScanner(
-                    "qr-code-reader", 
-                    { fps: 10, qrbox: { width: 250, height: 250 }, rememberLastUsedCamera: true },
-                    false // verbose
-                );
-            }
-            
-            // Safely check if the scanner is already running before trying to render again.
-            let isScanning = false;
-            try {
-                isScanning = html5QrCodeScanner.getState() === 2;
-            } catch (error) {
-                // This error is expected if the scanner is not initialized, so we can ignore it.
-            }
-
-            if (!isScanning) {
-                 html5QrCodeScanner.render(onScanSuccess, onScanFailure);
-            }
-        }
-
-        async function generateBatchTickets() {
-            const namesInput = batchTicketNamesInput.value.trim();
-            const prefix = ticketPrefixInput.value.trim();
-
-            if (!namesInput) return displayMessage('Por favor, introduce al menos un nombre.', 'warning');
-            if (!prefix) return displayMessage('Por favor, introduce un prefijo.', 'warning');
-
-            const names = namesInput.split(/[\n,]+/).map(name => name.trim()).filter(Boolean);
-            if (names.length === 0) return displayMessage('No se encontraron nombres válidos.', 'warning');
-
-            loadingOverlay.classList.remove('hidden');
-            generatedTicketsContainer.innerHTML = '';
-
-            for (const name of names) {
-                const ticketId = generateTicketId(prefix);
-                await saveTicket(ticketId, prefix, name);
-
-                const ticketCard = document.createElement('div');
-                ticketCard.className = 'bg-gray-900 p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-between gap-4';
-                ticketCard.innerHTML = `
-                    <div class="qr-code-display bg-white p-1 rounded-md" id="qr-${ticketId}"></div>
-                    <div class="ticket-info flex-grow text-center sm:text-left">
-                        <p class="font-bold text-lg text-sky-400">${prefix}</p>
-                        <p class="text-md">${name}</p>
-                        <p class="text-xs text-gray-400 break-all">${ticketId}</p>
-                    </div>
-                    <div class="ticket-actions flex flex-col space-y-2 w-full sm:w-auto">
-                        <a id="download-qr-${ticketId}" class="text-center px-3 py-2 text-sm bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition-colors" download>Descargar QR</a>
-                        <a id="download-pdf-${ticketId}" class="text-center px-3 py-2 text-sm bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition-colors" download>Descargar PDF</a>
-                        <button id="share-qr-${ticketId}" class="text-center px-3 py-2 text-sm bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors">Compartir</button>
-                    </div>
-                `;
-                generatedTicketsContainer.appendChild(ticketCard);
-
-                // Render QR and set up downloads
-                const qrElement = document.getElementById(`qr-${ticketId}`);
-                new QRCode(qrElement, { text: ticketId, width: 96, height: 96 });
-                
-                // Delay to ensure canvas/img is rendered for data URL extraction
-                setTimeout(() => {
-                    const canvas = qrElement.querySelector('canvas');
-                    const img = qrElement.querySelector('img');
-                    const qrDataUrl = canvas ? canvas.toDataURL('image/png') : img.src;
-
-                    // Setup QR download
-                    const downloadQrBtn = document.getElementById(`download-qr-${ticketId}`);
-                    downloadQrBtn.href = qrDataUrl;
-                    downloadQrBtn.download = `QR_VYTMUSIC_${name.replace(/\s/g, '_')}.png`;
-
-                    // Setup PDF download
-                    const downloadPdfBtn = document.getElementById(`download-pdf-${ticketId}`);
-                    downloadPdfBtn.addEventListener('click', () => {
-                        const { jsPDF } = window.jspdf;
-                        const doc = new jsPDF();
-                        doc.setFont('helvetica', 'bold');
-                        doc.text('Ticket VYTMUSIC', 105, 20, { align: 'center' });
-                        doc.setFont('helvetica', 'normal');
-                        doc.text(`Nombre: ${name}`, 10, 40);
-                        doc.text(`Prefijo: ${prefix}`, 10, 50);
-                        doc.text(`ID: ${ticketId}`, 10, 60, { maxWidth: 190 });
-                        doc.addImage(qrDataUrl, 'PNG', 10, 70, 60, 60);
-                        doc.save(`Ticket_VYTMUSIC_${name.replace(/\s/g, '_')}.pdf`);
-                    });
-
-                    // Setup Share button
-                    document.getElementById(`share-qr-${ticketId}`).addEventListener('click', () => {
-                        const message = `¡Hola! Aquí está tu ticket para VYTMUSIC:\n\n*Nombre:* ${name}\n*ID:* ${ticketId}\n\nPresenta el código QR en la entrada.`;
-                        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                        window.open(whatsappUrl, '_blank');
-                    });
-
-                }, 200);
-            }
-            loadingOverlay.classList.add('hidden');
-            displayMessage(`${names.length} entradas generadas exitosamente.`, 'success');
-        }
-
-        async function markTicketAsUsed() {
-            const ticketId = currentScannedTicketId.textContent;
-            if (!ticketId || ticketId === 'N/A') return;
-
-            loadingOverlay.classList.remove('hidden');
-            const success = await updateTicket(ticketId, { used: true, usedAt: new Date().toISOString() });
-            if (success) {
-                currentScannedTicketStatus.textContent = 'USADO';
-                currentScannedTicketStatus.className = 'text-red-500 font-bold';
-                markUsedBtn.classList.add('hidden');
-                displayMessage(`Ticket ${ticketId} marcado como usado.`, 'success');
-                const ticketData = await getTicket(ticketId);
-                if (ticketData) saveScanEvent(ticketData, 'used');
-            }
-            loadingOverlay.classList.add('hidden');
-        }
-
-        // --- App Initialization ---
-        window.onload = () => {
-            // Assign UI elements
-            loadingOverlay = document.getElementById('loading-overlay');
-            messageContainer = document.getElementById('message-container');
-            currentUserIdDisplay = document.getElementById('current-user-id-display');
-            
-            qrScannerSection = document.getElementById('qr-scanner-section');
-            batchTicketGeneratorSection = document.getElementById('batch-ticket-generator-section');
-            scanHistorySection = document.getElementById('scan-history-section');
-            
-            showScannerBtn = document.getElementById('show-scanner-btn');
-            showBatchGeneratorBtn = document.getElementById('show-batch-generator-btn');
-            showHistoryBtn = document.getElementById('show-history-btn');
-            
-            generateBatchTicketsBtn = document.getElementById('generate-batch-tickets-btn');
-            batchTicketNamesInput = document.getElementById('batch-ticket-names-input');
-            ticketPrefixInput = document.getElementById('ticket-prefix-input');
-            generatedTicketsContainer = document.getElementById('generated-tickets-container');
-            
-            qrCodeReader = document.getElementById('qr-code-reader');
-            scannedTicketInfo = document.getElementById('scanned-ticket-info');
-            markUsedBtn = document.getElementById('mark-used-btn');
-            restartScanBtn = document.getElementById('restart-scan-btn');
-            
-            currentScannedTicketId = document.getElementById('current-scanned-ticket-id');
-            currentScannedTicketStatus = document.getElementById('current-scanned-ticket-status');
-            currentScannedTicketPrefix = document.getElementById('current-scanned-ticket-prefix');
-            currentScannedTicketName = document.getElementById('current-scanned-ticket-name');
-            
-            scanHistoryList = document.getElementById('scan-history-list');
-
-            // Add event listeners
-            showScannerBtn.addEventListener('click', () => switchSection('qr-scanner-section'));
-            showBatchGeneratorBtn.addEventListener('click', () => switchSection('batch-ticket-generator-section'));
-            showHistoryBtn.addEventListener('click', () => switchSection('scan-history-section'));
-            generateBatchTicketsBtn.addEventListener('click', generateBatchTickets);
-            markUsedBtn.addEventListener('click', markTicketAsUsed);
-            restartScanBtn.addEventListener('click', startQrScanner);
-
-            // Initialize Firebase
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        console.log("Authenticated user ID:", userId);
-                        currentUserIdDisplay.textContent = userId;
-                        isFirebaseReady = true;
-                        startQrScanner(); // Start scanner on load
-                    } else {
-                        console.log("No user signed in, attempting anonymous sign-in.");
-                        try {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (error) {
-                            console.error("Anonymous sign-in failed:", error);
-                            displayMessage("No se pudo autenticar. Algunas funciones pueden no estar disponibles.", "error");
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error("Firebase initialization failed:", e);
-                displayMessage("Error al inicializar la aplicación. Recarga la página.", "error");
-            }
-        };
-    </script>
-</body>
-</html>
+                restartScanBtn.classList.add('hidden'); // Hide restart button when switching away
+                scannedTicketInfo.classList.add('hidden');
