@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Entradas VYTMUSIC v2</title>
+    <title>Control de Entradas VYTMUSIC</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,6 @@
 
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <style>
@@ -105,11 +104,11 @@
     <div class="container mx-auto max-w-4xl p-4 sm:p-6">
         
         <header class="text-center mb-6">
-            <img src="uploaded:LOGO NEGRO.jpg-c3bbab40-b52e-4b3b-8816-63649a23e392" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 150px;" 
+            <img src="https://i.imgur.com/rqkZi9P.png" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 150px;" 
                  onerror="this.onerror=null;this.src='https://placehold.co/150x150/ffffff/000000?text=Logo'; document.getElementById('logo-error-message').classList.remove('hidden');">
             <p id="logo-error-message" class="text-red-400 text-sm mt-1 hidden">Error al cargar el logo. Verifica la imagen.</p>
             <h1 class="text-3xl sm:text-4xl font-bold text-sky-400">VYTMUSIC</h1>
-            <p class="text-lg text-gray-300">Control de Entradas v2</p>
+            <p class="text-lg text-gray-300">Control de Entradas</p>
             <p class="text-xs text-gray-500 mt-2">ID de Usuario: <span id="current-user-id-display">Cargando...</span></p>
         </header>
 
@@ -175,6 +174,7 @@
                         </div>
                     </div>
                     <div id="generated-tickets-container" class="mt-6 space-y-4"></div>
+                    <button id="download-all-qrs-btn" class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 mt-4 hidden">Descargar Todas las Imágenes QR</button>
                     <button id="reset-stats-btn" class="w-full px-4 py-3 bg-red-700 text-white font-bold rounded-lg hover:bg-red-800 mt-6">Reiniciar Estadísticas de Entradas</button>
                 </form>
             </section>
@@ -224,6 +224,7 @@
             allTicketsData: [], // Store all tickets for client-side filtering
             totalGeneratedTickets: 0, // Initial count
             totalUsedTickets: 0, // Initial count
+            currentBatchGeneratedTickets: [], // Stores { ticketId, prefix, name, qrDataUrl } for the current batch
         };
 
         const config = {
@@ -237,7 +238,7 @@
                 appId: "1:574981837817:web:a29933a22bbfd51a086328",
             },
             initialAuthToken: typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null,
-            logoUrl: 'uploaded:LOGO NEGRO.jpg-c3bbab40-b52e-4b3b-8816-63649a23e392' // Corrected logo path
+            logoUrl: 'https://i.imgur.com/rqkZi9P.png' 
         };
 
         // --- UI ELEMENTS ---
@@ -255,7 +256,8 @@
                 'current-scanned-ticket-prefix', 'current-scanned-ticket-name', 'current-scanned-ticket-status',
                 'mark-used-btn', 'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input',
                 'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input',
-                'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message' // Added new UI element
+                'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message',
+                'download-all-qrs-btn' // Cached the new button
             ];
             ids.forEach(id => {
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
@@ -478,14 +480,16 @@
                     const scanHistoryCollectionRef = collection(state.db, `artifacts/${config.appId}/users/${state.userId}/scanHistory`);
                     const historySnapshot = await getDocs(scanHistoryCollectionRef);
                     const historyBatch = writeBatch(state.db);
-                    let historyDeleted = 0;
+                    const historyDeletedPromises = [];
 
                     historySnapshot.forEach((docSnap) => {
                         historyBatch.delete(doc(scanHistoryCollectionRef, docSnap.id));
-                        historyDeleted++;
+                        historyDeletedPromises.push(Promise.resolve()); // Placeholder for batch delete success
                     });
-                    await historyBatch.commit();
-                    displayMessage(`Se eliminaron ${historyDeleted} registros de tu historial de escaneos.`, 'success');
+                    await Promise.all(historyDeletedPromises); // Wait for all deletes in batch
+                    await historyBatch.commit(); // Commit the batch
+                    
+                    displayMessage(`Se eliminaron ${historySnapshot.size} registros de tu historial de escaneos.`, 'success');
 
                 } catch (e) {
                     console.error("Error resetting data:", e);
@@ -613,7 +617,6 @@
                 ui.currentScannedTicketPrefix.textContent = 'N/A';
                 ui.currentScannedTicketName.textContent = 'N/A';
                 ui.currentScannedTicketStatus.textContent = 'INVÁLIDO';
-                ui.currentScannedTicketStatus.className = 'text-red-500 font-bold';
                 ui.markUsedBtn.classList.add('hidden');
             }
         }
@@ -705,7 +708,8 @@
 
             setLoading(true);
             ui.generatedTicketsContainer.innerHTML = '';
-            
+            state.currentBatchGeneratedTickets = []; // Clear previous batch
+
             const ticketPromises = names.map(async (name) => {
                 const ticketId = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
                 await Firebase.saveTicket(ticketId, prefix, name);
@@ -715,6 +719,7 @@
             const generatedTickets = await Promise.all(ticketPromises);
             generatedTickets.forEach(ticket => renderGeneratedTicket(ticket));
 
+            ui.downloadAllQrsBtn.classList.remove('hidden'); // Show download all button
             setLoading(false);
             displayMessage(`${names.length} entradas generadas exitosamente.`, 'success');
         }
@@ -733,53 +738,107 @@
                     <p class="text-xs text-gray-400 break-all">${ticketId}</p>
                 </div>
                 <div class="flex flex-col space-y-2 w-full sm:w-auto">
-                    <button data-action="download-pdf" class="px-3 py-2 text-sm bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">Descargar PDF</button>
+                    <button data-action="download-image" class="px-3 py-2 text-sm bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">Descargar Imagen</button>
                     <button data-action="share-qr" class="px-3 py-2 text-sm bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">Compartir</button>
                 </div>
             `;
             ui.generatedTicketsContainer.appendChild(ticketCard);
 
-            const qrElement = document.getElementById(`qr-${ticketId}`);
-            new QRCode(qrElement, { text: ticketId, width: 96, height: 96, correctLevel: QRCode.CorrectLevel.H });
+            // Temporarily create a hidden QRCode element to get its canvas
+            const tempQrDiv = document.createElement('div');
+            tempQrDiv.style.display = 'none';
+            document.body.appendChild(tempQrDiv);
 
+            new QRCode(tempQrDiv, { 
+                text: JSON.stringify({ id: ticketId, prefix: prefix, name: name }), 
+                width: 200, 
+                height: 200, 
+                correctLevel: QRCode.CorrectLevel.H 
+            });
+
+            // Increased timeout to ensure QR code is fully rendered
             setTimeout(() => {
-                const canvas = qrElement.querySelector('canvas');
-                if (!canvas) {
-                    console.warn(`No canvas found for QR ID ${ticketId}. Cannot overlay logo or generate PDF with logo.`);
+                const qrCanvas = tempQrDiv.querySelector('canvas');
+                if (!qrCanvas) {
+                    console.warn(`No canvas found for QR ID ${ticketId} in temp div. Removing temp div.`);
+                    document.body.removeChild(tempQrDiv);
                     return;
                 }
-                
-                const ctx = canvas.getContext('2d');
+
+                const finalCanvas = document.createElement('canvas');
+                const finalCtx = finalCanvas.getContext('2d');
+
+                const qrCodeSize = 200; // Original QR code size
+                const textHeight = 80; // Space for text below QR
+                finalCanvas.width = qrCodeSize;
+                finalCanvas.height = qrCodeSize + textHeight; // Total height for QR + text
+
+                // Fill background with white
+                finalCtx.fillStyle = 'white';
+                finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+                // Draw the QR code onto the top part of the new canvas
+                finalCtx.drawImage(qrCanvas, 0, 0, qrCodeSize, qrCodeSize);
+
+                // Draw logo in the center of the QR code area
                 if (state.logoImage.complete && state.logoImage.naturalHeight !== 0) {
-                    const logoSize = canvas.width * 0.25;
-                    const x = (canvas.width - logoSize) / 2;
-                    const y = (canvas.height - logoSize) / 2;
-                    ctx.fillStyle = 'white'; // White background for the logo area
-                    ctx.fillRect(x, y, logoSize, logoSize);
-                    ctx.drawImage(state.logoImage, x, y, logoSize, logoSize);
+                    const logoSize = qrCodeSize * 0.25; // 25% of QR width
+                    const x = (qrCodeSize - logoSize) / 2;
+                    const y = (qrCodeSize - logoSize) / 2;
+                    finalCtx.fillStyle = 'white'; // White background for the logo area
+                    finalCtx.fillRect(x, y, logoSize, logoSize);
+                    finalCtx.drawImage(state.logoImage, x, y, logoSize, logoSize);
+                }
+
+                // Add custom text below the QR code within the canvas
+                finalCtx.fillStyle = '#000000'; // Black text color
+                finalCtx.textAlign = 'center';
+
+                // VYTMUSIC
+                finalCtx.font = 'bold 20px Inter'; // Larger font for VYTMUSIC
+                finalCtx.fillText('VYTMUSIC', finalCanvas.width / 2, qrCodeSize + 25); // Position below QR
+
+                // certamen de canto
+                finalCtx.font = '14px Inter'; // Smaller font for certamen de canto
+                finalCtx.fillText('certamen de canto', finalCanvas.width / 2, qrCodeSize + 45); // Position below VYTMUSIC
+
+                // WhatsApp number
+                finalCtx.font = 'bold 14px Inter'; // Bold and same size for WhatsApp info
+                finalCtx.fillStyle = '#25D366'; // WhatsApp green color
+                const whatsappNumber = '3417422062'; // Using the first number provided
+                finalCtx.fillText(`WhatsApp: ${whatsappNumber}`, finalCanvas.width / 2, qrCodeSize + 65); // Position below "certamen de canto"
+
+                // Replace the original QR div content with the new canvas
+                const qrElement = document.getElementById(`qr-${ticketId}`);
+                if (qrElement) {
+                    qrElement.innerHTML = ''; // Clear previous content
+                    qrElement.appendChild(finalCanvas);
+                } else {
+                    console.error(`QR element with ID qr-${ticketId} not found for appending final canvas.`);
                 }
                 
-                const qrDataUrl = canvas.toDataURL('image/png');
+                // Remove the temporary div
+                document.body.removeChild(tempQrDiv);
+
+                const qrDataUrl = finalCanvas.toDataURL('image/png');
                 
-                ticketCard.querySelector('[data-action="download-pdf"]').addEventListener('click', () => {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    doc.setFont('helvetica', 'bold');
-                    doc.text('Entrada VYTMUSIC', 105, 20, { align: 'center' });
-                    doc.setFont('helvetica', 'normal');
-                    doc.text(`Nombre: ${name}`, 10, 40);
-                    doc.text(`Tipo: ${prefix}`, 10, 50);
-                    doc.text(`ID: ${ticketId}`, 10, 60, { maxWidth: 190 });
-                    doc.addImage(qrDataUrl, 'PNG', 10, 70, 60, 60);
-                    doc.save(`Entrada_VYTMUSIC_${name.replace(/\s/g, '_')}.pdf`);
+                state.currentBatchGeneratedTickets.push({ ticketId, prefix, name, qrDataUrl });
+
+                ticketCard.querySelector('[data-action="download-image"]').addEventListener('click', () => {
+                    const link = document.createElement('a');
+                    link.href = qrDataUrl;
+                    link.download = `QR_${name.replace(/\s/g, '_')}.png`; // Descarga con el nombre de la persona
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                 });
 
                 ticketCard.querySelector('[data-action="share-qr"]').addEventListener('click', () => {
-                    const message = `¡Hola! Aquí está tu entrada para VYTMUSIC:\n\n*Nombre:* ${name}\n*ID:* ${ticketId}\n\nPresenta el código QR en la entrada.`;
-                    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+                    const message = `¡Hola! Aquí está tu entrada para VYTMUSIC:\n\n*Nombre:* ${name}\n*ID:* ${ticketId}\n\nPresenta el código QR en la entrada. Para más información o inscripciones, contáctanos por WhatsApp: ${whatsappNumber}`;
+                    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
                 });
 
-            }, 200);
+            }, 500); // Increased delay to 500ms
         }
 
         /**
@@ -824,6 +883,30 @@
             );
         }
 
+        // Function to handle downloading all generated QR images
+        function handleDownloadAllQRs() {
+            if (state.currentBatchGeneratedTickets.length === 0) {
+                displayMessage('No hay imágenes QR generadas para descargar.', 'warning');
+                return;
+            }
+            displayMessage('Iniciando descarga de todas las imágenes QR...', 'info');
+            let delay = 0;
+            state.currentBatchGeneratedTickets.forEach((ticket, index) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = ticket.qrDataUrl;
+                    link.download = `QR_${ticket.name.replace(/\s/g, '_')}.png`; // Descarga con el nombre de la persona
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    if (index === state.currentBatchGeneratedTickets.length - 1) {
+                        displayMessage('Todas las imágenes QR han sido descargadas.', 'success');
+                    }
+                }, delay);
+                delay += 500; // Add a small delay between downloads to prevent browser blocking
+            });
+        }
+
         // --- INITIALIZATION ---
         function init() {
             cacheUIElements();
@@ -836,6 +919,8 @@
             ui.restartScanBtn.addEventListener('click', startQrScanner);
             ui.allTicketsSearchInput.addEventListener('input', () => renderAllTickets()); // Live search
             ui.resetStatsBtn.addEventListener('click', handleResetStats); // New event listener for reset button
+            ui.downloadAllQrsBtn.addEventListener('click', handleDownloadAllQRs); // Event listener for download all button
+
 
             // Hide logo error message initially
             if (ui.logoErrorMessage) {
