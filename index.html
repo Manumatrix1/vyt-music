@@ -105,13 +105,27 @@
     <div class="container mx-auto max-w-4xl p-4 sm:p-6">
         
         <header class="text-center mb-6">
-            <img src="uploaded:LOGO NEGRO.jpg-c3bbab40-b52e-4b3b-8816-63649a23e392" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 150px;" onerror="this.onerror=null;this.src='https://placehold.co/150x150/ffffff/000000?text=Logo';">
+            <img src="uploaded:LOGO NEGRO.jpg-c3bbab40-b52e-4b3b-8816-63649a23e392" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 150px;" 
+                 onerror="this.onerror=null;this.src='https://placehold.co/150x150/ffffff/000000?text=Logo'; document.getElementById('logo-error-message').classList.remove('hidden');">
+            <p id="logo-error-message" class="text-red-400 text-sm mt-1 hidden">Error al cargar el logo. Verifica la imagen.</p>
             <h1 class="text-3xl sm:text-4xl font-bold text-sky-400">VYTMUSIC</h1>
             <p class="text-lg text-gray-300">Control de Entradas v2</p>
             <p class="text-xs text-gray-500 mt-2">ID de Usuario: <span id="current-user-id-display">Cargando...</span></p>
         </header>
 
         <div id="message-container" class="mb-4"></div>
+
+        <!-- Ticket Counters -->
+        <div class="bg-gray-800 p-4 rounded-lg shadow-md mb-6 flex flex-col sm:flex-row justify-around items-center text-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <div>
+                <p class="text-sm text-gray-400">Entradas Generadas</p>
+                <p id="total-generated-tickets" class="text-2xl font-bold text-sky-400">0</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-400">Entradas Usadas (Ingresos)</p>
+                <p id="total-used-tickets" class="text-2xl font-bold text-green-400">0</p>
+            </div>
+        </div>
 
         <nav class="flex justify-center space-x-2 sm:space-x-4 mb-8 border-b border-gray-700">
             <button data-section="qr-scanner-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
@@ -161,6 +175,7 @@
                         </div>
                     </div>
                     <div id="generated-tickets-container" class="mt-6 space-y-4"></div>
+                    <button id="reset-stats-btn" class="w-full px-4 py-3 bg-red-700 text-white font-bold rounded-lg hover:bg-red-800 mt-6">Reiniciar Estadísticas de Entradas</button>
                 </form>
             </section>
 
@@ -191,7 +206,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, updateDoc, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, updateDoc, collection, addDoc, onSnapshot, query, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
         // --- GLOBAL STATE & CONFIG ---
         const state = {
@@ -202,10 +217,13 @@
             scanner: null,
             ticketListenerUnsubscribe: null,
             historyListenerUnsubscribe: null,
-            allTicketsListenerUnsubscribe: null, // New listener for all tickets
+            allTicketsListenerUnsubscribe: null,
+            ticketCountsListenerUnsubscribe: null, // New listener for ticket counts
             logoImage: new Image(),
             currentScannedTicketId: null,
-            allTicketsData: [] // Store all tickets for client-side filtering
+            allTicketsData: [], // Store all tickets for client-side filtering
+            totalGeneratedTickets: 0, // Initial count
+            totalUsedTickets: 0, // Initial count
         };
 
         const config = {
@@ -232,11 +250,12 @@
             const ids = [
                 'loading-overlay', 'scan-flash-overlay', 'confirmation-modal', 'modal-title', 'modal-body',
                 'modal-cancel-btn', 'modal-confirm-btn', 'current-user-id-display', 'message-container',
-                'qr-scanner-section', 'batch-ticket-generator-section', 'scan-history-section', 'all-tickets-section', // Added all-tickets-section
+                'qr-scanner-section', 'batch-ticket-generator-section', 'scan-history-section', 'all-tickets-section',
                 'qr-code-reader', 'restart-scan-btn', 'scanned-ticket-info', 'current-scanned-ticket-id',
                 'current-scanned-ticket-prefix', 'current-scanned-ticket-name', 'current-scanned-ticket-status',
                 'mark-used-btn', 'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input',
-                'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input' // Added all-tickets-list and search input
+                'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input',
+                'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message' // Added new UI element
             ];
             ids.forEach(id => {
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
@@ -388,6 +407,30 @@
                 });
             },
             /**
+             * Listens for real-time updates to all tickets and updates counts.
+             */
+            listenToTicketCounts(callback) {
+                if (!state.isFirebaseReady) return;
+                if (state.ticketCountsListenerUnsubscribe) state.ticketCountsListenerUnsubscribe();
+                const q = query(collection(state.db, `artifacts/${config.appId}/public/data/tickets`));
+                state.ticketCountsListenerUnsubscribe = onSnapshot(q, (querySnapshot) => {
+                    let generatedCount = 0;
+                    let usedCount = 0;
+                    querySnapshot.forEach(doc => {
+                        generatedCount++;
+                        if (doc.data().used) {
+                            usedCount++;
+                        }
+                    });
+                    state.totalGeneratedTickets = generatedCount;
+                    state.totalUsedTickets = usedCount;
+                    callback(generatedCount, usedCount);
+                }, (error) => {
+                    console.error("Error listening to ticket counts:", error);
+                    displayMessage("Error al cargar los contadores de entradas.", "error");
+                });
+            },
+            /**
              * Listens for real-time updates to all tickets.
              */
             listenToAllTickets(callback) {
@@ -404,6 +447,52 @@
                     console.error("Error listening to all tickets:", error);
                     displayMessage("Error al cargar la lista de entradas.", "error");
                 });
+            },
+            /**
+             * Resets the 'used' status of all tickets to false and clears the current user's scan history.
+             */
+            async resetTicketUsageAndHistory() {
+                if (!state.isFirebaseReady) {
+                    displayMessage('Firebase no está listo. No se pudo reiniciar.', 'error');
+                    return;
+                }
+
+                setLoading(true);
+                try {
+                    // 1. Reset 'used' status of all tickets
+                    const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
+                    const ticketsSnapshot = await getDocs(ticketsCollectionRef);
+                    const batch = writeBatch(state.db);
+                    let ticketsUpdated = 0;
+
+                    ticketsSnapshot.forEach((docSnap) => {
+                        if (docSnap.data().used) { // Only update if it's currently used
+                            batch.update(doc(ticketsCollectionRef, docSnap.id), { used: false, usedAt: null });
+                            ticketsUpdated++;
+                        }
+                    });
+                    await batch.commit();
+                    displayMessage(`Se reinició el estado de ${ticketsUpdated} entradas a 'VÁLIDO'.`, 'success');
+
+                    // 2. Clear current user's scan history
+                    const scanHistoryCollectionRef = collection(state.db, `artifacts/${config.appId}/users/${state.userId}/scanHistory`);
+                    const historySnapshot = await getDocs(scanHistoryCollectionRef);
+                    const historyBatch = writeBatch(state.db);
+                    let historyDeleted = 0;
+
+                    historySnapshot.forEach((docSnap) => {
+                        historyBatch.delete(doc(scanHistoryCollectionRef, docSnap.id));
+                        historyDeleted++;
+                    });
+                    await historyBatch.commit();
+                    displayMessage(`Se eliminaron ${historyDeleted} registros de tu historial de escaneos.`, 'success');
+
+                } catch (e) {
+                    console.error("Error resetting data:", e);
+                    displayMessage(`Error al reiniciar las estadísticas: ${e.message}`, 'error');
+                } finally {
+                    setLoading(false);
+                }
             }
         };
 
@@ -418,6 +507,7 @@
             if (state.ticketListenerUnsubscribe) { state.ticketListenerUnsubscribe(); state.ticketListenerUnsubscribe = null; }
             if (state.historyListenerUnsubscribe) { state.historyListenerUnsubscribe(); state.historyListenerUnsubscribe = null; }
             if (state.allTicketsListenerUnsubscribe) { state.allTicketsListenerUnsubscribe(); state.allTicketsListenerUnsubscribe = null; }
+            // ticketCountsListenerUnsubscribe should remain active across sections
 
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
@@ -437,6 +527,7 @@
             } else if (sectionId === 'all-tickets-section') {
                 Firebase.listenToAllTickets(renderAllTickets);
             }
+            // Ticket counts listener is always active from init
         }
 
         /**
@@ -584,6 +675,15 @@
             `).join('');
         }
 
+        /**
+         * Renders the ticket count displays.
+         * @param {number} generated Total generated tickets.
+         * @param {number} used Total used tickets.
+         */
+        function renderTicketCounts(generated, used) {
+            ui.totalGeneratedTickets.textContent = generated;
+            ui.totalUsedTickets.textContent = used;
+        }
 
         /**
          * Handles the batch ticket generation form submission.
@@ -711,6 +811,19 @@
             );
         }
 
+        /**
+         * Handles the reset statistics button click.
+         */
+        function handleResetStats() {
+            showConfirmation(
+                'Reiniciar Estadísticas de Entradas',
+                'Esto marcará TODAS las entradas como "VÁLIDAS" nuevamente y borrará TU historial de escaneos. ¿Estás seguro?',
+                async () => {
+                    await Firebase.resetTicketUsageAndHistory();
+                }
+            );
+        }
+
         // --- INITIALIZATION ---
         function init() {
             cacheUIElements();
@@ -722,6 +835,12 @@
             ui.markUsedBtn.addEventListener('click', handleMarkAsUsed);
             ui.restartScanBtn.addEventListener('click', startQrScanner);
             ui.allTicketsSearchInput.addEventListener('input', () => renderAllTickets()); // Live search
+            ui.resetStatsBtn.addEventListener('click', handleResetStats); // New event listener for reset button
+
+            // Hide logo error message initially
+            if (ui.logoErrorMessage) {
+                ui.logoErrorMessage.classList.add('hidden');
+            }
 
             // Load logo
             state.logoImage.crossOrigin = "Anonymous"; // Enable CORS for canvas usage
@@ -729,9 +848,15 @@
             state.logoImage.onerror = () => {
                 console.error("Error al cargar el logo. Asegúrate de que la URL sea accesible y tenga CORS configurado.");
                 displayMessage("Error al cargar el logo. Los códigos QR podrían no mostrarlo.", "warning");
+                if (ui.logoErrorMessage) {
+                    ui.logoErrorMessage.classList.remove('hidden');
+                }
             };
             state.logoImage.onload = () => {
                 console.log("Logo cargado exitosamente.");
+                if (ui.logoErrorMessage) {
+                    ui.logoErrorMessage.classList.add('hidden');
+                }
             };
 
             // Initialize Firebase
@@ -746,6 +871,7 @@
                         console.log("Authenticated user ID:", state.userId);
                         ui.currentUserIdDisplay.textContent = state.userId;
                         state.isFirebaseReady = true;
+                        Firebase.listenToTicketCounts(renderTicketCounts); // Start listening to counts
                         switchSection('qr-scanner-section'); // Start on scanner by default
                     } else {
                         console.log("No user signed in, attempting anonymous sign-in.");
