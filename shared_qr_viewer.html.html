@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VYTMUSIC - Lote de Entradas Compartido</title>
+    <title>VYTMUSIC - Lote de QRs Compartidos</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,9 +22,12 @@
             font-family: 'Inter', sans-serif;
             background-color: #111827; /* bg-gray-900 */
             color: #f9fafb; /* text-gray-50 */
-            min-height: 100vh;
+            min-height: 100vh; /* Asegura que el body ocupe al menos toda la altura de la ventana */
             display: flex;
             flex-direction: column;
+        }
+        .container {
+            flex-grow: 1; /* Permite que el contenedor principal crezca para llenar el espacio */
         }
         .hidden { display: none !important; }
         
@@ -109,7 +112,7 @@
         .qr-info-text {
             text-align: center;
             margin-top: 1rem;
-            color: #f9fafb; /* Cambiado a blanco para mejor contraste en fondo oscuro */
+            color: #000; /* Texto negro para legibilidad en fondo blanco */
         }
 
         .qr-info-text h3 {
@@ -120,80 +123,37 @@
         }
 
         .qr-info-text p {
-            font-size: 1.1rem; /* Texto para "Certamen de Canto" - Aún más pequeño */
+            font-size: 1.25rem; /* Texto más pequeño para "Certamen de Canto" */
             margin-bottom: 0.5rem;
-            color: #f9fafb; /* Cambiado a blanco */
-        }
-        /* Estilo para el texto adicional debajo de "Certamen de Canto" */
-        .qr-info-text .small-text {
-            font-size: 0.9rem; /* Más pequeño que el texto normal */
-            color: #cbd5e1; /* Un gris claro para el texto secundario */
-            margin-top: -0.25rem; /* Ajustar el margen superior si es necesario */
-            margin-bottom: 0.5rem;
+            color: #000; /* Texto negro */
         }
 
         .qr-info-text .name-display {
             font-size: 2rem; /* Visualización del nombre */
             font-weight: 600;
             margin-top: 1rem;
-            color: #f9fafb; /* Cambiado a blanco */
-            background-color: #38bdf8; /* Fondo celeste */
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            display: inline-block; /* Para que el fondo se ajuste al texto */
-            margin-bottom: 1rem; /* Espacio debajo del recuadro */
+            color: #000; /* Texto negro */
         }
 
         .qr-info-text .id-display,
         .qr-info-text .prefix-display,
-        .qr-info-text .seat-location-display,
-        .qr-info-text .show-details-display { /* Nuevo estilo para detalles del show */
+        .qr-info-text .seat-location-display {
             font-size: 1.5rem; /* Otras visualizaciones de información */
-            color: #f9fafb; /* Cambiado a blanco */
-        }
-        .qr-info-text .show-details-display a {
-            color: #38bdf8; /* Color azul para enlaces */
-            text-decoration: underline;
+            color: #000; /* Texto negro */
         }
 
-
-        .qr-info-text .whatsapp-link-box {
-            background-color: #22c55e; /* Verde de WhatsApp */
-            color: white;
-            padding: 0.75rem 1.25rem; /* Padding ajustado para un botón más pequeño */
-            border-radius: 0.75rem;
-            margin-top: 1.5rem;
-            display: inline-flex; /* Para alinear el texto y el icono */
-            flex-direction: column; /* Para que el texto se apile */
-            align-items: center;
-            justify-content: center;
-            text-decoration: none; /* Quitar subrayado del enlace */
+        .qr-info-text .call-to-action {
+            font-size: 1.75rem; /* "¡INSCRÍBETE!" */
             font-weight: bold;
-            transition: background-color 0.3s ease;
-            max-width: 300px; /* Limitar el ancho máximo del botón */
-        }
-        .qr-info-text .whatsapp-link-box:hover {
-            background-color: #16a34a; /* Verde más oscuro al pasar el ratón */
-        }
-        .qr-info-text .whatsapp-link-box .main-text {
-            font-size: 1.5rem; /* Tamaño para "INSCRÍBETE" - Grande */
-            line-height: 1.2;
-        }
-        .qr-info-text .whatsapp-link-box .vyt-music-text {
-            font-size: 1.1rem; /* Tamaño para "VYT-MUSIC" - Mediano */
-            margin-top: 0.1rem;
-        }
-        .qr-info-text .whatsapp-link-box .certamen-text {
-            font-size: 0.9rem; /* Tamaño para "CERTAMEN DE CANTO" - Pequeño */
-            margin-top: 0.1rem;
-        }
-        .qr-info-text .whatsapp-icon {
-            margin-top: 0.5rem; /* Espacio entre texto y icono */
-            width: 2em; /* Tamaño del icono */
-            height: 2em;
-            /* fill: white; // No es necesario para imágenes PNG */
+            color: #38bdf8; /* Cambiado a azul cielo como el logo */
+            margin-top: 1rem;
         }
 
+        .qr-info-text .whatsapp-info {
+            font-size: 1.5rem; /* Número de WhatsApp */
+            color: #22c55e; /* Color verde */
+            margin-top: 0.5rem;
+        }
         .download-qr-btn {
             margin-top: 1rem;
             padding: 0.75rem 1.5rem;
@@ -207,56 +167,6 @@
         .download-qr-btn:hover {
             background-color: #0ea5e9; /* Azul cielo más oscuro */
         }
-        /* Estilos específicos para el encabezado en shared_qr_viewer.html */
-        .header-production-text { /* Nuevo estilo para PRODUCCIONES */
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #cbd5e1; /* Gris claro */
-            margin-bottom: 0.25rem;
-        }
-        .header-small-text {
-            font-size: 1rem; /* Tamaño para "Certamen de Canto" en el header - Más pequeño */
-            color: #cbd5e1; /* Gris claro */
-            margin-top: 0.25rem;
-            margin-bottom: 0.25rem;
-        }
-        .header-show-name { /* Nuevo estilo para Nombre del Show en el header */
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #f9fafb;
-            margin-top: 0.5rem;
-        }
-        .header-artist-name { /* Nuevo estilo para Artista en el header */
-            font-size: 1.2rem;
-            color: #cbd5e1;
-            margin-top: 0.25rem;
-        }
-
-        /* Estilos para los iconos de redes sociales */
-        .social-icons-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan si no caben en una línea */
-            gap: 0.6rem; /* Espacio entre los iconos, reducido */
-            margin-top: 1.5rem; /* Espacio superior, reducido */
-            padding-top: 1rem; /* Padding superior, reducido */
-            border-top: 1px solid #374151; /* Línea separadora */
-        }
-        .social-icon {
-            width: 1.8rem; /* Tamaño de los iconos, reducido */
-            height: 1.8rem; /* Tamaño de los iconos, reducido */
-            border-radius: 50%; /* Hacerlos circulares */
-            overflow: hidden; /* Asegurar que la imagen se ajuste */
-            transition: transform 0.2s ease-in-out;
-        }
-        .social-icon:hover {
-            transform: scale(1.1); /* Efecto de crecimiento al pasar el ratón */
-        }
-        .social-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Ajustar la imagen dentro del círculo */
-        }
     </style>
 </head>
 <body class="antialiased">
@@ -264,40 +174,44 @@
     <!-- Overlay de carga -->
     <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
     
-    <!-- Contenedor Principal para el Visor de Lote Compartido -->
-    <div class="container mx-auto max-w-4xl p-4 sm:p-6 flex-grow">
+    <div class="container mx-auto max-w-4xl p-4 sm:p-6">
+        
         <header class="text-center mb-6">
             <img src="https://i.imgur.com/rqkZi9P.png" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 150px;" 
                  onerror="this.onerror=null;this.src='https://placehold.co/150x150/ffffff/000000?text=Logo'; document.getElementById('logo-error-message').classList.remove('hidden');">
             <p id="logo-error-message" class="text-red-400 text-sm mt-1 hidden">Error al cargar el logo. Verifica la imagen.</p>
-            <p class="header-production-text">PRODUCCIONES</p> <!-- Nuevo: PRODUCCIONES -->
             <h1 class="text-3xl sm:text-4xl font-bold text-sky-400">VYTMUSIC</h1>
-            <p class="header-small-text">CERTAMEN DE CANTO</p>
-            <p id="batch-show-name-display" class="header-show-name">Show: Cargando...</p> <!-- Nuevo: Nombre del Show -->
-            <p id="batch-artist-name-display" class="header-artist-name">Artista: Cargando...</p> <!-- Nuevo: Artista -->
+            <p class="text-lg text-gray-300">Lote de Entradas Compartido</p>
         </header>
 
         <div id="message-container" class="mb-4"></div>
 
-        <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
-            <div id="shared-batch-qrs-container" class="mt-6 space-y-4">
-                <!-- Los QRs compartidos se cargarán aquí -->
-            </div>
-        </div>
+        <main>
+            <section id="shared-batch-viewer-section">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold mb-4 text-center" id="shared-batch-title">Cargando Lote de QRs...</h2>
+                    <p class="text-gray-300 mb-4 text-center" id="shared-batch-info">Por favor, espera mientras cargamos los códigos QR.</p>
+                    <div id="shared-batch-qrs-container" class="mt-6 space-y-4">
+                        <!-- Los QRs compartidos se cargarán aquí -->
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
         // --- ESTADO GLOBAL Y CONFIGURACIÓN ---
         const state = {
             db: null,
             auth: null,
+            userId: null,
             isFirebaseReady: false,
-            logoImage: new Image(),
+            logoImage: new Image()
         };
 
         const config = {
@@ -313,18 +227,17 @@
             logoUrl: 'https://i.imgur.com/rqkZi9P.png' 
         };
 
-        // --- ELEMENTOS DE LA INTERFAZ DE USUARIO ---
+        // --- UI ELEMENTS ---
         const ui = {};
 
         /**
-         * Función centralizada para consultar y almacenar todos los elementos de la interfaz de usuario.
+         * Centralized function to query and store all UI elements.
          */
         function cacheUIElements() {
             const ids = [
-                'loading-overlay', 'message-container', 'logo-error-message',
-                'shared-batch-qrs-container',
-                'batch-show-name-display', // Nuevo elemento para el nombre del show
-                'batch-artist-name-display' // Nuevo elemento para el nombre del artista
+                'loading-overlay', 'message-container', 'shared-batch-viewer-section', 
+                'shared-batch-title', 'shared-batch-info', 'shared-batch-qrs-container',
+                'logo-error-message'
             ];
             ids.forEach(id => {
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
@@ -332,12 +245,12 @@
             });
         }
 
-        // --- FUNCIONES DE UTILIDAD Y UI ---
+        // --- UTILITY AND UI FUNCTIONS ---
 
         /**
-         * Muestra un mensaje al usuario.
-         * @param {string} message El mensaje a mostrar.
-         * @param {'success'|'error'|'warning'|'info'} type El tipo de mensaje.
+         * Displays a message to the user.
+         * @param {string} message The message to display.
+         * @param {'success'|'error'|'warning'|'info'} type The type of message.
          */
         function displayMessage(message, type = 'success') {
             const colors = {
@@ -349,141 +262,24 @@
         }
 
         /**
-         * Muestra u oculta el overlay de carga principal.
-         * @param {boolean} show True para mostrar, false para ocultar.
+         * Shows or hides the main loading overlay.
+         * @param {boolean} show True to show, false to hide.
          */
         function setLoading(show) {
             ui.loadingOverlay.classList.toggle('hidden', !show);
         }
 
-        /**
-         * Genera un código QR para una entrada y lo muestra en la interfaz.
-         * @param {string} ticketId El ID único de la entrada.
-         * @param {string} name El nombre de la persona.
-         * @param {string} prefix El prefijo de la entrada.
-         * @param {string} seatLocation La ubicación del asiento asignada.
-         * @param {string} qrData Los datos a codificar en el QR.
-         * @param {HTMLElement} container El contenedor donde se añadirá el elemento QR.
-         * @param {string} showName Nombre del show.
-         * @param {string} showLocation Lugar del show.
-         * @param {string} showAddress Dirección del show (puede ser un link de Google Maps).
-         */
-        function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container, showName, showLocation, showAddress) {
-            const qrItemDiv = document.createElement('div');
-            qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-900 text-center mx-auto'; 
-            
-            // Wrapper para el QR y el logo para manejar el posicionamiento
-            const qrCodeContainerWrapper = document.createElement('div');
-            qrCodeContainerWrapper.className = 'qrcode-container-wrapper';
-
-            const qrCodeContainerDiv = document.createElement('div');
-            qrCodeContainerDiv.id = `qrcode-${ticketId}`;
-            qrCodeContainerDiv.className = 'qrcode-container'; 
-
-            const logoImg = document.createElement('img');
-            logoImg.src = config.logoUrl;
-            logoImg.alt = "Logo VYTMUSIC";
-            logoImg.className = 'qrcode-logo';
-
-            qrCodeContainerDiv.appendChild(logoImg); // Añadir logo dentro del contenedor del QR para centrarlo con flexbox
-            qrCodeContainerWrapper.appendChild(qrCodeContainerDiv); 
-
-            const infoTextDiv = document.createElement('div');
-            infoTextDiv.className = 'qr-info-text';
-
-            let showAddressHtml = '';
-            if (showAddress) {
-                // Verificar si es un enlace de Google Maps
-                if (showAddress.startsWith('http') && (showAddress.includes('google.com/maps') || showAddress.includes('maps.app.goo.gl'))) {
-                    showAddressHtml = `<p class="show-details-display">Dirección: <a href="${showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a></p>`;
-                } else {
-                    showAddressHtml = `<p class="show-details-display">Dirección: ${showAddress}</p>`;
-                }
-            }
-
-            infoTextDiv.innerHTML = `
-                <h3>VYT-MUSIC</h3>
-                <p>CERTAMEN DE CANTO</p>
-                <p class="small-text">¡Tu entrada para el evento!</p>
-                <p class="name-display">${name}</p> <!-- Nombre del invitado en recuadro celeste -->
-                <p class="show-details-display">Show: ${showName || 'N/A'}</p>
-                <p class="show-details-display">Lugar: ${showLocation || 'N/A'}</p>
-                ${showAddressHtml}
-                <p class="prefix-display">Artista: ${prefix}</p> <!-- Cambiado de "Prefijo:" a "Artista:" -->
-                <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
-                <p class="id-display">ID: ${ticketId}</p>
-                <a href="https://wa.me/3417422062" target="_blank" class="whatsapp-link-box">
-                    <span class="main-text">INSCRÍBETE</span>
-                    <span class="vyt-music-text">VYT-MUSIC</span>
-                    <span class="certamen-text">CERTAMEN DE CANTO</span>
-                    <img src="https://i.imgur.com/lUNzBH1.png" alt="" class="whatsapp-icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/25D366/ffffff?text=WA';">
-                </a>
-            `;
-
-            qrItemDiv.appendChild(qrCodeContainerWrapper);
-            qrItemDiv.appendChild(infoTextDiv);
-            container.appendChild(qrItemDiv); // Usar el contenedor proporcionado
-
-            new QRCode(qrCodeContainerDiv.id, {
-                text: qrData,
-                width: 1080, // Tamaño aumentado
-                height: 1080, // Tamaño aumentado
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-
-            // Crear botón de descarga para cada QR
-            const downloadBtn = document.createElement('button');
-            downloadBtn.textContent = 'Descargar QR';
-            downloadBtn.className = 'download-qr-btn';
-            downloadBtn.addEventListener('click', () => {
-                const qrCanvas = qrCodeContainerDiv.querySelector('canvas');
-                if (qrCanvas) {
-                    const dataURL = qrCanvas.toDataURL('image/png');
-                    const a = document.createElement('a');
-                    a.href = dataURL;
-                    a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                } else {
-                    displayMessage('No se pudo encontrar el canvas del QR para descargar.', 'error');
-                }
-            });
-            qrItemDiv.appendChild(downloadBtn);
-
-            // Sección de Redes Sociales
-            const socialMediaContainer = document.createElement('div');
-            socialMediaContainer.className = 'social-icons-container';
-            socialMediaContainer.innerHTML = `
-                <a href="https://www.instagram.com/vytmusicrosario/" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/E1306C/ffffff?text=IG';">
-                </a>
-                <a href="https://www.facebook.com/vocesytalentos" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/4267B2/ffffff?text=FB';">
-                </a>
-                <a href="https://www.tiktok.com/@vyt.music.rosario" target="_blank" class="social-icon">
-                    <img src="tiktok-logo-icon-free-png.webp" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=TT';">
-                </a>
-                <a href="https://www.youtube.com/@VYTMUSICCONCURSODECANTO" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/FF0000/ffffff?text=YT';">
-                </a>
-            `;
-            qrItemDiv.appendChild(socialMediaContainer);
-        }
-
-        // --- LÓGICA DE FIREBASE Y DATOS ---
+        // --- FIREBASE AND DATA LOGIC ---
 
         const Firebase = {
             /**
-             * Obtiene un lote compartido por su ID.
-             * @param {string} batchId El ID del lote compartido.
-             * @returns {object|null} Los datos del lote compartido o null si no se encuentra.
+             * Gets a shared batch by its ID.
+             * @param {string} batchId The ID of the shared batch.
+             * @returns {object|null} The shared batch data or null if not found.
              */
             async getSharedBatch(batchId) {
                 if (!state.isFirebaseReady) {
-                    displayMessage('Firebase no está listo para obtener el lote compartido.', 'error');
+                    displayMessage('Firebase is not ready to get shared batch.', 'error');
                     return null;
                 }
                 const sharedBatchRef = doc(state.db, `artifacts/${config.appId}/public/data/sharedBatches`, batchId);
@@ -494,18 +290,18 @@
                 return null;
             },
             /**
-             * Obtiene múltiples entradas por sus IDs.
-             * @param {Array<string>} ticketIds Array de IDs de entradas a obtener.
-             * @returns {Array<object>} Array de datos de entradas.
+             * Gets multiple tickets by their IDs.
+             * @param {Array<string>} ticketIds Array of ticket IDs to get.
+             * @returns {Array<object>} Array of ticket data.
              */
             async getTicketsByIds(ticketIds) {
                 if (!state.isFirebaseReady || ticketIds.length === 0) {
                     return [];
                 }
                 const tickets = [];
-                // Firestore no soporta consultas 'in' con más de 10 elementos directamente.
-                // Para lotes grandes, se necesitaría dividir en sub-consultas o un enfoque diferente.
-                // Para este caso, iteramos individualmente.
+                // Firestore does not support 'in' queries with more than 10 elements directly.
+                // For large batches, it would require splitting into sub-queries or a different approach.
+                // For this case, we iterate individually.
                 for (const id of ticketIds) {
                     const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, id);
                     const docSnap = await getDoc(ticketRef);
@@ -517,68 +313,158 @@
             }
         };
 
+        // --- QR GENERATOR FUNCTIONALITY (adapted for viewer) ---
+
         /**
-         * Carga y muestra un lote compartido de QRs basado en un batchId de la URL.
-         * @param {string} batchId El ID del lote compartido a cargar.
+         * Generates a QR code for a ticket and displays it in the UI.
+         * Also adds logo and name to the downloadable QR image.
+         * @param {string} ticketId The unique ID of the ticket.
+         * @param {string} name The name of the person.
+         * @param {string} prefix The ticket prefix.
+         * @param {string} seatLocation The assigned seat location.
+         * @param {string} qrData The data to encode in the QR.
+         * @param {HTMLElement} container The container where the QR element will be added.
+         * @param {string} showName Name of the show.
+         * @param {string} showLocation Location of the show.
+         * @param {string} showAddress Address of the show (can be a Google Maps link).
          */
-        async function loadAndDisplaySharedBatch(batchId) {
-            setLoading(true);
-            ui.sharedBatchQrsContainer.innerHTML = ''; // Limpiar contenido previo
-            ui.batchShowNameDisplay.textContent = 'Show: Cargando...'; // Resetear el texto del show
-            ui.batchArtistNameDisplay.textContent = 'Artista: Cargando...'; // Resetear el texto del artista
+        function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container, showName, showLocation, showAddress) {
+            const qrItemDiv = document.createElement('div');
+            qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-white text-center mx-auto'; 
+            
+            // Wrapper for QR and logo to handle positioning
+            const qrCodeContainerWrapper = document.createElement('div');
+            qrCodeContainerWrapper.className = 'qrcode-container-wrapper';
 
-            try {
-                const sharedBatch = await Firebase.getSharedBatch(batchId);
-                if (sharedBatch && sharedBatch.ticketIds && sharedBatch.ticketIds.length > 0) {
-                    const tickets = await Firebase.getTicketsByIds(sharedBatch.ticketIds);
-                    if (tickets.length > 0) {
-                        // Actualizar el nombre del show y el artista en el encabezado
-                        ui.batchShowNameDisplay.textContent = `Show: ${tickets[0].showName || 'N/A'}`;
-                        ui.batchArtistNameDisplay.textContent = `Artista: ${tickets[0].prefix || 'N/A'}`;
+            const qrCodeContainerDiv = document.createElement('div');
+            qrCodeContainerDiv.id = `qrcode-${ticketId}`;
+            qrCodeContainerDiv.className = 'qrcode-container'; 
 
-                        tickets.forEach(ticket => {
-                            generateQrCodeForTicket(
-                                ticket.id, 
-                                ticket.name, 
-                                ticket.prefix, 
-                                ticket.seatLocation, 
-                                ticket.id, 
-                                ui.sharedBatchQrsContainer,
-                                ticket.showName, // Pasar showName
-                                ticket.showLocation, // Pasar showLocation
-                                ticket.showAddress // Pasar showAddress
-                            );
-                        });
-                        displayMessage(`Lote con ${tickets.length} QRs cargado.`, 'success');
-                    } else {
-                        displayMessage('No se encontraron tickets en este lote compartido.', 'warning');
-                        ui.batchShowNameDisplay.textContent = 'Show: N/A';
-                        ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
-                    }
+            const infoTextDiv = document.createElement('div');
+            infoTextDiv.className = 'qr-info-text';
+
+            let showAddressHtml = '';
+            if (showAddress) {
+                // Check if it's a Google Maps link
+                if (showAddress.startsWith('http') && (showAddress.includes('google.com/maps') || showAddress.includes('maps.app.goo.gl'))) {
+                    showAddressHtml = `<p class="text-sm text-gray-700">Dirección: <a href="${showAddress}" target="_blank" class="text-sky-600 hover:underline">Ver en Mapa</a></p>`;
                 } else {
-                    displayMessage('Lote compartido no encontrado o vacío.', 'error');
-                    ui.batchShowNameDisplay.textContent = 'Show: N/A';
-                    ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
+                    showAddressHtml = `<p class="text-sm text-gray-700">Dirección: ${showAddress}</p>`;
                 }
-            } catch (error) {
-                console.error('Error al cargar el lote compartido:', error);
-                displayMessage('Error al cargar el lote compartido. Consulta la consola.', 'error');
-                ui.batchShowNameDisplay.textContent = 'Show: Error';
-                ui.batchArtistNameDisplay.textContent = 'Artista: Error';
-            } finally {
-                setLoading(false);
             }
+
+            infoTextDiv.innerHTML = `
+                <h3 class="text-sky-600">VYT-MUSIC</h3>
+                <p class="text-gray-800">CERTAMEN DE CANTO</p>
+                <p class="name-display text-gray-900">${name}</p>
+                <p class="text-sm text-gray-700">Show: ${showName || 'N/A'}</p>
+                <p class="text-sm text-gray-700">Lugar: ${showLocation || 'N/A'}</p>
+                ${showAddressHtml}
+                <p class="prefix-display text-gray-800">Prefijo: ${prefix}</p>
+                <p class="seat-location-display text-gray-800">Ubicación: ${seatLocation || 'No Asignado'}</p>
+                <p class="id-display text-gray-600">ID: ${ticketId}</p>
+                <p class="call-to-action text-sky-600">¡INSCRÍBETE!</p>
+                <p class="whatsapp-info text-green-600">WhatsApp: 3417422062</p>
+            `;
+
+            qrItemDiv.appendChild(qrCodeContainerWrapper);
+            qrItemDiv.appendChild(infoTextDiv);
+            container.appendChild(qrItemDiv); // Use provided container
+
+            // Generate QR code
+            new QRCode(qrCodeContainerDiv.id, {
+                text: qrData,
+                width: 1080, // Increased size for better quality when drawing on it
+                height: 1080, // Increased size
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Add download button for each QR
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = 'Descargar QR';
+            downloadBtn.className = 'download-qr-btn';
+            downloadBtn.addEventListener('click', () => {
+                const qrCanvas = qrCodeContainerDiv.querySelector('canvas');
+                if (qrCanvas) {
+                    const ctx = qrCanvas.getContext('2d');
+                    const canvasWidth = qrCanvas.width;
+                    const canvasHeight = qrCanvas.height;
+
+                    // Save the current state of the canvas
+                    ctx.save();
+
+                    // Draw a white background rectangle for the logo and text to ensure visibility
+                    const logoAreaSize = canvasWidth * 0.3; // Example size for the white area
+                    const logoAreaX = (canvasWidth - logoAreaSize) / 2;
+                    const logoAreaY = (canvasHeight - logoAreaSize) / 2;
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(logoAreaX, logoAreaY, logoAreaSize, logoAreaSize);
+
+                    // Draw the logo image on the canvas
+                    const logoSize = canvasWidth * 0.18; // 18% of QR width
+                    const logoX = (canvasWidth - logoSize) / 2;
+                    const logoY = (canvasHeight - logoSize) / 2 - (canvasHeight * 0.03); // Slightly above center for text below
+                    
+                    // Ensure the logo is loaded before drawing
+                    state.logoImage.onload = () => {
+                        ctx.drawImage(state.logoImage, logoX, logoY, logoSize, logoSize);
+
+                        // Draw the guest's name below the logo
+                        ctx.font = `${canvasWidth * 0.03}px Inter, sans-serif`; // Adjust font size relative to QR size
+                        ctx.fillStyle = '#000000'; // Black text
+                        ctx.textAlign = 'center';
+                        const textY = logoY + logoSize + (canvasHeight * 0.02); // Position below logo
+                        ctx.fillText(name, canvasWidth / 2, textY);
+
+                        // Restore the canvas state (important if you had other transformations)
+                        ctx.restore();
+
+                        // Trigger download after drawing
+                        const dataURL = qrCanvas.toDataURL('image/png');
+                        const a = document.createElement('a');
+                        a.href = dataURL;
+                        a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    };
+                    // If image is already loaded, draw immediately
+                    if (state.logoImage.complete) {
+                        state.logoImage.onload(); // Manually trigger onload if already loaded
+                    } else {
+                        // Set onerror for fallback if image fails to load
+                        state.logoImage.onerror = () => {
+                            console.error("Error loading logo image for QR download.");
+                            displayMessage('Error al cargar el logo para la descarga del QR. Descargando solo el QR.', 'warning');
+                            // Fallback to downloading just the QR if logo fails
+                            const dataURL = qrCanvas.toDataURL('image/png');
+                            const a = document.createElement('a');
+                            a.href = dataURL;
+                            a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        };
+                    }
+
+                } else {
+                    displayMessage('No se pudo encontrar el canvas del QR para descargar.', 'error');
+                }
+            });
+            qrItemDiv.appendChild(downloadBtn);
         }
 
-        // --- INICIALIZACIÓN ---
+        // --- INITIALIZATION ---
 
         /**
-         * Inicializa la aplicación.
+         * Initializes the application.
          */
         async function startApp() {
             cacheUIElements();
             setLoading(true);
-            console.log("Iniciando aplicación y caché de UI.");
+            console.log("Iniciando aplicación de visor de QRs compartidos.");
 
             try {
                 const app = initializeApp(config.firebase);
@@ -592,39 +478,85 @@
                 return;
             }
 
-            // En esta página, solo necesitamos autenticación anónima para leer datos públicos
+            // Authenticate anonymously for public viewing
             try {
                 await signInAnonymously(state.auth);
+                state.userId = state.auth.currentUser?.uid || 'anonymous';
                 state.isFirebaseReady = true;
-                console.log("Autenticación anónima exitosa.");
+                console.log("Sesión anónima iniciada para visor de QRs.");
             } catch (error) {
-                console.error("Error de autenticación anónima:", error);
-                displayMessage(`Error de autenticación: ${error.message}. No se podrán cargar los QRs.`, 'error');
+                console.error("Error al iniciar sesión anónimamente:", error);
+                displayMessage("No se pudo autenticar para ver los QRs. Intenta de nuevo.", "error");
                 setLoading(false);
                 return;
             }
 
-            // Cargar el logo
+            // Load the logo image once
             state.logoImage.src = config.logoUrl;
+            state.logoImage.onload = () => {
+                console.log("Logo image loaded successfully.");
+            };
             state.logoImage.onerror = () => {
-                ui.logoErrorMessage.classList.remove('hidden');
+                console.error("Failed to load logo image from URL:", config.logoUrl);
+                ui.logoError.classList.remove('hidden'); // Show error message if logo fails to load
+                displayMessage('Error al cargar el logo principal. La aplicación funcionará, pero las imágenes QR descargadas podrían no incluir el logo.', 'warning');
             };
 
-            // Verificar el batchId en la URL
+            // Get batchId from URL
             const urlParams = new URLSearchParams(window.location.search);
             const batchId = urlParams.get('batchId');
-            if (batchId) {
-                await loadAndDisplaySharedBatch(batchId);
-            } else {
-                displayMessage('No se encontró un ID de lote en la URL.', 'warning');
-                ui.batchShowNameDisplay.textContent = 'Show: Lote no especificado'; // Mensaje alternativo
-                ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
+
+            if (!batchId) {
+                ui.sharedBatchTitle.textContent = 'Error: Lote no especificado';
+                ui.sharedBatchInfo.textContent = 'No se encontró un ID de lote en la URL.';
+                displayMessage('No se encontró un ID de lote en la URL.', 'error');
                 setLoading(false);
+                return;
             }
-            console.log("Carga inicial completa.");
+
+            try {
+                const sharedBatch = await Firebase.getSharedBatch(batchId);
+                if (sharedBatch) {
+                    ui.sharedBatchTitle.textContent = 'Lote de QRs Compartido';
+                    ui.sharedBatchInfo.textContent = `Mostrando ${sharedBatch.ticketIds.length} QRs del lote.`;
+                    
+                    const ticketsData = await Firebase.getTicketsByIds(sharedBatch.ticketIds);
+                    if (ticketsData.length > 0) {
+                        ui.sharedBatchQrsContainer.innerHTML = ''; // Clear loading message
+                        ticketsData.forEach(ticket => {
+                            generateQrCodeForTicket(
+                                ticket.id, 
+                                ticket.name, 
+                                ticket.prefix, 
+                                ticket.seatLocation, 
+                                ticket.id, // QR data is the ticket ID
+                                ui.sharedBatchQrsContainer,
+                                ticket.showName,
+                                ticket.showLocation,
+                                ticket.showAddress
+                            );
+                        });
+                    } else {
+                        ui.sharedBatchInfo.textContent = 'No se encontraron tickets en este lote.';
+                        displayMessage('No se encontraron tickets en este lote.', 'warning');
+                    }
+                } else {
+                    ui.sharedBatchTitle.textContent = 'Lote no encontrado';
+                    ui.sharedBatchInfo.textContent = 'El ID del lote especificado no existe o no es válido.';
+                    displayMessage('El lote de QRs no fue encontrado.', 'error');
+                }
+            } catch (error) {
+                console.error('Error al cargar el lote compartido:', error);
+                ui.sharedBatchTitle.textContent = 'Error al cargar el lote';
+                ui.sharedBatchInfo.textContent = 'Hubo un error al intentar cargar los QRs. Por favor, inténtalo de nuevo.';
+                displayMessage('Error al cargar el lote compartido. Revisa la consola.', 'error');
+            } finally {
+                setLoading(false);
+                console.log("Carga del visor de QRs compartidos completa.");
+            }
         }
 
-        // Iniciar la aplicación cuando el DOM esté completamente cargado
+        // Start the application when the DOM is fully loaded
         document.addEventListener('DOMContentLoaded', startApp);
     </script>
 </body>
