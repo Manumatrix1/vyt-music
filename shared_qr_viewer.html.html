@@ -81,7 +81,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            display: flex;
+            display: flex; /* Usar flexbox para centrar el contenido (QR y logo) */
             justify-content: center;
             align-items: center;
         }
@@ -95,8 +95,12 @@
         .qrcode-logo {
             position: absolute;
             z-index: 10; /* Asegura que el logo esté encima del QR */
-            width: 25%; /* Ajusta el tamaño del logo según sea necesario */
+            width: 18%; /* Ajustado a un porcentaje más pequeño para evitar que se corte */
             height: auto;
+            /* Centrar el logo usando transform */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             border-radius: 50%; /* Hace el logo circular si se desea */
             background-color: white; /* Fondo para que el logo se destaque */
             padding: 5px; /* Relleno alrededor del logo */
@@ -105,7 +109,7 @@
         .qr-info-text {
             text-align: center;
             margin-top: 1rem;
-            color: #000; /* Texto negro para legibilidad en fondo blanco */
+            color: #f9fafb; /* Cambiado a blanco para mejor contraste en fondo oscuro */
         }
 
         .qr-info-text h3 {
@@ -118,21 +122,28 @@
         .qr-info-text p {
             font-size: 1.25rem; /* Texto más pequeño para "Certamen de Canto" */
             margin-bottom: 0.5rem;
-            color: #000; /* Texto negro */
+            color: #f9fafb; /* Cambiado a blanco */
+        }
+        /* Estilo para el texto adicional debajo de "Certamen de Canto" */
+        .qr-info-text .small-text {
+            font-size: 1rem; /* Más pequeño que el texto normal */
+            color: #cbd5e1; /* Un gris claro para el texto secundario */
+            margin-top: -0.25rem; /* Ajustar el margen superior si es necesario */
+            margin-bottom: 0.5rem;
         }
 
         .qr-info-text .name-display {
             font-size: 2rem; /* Visualización del nombre */
             font-weight: 600;
             margin-top: 1rem;
-            color: #000; /* Texto negro */
+            color: #f9fafb; /* Cambiado a blanco */
         }
 
         .qr-info-text .id-display,
         .qr-info-text .prefix-display,
         .qr-info-text .seat-location-display {
             font-size: 1.5rem; /* Otras visualizaciones de información */
-            color: #000; /* Texto negro */
+            color: #f9fafb; /* Cambiado a blanco */
         }
 
         .qr-info-text .call-to-action {
@@ -160,6 +171,18 @@
         .download-qr-btn:hover {
             background-color: #0ea5e9; /* Azul cielo más oscuro */
         }
+        /* Estilos específicos para el encabezado en shared_qr_viewer.html */
+        .header-small-text {
+            font-size: 1.1rem; /* Tamaño para "Certamen de Canto" en el header */
+            color: #cbd5e1; /* Gris claro */
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+        .header-prefix-text {
+            font-size: 1rem; /* Tamaño para el prefijo en el header */
+            color: #94a3b8; /* Gris más oscuro */
+            margin-top: 0.25rem;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -174,6 +197,8 @@
                  onerror="this.onerror=null;this.src='https://placehold.co/150x150/ffffff/000000?text=Logo'; document.getElementById('logo-error-message').classList.remove('hidden');">
             <p id="logo-error-message" class="text-red-400 text-sm mt-1 hidden">Error al cargar el logo. Verifica la imagen.</p>
             <h1 class="text-3xl sm:text-4xl font-bold text-sky-400">VYTMUSIC</h1>
+            <p class="header-small-text">CERTAMEN DE CANTO</p> <!-- Movido aquí -->
+            <p id="batch-prefix-display" class="header-prefix-text">Prefijo del Lote: Cargando...</p> <!-- Nuevo elemento para el prefijo -->
             <p class="text-lg text-gray-300">Lote de Entradas Compartido</p>
         </header>
 
@@ -224,7 +249,8 @@
         function cacheUIElements() {
             const ids = [
                 'loading-overlay', 'message-container', 'logo-error-message',
-                'shared-batch-title', 'shared-batch-info', 'shared-batch-qrs-container'
+                'shared-batch-title', 'shared-batch-info', 'shared-batch-qrs-container',
+                'batch-prefix-display' // Añadido el nuevo elemento del prefijo
             ];
             ids.forEach(id => {
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
@@ -282,8 +308,8 @@
             logoImg.alt = "Logo VYTMUSIC";
             logoImg.className = 'qrcode-logo';
 
-            qrCodeContainerWrapper.appendChild(qrCodeContainerDiv);
-            qrCodeContainerWrapper.appendChild(logoImg); // Añadir logo encima del QR
+            qrCodeContainerDiv.appendChild(logoImg); // Añadir logo dentro del contenedor del QR para centrarlo con flexbox
+            qrCodeContainerWrapper.appendChild(qrCodeContainerDiv); 
 
             const infoTextDiv = document.createElement('div');
             infoTextDiv.className = 'qr-info-text';
@@ -291,6 +317,7 @@
             infoTextDiv.innerHTML = `
                 <h3>VYT-MUSIC</h3>
                 <p>CERTAMEN DE CANTO</p>
+                <p class="small-text">¡Tu entrada para el evento!</p> <!-- Nuevo texto aquí -->
                 <p class="name-display">${name}</p>
                 <p class="prefix-display">Prefijo: ${prefix}</p>
                 <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
@@ -382,6 +409,7 @@
             setLoading(true);
             ui.sharedBatchQrsContainer.innerHTML = ''; // Limpiar contenido previo
             ui.sharedBatchInfo.textContent = 'Cargando lote...';
+            ui.batchPrefixDisplay.textContent = 'Prefijo del Lote: Cargando...'; // Resetear el prefijo
 
             try {
                 const sharedBatch = await Firebase.getSharedBatch(batchId);
@@ -390,6 +418,9 @@
                     ui.sharedBatchInfo.textContent = `Este lote contiene ${sharedBatch.ticketIds.length} QRs.`;
                     const tickets = await Firebase.getTicketsByIds(sharedBatch.ticketIds);
                     if (tickets.length > 0) {
+                        // Actualizar el prefijo del lote en el encabezado
+                        ui.batchPrefixDisplay.textContent = `Prefijo del Lote: ${tickets[0].prefix || 'N/A'}`;
+
                         tickets.forEach(ticket => {
                             generateQrCodeForTicket(ticket.id, ticket.name, ticket.prefix, ticket.seatLocation, ticket.id, ui.sharedBatchQrsContainer);
                         });
@@ -397,15 +428,18 @@
                     } else {
                         ui.sharedBatchInfo.textContent = 'No se encontraron tickets en este lote compartido.';
                         displayMessage('No se encontraron tickets para este lote compartido.', 'warning');
+                        ui.batchPrefixDisplay.textContent = 'Prefijo del Lote: N/A';
                     }
                 } else {
                     ui.sharedBatchInfo.textContent = 'Lote compartido no encontrado o vacío.';
                     displayMessage('Lote compartido no encontrado o vacío.', 'error');
+                    ui.batchPrefixDisplay.textContent = 'Prefijo del Lote: N/A';
                 }
             } catch (error) {
                 console.error('Error al cargar el lote compartido:', error);
                 ui.sharedBatchInfo.textContent = 'Error al cargar el lote compartido.';
                 displayMessage('Error al cargar el lote compartido. Consulta la consola.', 'error');
+                ui.batchPrefixDisplay.textContent = 'Prefijo del Lote: Error';
             } finally {
                 setLoading(false);
             }
