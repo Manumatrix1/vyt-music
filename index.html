@@ -16,6 +16,8 @@
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- Tone.js CDN for sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
 
     <style>
         /* Estilos base personalizados */
@@ -419,6 +421,7 @@
             totalGeneratedTickets: 0,
             totalUsedTickets: 0,
             currentBatchGeneratedTickets: [], // Stores { ticketId, prefix, name, seatLocation, qrDataUrl } for the current batch
+            synth: null // Add synth to state
         };
 
         const config = {
@@ -912,6 +915,10 @@
                     ui.currentScannedTicketStatus.className = 'text-red-500 bg-red-100 px-3 py-1 rounded-md'; // Enhanced styling
                     flashScanResult('invalid');
                     Firebase.saveScanEvent({ id: ticketId }, 'invalid');
+                    if (state.synth) {
+                        await Tone.start(); // Ensure audio context is started
+                        state.synth.triggerAttackRelease("C3", "32n"); // Play a low, short note for invalid
+                    }
                 } else {
                     const ticketData = ticketDoc.data();
                     ui.currentScannedTicketId.textContent = ticketData.id;
@@ -925,6 +932,10 @@
                         ui.currentScannedTicketStatus.className = 'text-yellow-700 bg-yellow-100 px-3 py-1 rounded-md'; // Enhanced styling
                         flashScanResult('used');
                         Firebase.saveScanEvent(ticketData, 'used');
+                        if (state.synth) {
+                            await Tone.start(); // Ensure audio context is started
+                            state.synth.triggerAttackRelease("G3", "16n"); // Play a slightly lower, short note for used
+                        }
                     } else {
                         displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) DISPONIBLE.`, 'success');
                         ui.currentScannedTicketStatus.textContent = 'DISPONIBLE';
@@ -933,6 +944,10 @@
                         state.currentScannedTicketId = ticketData.id;
                         flashScanResult('valid');
                         Firebase.saveScanEvent(ticketData, 'valid');
+                        if (state.synth) {
+                            await Tone.start(); // Ensure audio context is started
+                            state.synth.triggerAttackRelease("C4", "8n"); // Play a middle C note for valid
+                        }
                     }
                 }
             } catch (error) {
@@ -941,6 +956,10 @@
                 ui.currentScannedTicketStatus.textContent = 'ERROR';
                 ui.currentScannedTicketStatus.className = 'text-red-500 bg-red-100 px-3 py-1 rounded-md'; // Enhanced styling
                 flashScanResult('invalid');
+                if (state.synth) {
+                    await Tone.start(); // Ensure audio context is started
+                    state.synth.triggerAttackRelease("C3", "32n"); // Play a low, short note for errors
+                }
             }
         }
 
@@ -1178,7 +1197,8 @@
                 const app = initializeApp(config.firebase);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
-                console.log("Aplicación Firebase, Firestore y Auth inicializados.");
+                state.synth = new Tone.Synth().toDestination(); // Initialize Tone.js synth
+                console.log("Aplicación Firebase, Firestore, Auth y Tone.js inicializados.");
             } catch (error) {
                 console.error("Error al inicializar Firebase:", error);
                 displayMessage("Error crítico al conectar con Firebase. La aplicación no puede continuar.", "error");
