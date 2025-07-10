@@ -104,10 +104,10 @@
             max-width: 1100px; /* Limita el ancho máximo para pantallas grandes */
             margin-left: auto;
             margin-right: auto;
-            background-color: #1f2937; /* Fondo oscuro para el contenedor del QR */
+            background-color: white; /* Fondo blanco para el QR y el texto */
             padding: 1rem; /* Espaciado alrededor del contenido */
             border-radius: 0.5rem; /* Esquinas redondeadas */
-            color: #f9fafb; /* Texto claro para legibilidad en fondo oscuro */
+            color: #000; /* Texto negro para legibilidad en fondo blanco */
             position: relative; /* Necesario para el posicionamiento absoluto del logo */
             overflow: hidden; /* Oculta el desbordamiento del logo */
         }
@@ -160,7 +160,7 @@
         .qr-info-text {
             text-align: center;
             margin-top: 1rem;
-            color: #f9fafb; /* Texto claro para legibilidad en fondo oscuro */
+            color: #f9fafb; /* Cambiado a blanco para mejor contraste en fondo oscuro */
         }
 
         .qr-info-text h3 {
@@ -171,16 +171,9 @@
         }
 
         .qr-info-text p {
-            font-size: 1.1rem; /* Texto para "Certamen de Canto" - Aún más pequeño */
+            font-size: 1.25rem; /* Texto más pequeño para "Certamen de Canto" */
             margin-bottom: 0.5rem;
-            color: #f9fafb; /* Texto claro */
-        }
-        /* Estilo para el texto adicional debajo de "Certamen de Canto" */
-        .qr-info-text .small-text {
-            font-size: 0.9rem; /* Más pequeño que el texto normal */
-            color: #cbd5e1; /* Un gris claro para el texto secundario */
-            margin-top: -0.25rem; /* Ajustar el margen superior si es necesario */
-            margin-bottom: 0.5rem;
+            color: #f9fafb; /* Cambiado a blanco */
         }
 
         .qr-info-text .name-display {
@@ -188,63 +181,27 @@
             font-weight: 600;
             margin-top: 1rem;
             color: #f9fafb; /* Cambiado a blanco */
-            background-color: #38bdf8; /* Fondo celeste */
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            display: inline-block; /* Para que el fondo se ajuste al texto */
-            margin-bottom: 1rem; /* Espacio debajo del recuadro */
         }
 
         .qr-info-text .id-display,
         .qr-info-text .prefix-display,
-        .qr-info-text .seat-location-display,
-        .qr-info-text .show-details-display { /* Nuevo estilo para detalles del show */
+        .qr-info-text .seat-location-display {
             font-size: 1.5rem; /* Otras visualizaciones de información */
-            color: #f9fafb; /* Texto claro */
-        }
-        .qr-info-text .show-details-display a {
-            color: #38bdf8; /* Color azul para enlaces */
-            text-decoration: underline;
+            color: #f9fafb; /* Cambiado a blanco */
         }
 
-
-        .qr-info-text .whatsapp-link-box {
-            background-color: #22c55e; /* Verde de WhatsApp */
-            color: white;
-            padding: 0.75rem 1.25rem; /* Padding ajustado para un botón más pequeño */
-            border-radius: 0.75rem;
-            margin-top: 1.5rem;
-            display: inline-flex; /* Para alinear el texto y el icono */
-            flex-direction: column; /* Para que el texto se apile */
-            align-items: center;
-            justify-content: center;
-            text-decoration: none; /* Quitar subrayado del enlace */
+        .qr-info-text .call-to-action {
+            font-size: 1.75rem; /* "¡INSCRÍBETE!" */
             font-weight: bold;
-            transition: background-color 0.3s ease;
-            max-width: 300px; /* Limitar el ancho máximo del botón */
-        }
-        .qr-info-text .whatsapp-link-box:hover {
-            background-color: #16a34a; /* Verde más oscuro al pasar el ratón */
-        }
-        .qr-info-text .whatsapp-link-box .main-text {
-            font-size: 1.5rem; /* Tamaño para "INSCRÍBETE" - Grande */
-            line-height: 1.2;
-        }
-        .qr-info-text .whatsapp-link-box .vyt-music-text {
-            font-size: 1.1rem; /* Tamaño para "VYT-MUSIC" - Mediano */
-            margin-top: 0.1rem;
-        }
-        .qr-info-text .whatsapp-link-box .certamen-text {
-            font-size: 0.9rem; /* Tamaño para "CERTAMEN DE CANTO" - Pequeño */
-            margin-top: 0.1rem;
-        }
-        .qr-info-text .whatsapp-icon {
-            margin-top: 0.5rem; /* Espacio entre texto y icono */
-            width: 2em; /* Tamaño del icono */
-            height: 2em;
-            /* fill: white; // No es necesario para imágenes PNG */
+            color: #38bdf8; /* Cambiado a azul cielo como el logo */
+            margin-top: 1rem;
         }
 
+        .qr-info-text .whatsapp-info {
+            font-size: 1.5rem; /* Número de WhatsApp */
+            color: #22c55e; /* Color verde */
+            margin-top: 0.5rem;
+        }
         .download-qr-btn {
             margin-top: 1rem;
             padding: 0.75rem 1.5rem;
@@ -258,55 +215,9 @@
         .download-qr-btn:hover {
             background-color: #0ea5e9; /* Azul cielo más oscuro */
         }
-        /* Estilos específicos para el encabezado en shared_qr_viewer.html */
-        .header-production-text { /* Nuevo estilo para PRODUCCIONES */
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #cbd5e1; /* Gris claro */
-            margin-bottom: 0.25rem;
-        }
-        .header-small-text {
-            font-size: 1rem; /* Tamaño para "Certamen de Canto" en el header - Más pequeño */
-            color: #cbd5e1; /* Gris claro */
-            margin-top: 0.25rem;
-            margin-bottom: 0.25rem;
-        }
-        .header-show-name { /* Nuevo estilo para Nombre del Show en el header */
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #f9fafb;
-            margin-top: 0.5rem;
-        }
-        .header-artist-name { /* Nuevo estilo para Artista en el header */
-            font-size: 1.2rem;
-            color: #cbd5e1;
-            margin-top: 0.25rem;
-        }
-
-        /* Estilos para los iconos de redes sociales */
-        .social-icons-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan si no caben en una línea */
-            gap: 0.6rem; /* Espacio entre los iconos, reducido */
-            margin-top: 1.5rem; /* Espacio superior, reducido */
-            padding-top: 1rem; /* Padding superior, reducido */
-            border-top: 1px solid #374151; /* Línea separadora */
-        }
-        .social-icon {
-            width: 1.8rem; /* Tamaño de los iconos, reducido */
-            height: 1.8rem; /* Tamaño de los iconos, reducido */
-            border-radius: 50%; /* Hacerlos circulares */
-            overflow: hidden; /* Asegurar que la imagen se ajuste */
-            transition: transform 0.2s ease-in-out;
-        }
-        .social-icon:hover {
-            transform: scale(1.1); /* Efecto de crecimiento al pasar el ratón */
-        }
-        .social-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Ajustar la imagen dentro del círculo */
+        /* Hidden audio element for beep sound */
+        .hidden-audio {
+            display: none;
         }
     </style>
 </head>
@@ -437,7 +348,22 @@
             <section id="qr-scanner-section" class="section">
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-bold mb-4 text-center">Escanear Código QR</h2>
-                    <div id="qr-code-reader"></div>
+                    <!-- QR Code Reader Container -->
+                    <div id="qr-code-reader" class="w-full bg-gray-100 rounded-lg overflow-hidden mb-6 aspect-video flex items-center justify-center">
+                        <!-- The QR scanner will render here -->
+                    </div>
+
+                    <!-- Status Message for Scanner -->
+                    <div id="scanner-status" class="text-xl font-semibold text-blue-700 mb-4 h-8 flex items-center justify-center">
+                        Cargando escáner...
+                    </div>
+
+                    <!-- Scanned QR Data Display -->
+                    <div id="scanned-qr-result-display" class="bg-green-100 text-green-800 p-4 rounded-lg text-lg font-medium break-words hidden">
+                        <p class="font-bold mb-2">Información del QR:</p>
+                        <p id="qr-data-content"></p>
+                    </div>
+
                     <div class="text-center">
                         <!-- El botón Reiniciar Escáner ahora siempre visible -->
                         <button id="restart-scan-btn" class="mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700">Reiniciar Escáner</button>
@@ -490,6 +416,13 @@
             </section>
         </main>
     </div>
+
+    <!-- Audio element for beep sound -->
+    <audio id="beep-sound" class="hidden-audio" preload="auto">
+        <!-- Base64 encoded MP3 for a short beep sound -->
+        <source src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjM1LjEwMAAAAAAAAAAAAAAA//tQZAAAAAAAAnRtcwAAAAAAAAAAJAAAAAAAAAABU09VTkQgQ0xPVUQgLSBBdWRpbyBDb3B5cmlnaHQgZnJlZSBzb3VuZHMgZm9yIHlvdXIgcHJvamVjdHMuIC0gQmVlcCBTb3VuZCBFLmcuIFNjYW5uZXIgYmVlcC4gLSBodHRwczovL3NvdW5kY2xvdWQuY29tL3NvdW5kY2xvdWQvMjUwNDc1MzI4AAAAAAAAAAAAAP/7UmQAAADSAAAAICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCg==" type="audio/mpeg">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
 
     <!-- Firebase SDKs -->
     <script type="module">
@@ -556,14 +489,15 @@
                 // Elements for shared batch viewer
                 'shared-batch-viewer-section', 'shared-batch-title', 'shared-batch-info', 'shared-batch-qrs-container',
                 // New elements for show details
-                'show-name-input', 'show-location-input', 'show-address-input'
+                'show-name-input', 'show-location-input', 'show-address-input',
+                // New elements for QR scanner status and result display
+                'scanner-status', 'scanned-qr-result-display', 'qr-data-content', 'beep-sound'
             ];
             ids.forEach(id => {
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
                 ui[camelCaseId] = document.getElementById(id);
             });
             ui.navButtons = document.querySelectorAll('.nav-btn');
-            console.log("DEBUG GENERATOR: UI Element 'shareBatchQrsBtn' found:", !!ui.shareBatchQrsBtn);
         }
 
         // --- UTILITY AND UI FUNCTIONS ---
@@ -673,7 +607,6 @@
          * @param {string} link The link to display.
          */
         function showShareLinkModal(link) {
-            console.log("DEBUG GENERATOR: showShareLinkModal called with link:", link);
             ui.shareLinkDisplay.value = link;
             ui.shareLinkModal.classList.remove('hidden');
 
@@ -686,7 +619,7 @@
                     document.execCommand('copy');
                     displayMessage('Link copied to clipboard!', 'success');
                 } catch (err) {
-                    console.error('DEBUG GENERATOR: Error copying link:', err);
+                    console.error('Error copying link:', err);
                     displayMessage('Error copying link. Try manually.', 'error');
                 }
             };
@@ -811,7 +744,7 @@
                     await batch.commit();
                     displayMessage('All tickets and history have been reset.', 'success');
                 } catch (error) {
-                    console.error('DEBUG GENERATOR: Error resetting tickets and history:', error);
+                    console.error('Error resetting tickets and history:', error);
                     displayMessage('Error resetting tickets and history. Check console.', 'error');
                 } finally {
                     setLoading(false);
@@ -899,22 +832,20 @@
 
             // Specific logic when changing sections
             if (sectionToShow.id === 'qr-scanner-section') {
-                console.log("DEBUG SCANNER: Entering QR Scanner section. Starting scanner.");
+                console.log("Entering QR Scanner section. Starting scanner.");
                 startQrScanner();
                 ui.scannedTicketInfo.classList.add('hidden');
+                ui.scannedQrResultDisplay.classList.add('hidden'); // Hide raw QR data display
                 // The restart button is now always visible, so no need to hide it here initially
             } else {
-                console.log("DEBUG SCANNER: Exiting QR Scanner section. Stopping scanner.");
+                console.log("Exiting QR Scanner section. Stopping scanner.");
                 stopQrScanner();
             }
             if (sectionToShow.id === 'batch-ticket-generator-section') {
-                console.log("DEBUG GENERATOR: Entering batch-ticket-generator-section.");
                 if (state.currentBatchGeneratedTickets.length === 0) {
                     ui.shareBatchQrsBtn.classList.add('hidden');
-                    console.log("DEBUG GENERATOR: shareBatchQrsBtn hidden because currentBatchGeneratedTickets is empty.");
                 } else {
                     ui.shareBatchQrsBtn.classList.remove('hidden');
-                    console.log("DEBUG GENERATOR: shareBatchQrsBtn shown because currentBatchGeneratedTickets has items.");
                 }
             }
             // The shared-batch-viewer-section is no longer activated by URL in the main app
@@ -927,26 +858,33 @@
          * Starts the QR scanner.
          */
         function startQrScanner() {
-            console.log("DEBUG SCANNER: Attempting to start QR scanner.");
+            console.log("Attempting to start QR scanner.");
             // Always stop scanner cleanly before starting to avoid conflicts
             stopQrScanner().then(() => {
                 if (!state.scanner) {
                     state.scanner = new Html5Qrcode("qr-code-reader");
-                    console.log("DEBUG SCANNER: Html5Qrcode instance created.");
+                    console.log("Html5Qrcode instance created.");
                 }
                 
                 ui.qrCodeReader.innerHTML = ""; // Clear container before starting
-                
+                ui.scannerStatus.textContent = "Cargando escáner..."; // Initial status
+                ui.scannedQrResultDisplay.classList.add('hidden'); // Hide previous result
+                ui.scannedTicketInfo.classList.add('hidden'); // Hide ticket info
+                ui.markUsedBtn.classList.add('hidden'); // Hide mark used button
+
                 state.scanner.start(
                     { facingMode: "environment" }, 
                     { fps: 10, qrbox: {width: 250, height: 250}, disableFlip: false }, 
                     onScanSuccess, 
                     onScanError
                 ).then(() => {
-                    console.log("DEBUG SCANNER: QR scanner started successfully.");
+                    console.log("QR scanner started successfully.");
+                    ui.scannerStatus.textContent = "ESCANDEANDO..."; // Ready to scan
+                    ui.scannerStatus.classList.remove('text-red-700', 'text-green-700');
+                    ui.scannerStatus.classList.add('text-blue-700');
                     displayMessage('Cámara iniciada. Lista para escanear.', 'info');
                 }).catch(err => {
-                    console.error("DEBUG SCANNER: Error starting scanner:", err);
+                    console.error("Error starting scanner:", err);
                     let errorMessage = 'No se pudo iniciar la cámara. Asegúrate de otorgar los permisos y que no esté en uso por otra aplicación.';
                     if (err.name === 'NotAllowedError') {
                         errorMessage = 'Acceso a la cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
@@ -955,6 +893,9 @@
                     } else if (err.name === 'NotReadableError') {
                         errorMessage = 'La cámara ya está en uso o no se puede acceder a ella. Cierra otras aplicaciones que la usen.';
                     }
+                    ui.scannerStatus.textContent = `Error: ${errorMessage}`;
+                    ui.scannerStatus.classList.remove('text-blue-700');
+                    ui.scannerStatus.classList.add('text-red-700');
                     displayMessage(errorMessage, 'error');
                 });
             });
@@ -966,17 +907,23 @@
          */
         async function stopQrScanner() {
             if (state.scanner && state.scanner.isScanning) {
-                console.log("DEBUG SCANNER: Attempting to stop QR scanner.");
+                console.log("Attempting to stop QR scanner.");
                 try {
                     await state.scanner.stop();
-                    console.log("DEBUG SCANNER: QR scanner stopped successfully.");
+                    console.log("QR scanner stopped successfully.");
+                    ui.scannerStatus.textContent = "Escáner detenido.";
+                    ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700', 'text-red-700');
+                    ui.scannerStatus.classList.add('text-gray-500');
                 } catch (err) {
-                    console.error("DEBUG SCANNER: Error stopping scanner:", err);
+                    console.error("Error stopping scanner:", err);
+                    ui.scannerStatus.textContent = "Error al detener el escáner.";
+                    ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700');
+                    ui.scannerStatus.classList.add('text-red-700');
                 }
             } else if (state.scanner) {
-                console.log("DEBUG SCANNER: Scanner exists but is not scanning. No need to stop.");
+                console.log("Scanner exists but is not scanning. No need to stop.");
             } else {
-                console.log("DEBUG SCANNER: Scanner instance does not exist.");
+                console.log("Scanner instance does not exist.");
             }
         }
 
@@ -985,16 +932,20 @@
          * @param {string} decodedText The decoded text from the QR.
          */
         async function onScanSuccess(decodedText, decodedResult) {
-            console.log("DEBUG SCANNER: QR scanned successfully:", decodedText);
+            console.log("QR scanned successfully:", decodedText);
+            
+            // Display raw QR data
+            ui.qrDataContent.textContent = decodedText;
+            ui.scannedQrResultDisplay.classList.remove('hidden');
+            
             ui.scannedTicketInfo.classList.remove('hidden');
-            console.log("DEBUG SCANNER: Scanned ticket info section unhidden."); // Confirming visibility
             ui.markUsedBtn.classList.add('hidden'); // Hide mark used button by default
 
             if (state.scanner) {
                  // Pause scanner to display result
                  if(state.scanner.isScanning) {
                     await state.scanner.pause(true);
-                    console.log("DEBUG SCANNER: Scanner paused.");
+                    console.log("Scanner paused.");
                 }
             }
 
@@ -1017,6 +968,9 @@
                         await Tone.start(); // Ensure audio context is started
                         state.synth.triggerAttackRelease("C3", "32n"); // Play a low, short note for invalid
                     }
+                    ui.scannerStatus.textContent = "¡Ticket Inválido!";
+                    ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700');
+                    ui.scannerStatus.classList.add('text-red-700');
                 } else {
                     const ticketData = ticketDoc.data();
                     ui.currentScannedTicketId.textContent = ticketData.id;
@@ -1034,6 +988,9 @@
                             await Tone.start(); // Ensure audio context is started
                             state.synth.triggerAttackRelease("G3", "16n"); // Play a slightly lower, short note for used
                         }
+                        ui.scannerStatus.textContent = "¡Ticket Ya Usado!";
+                        ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700');
+                        ui.scannerStatus.classList.add('text-yellow-700');
                     } else {
                         displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) DISPONIBLE.`, 'success');
                         ui.currentScannedTicketStatus.textContent = 'DISPONIBLE';
@@ -1046,10 +1003,13 @@
                             await Tone.start(); // Ensure audio context is started
                             state.synth.triggerAttackRelease("C4", "8n"); // Play a middle C note for valid
                         }
+                        ui.scannerStatus.textContent = "¡Escaneo Completado!";
+                        ui.scannerStatus.classList.remove('text-blue-700', 'text-red-700');
+                        ui.scannerStatus.classList.add('text-green-700');
                     }
                 }
             } catch (error) {
-                console.error('DEBUG SCANNER: Error al procesar el escaneo:', error);
+                console.error('Error al procesar el escaneo:', error);
                 displayMessage('Error al escanear el ticket. Inténtalo de nuevo.', 'error');
                 ui.currentScannedTicketStatus.textContent = 'ERROR';
                 ui.currentScannedTicketStatus.className = 'text-red-500 bg-red-100 px-3 py-1 rounded-md'; // Enhanced styling
@@ -1058,6 +1018,9 @@
                     await Tone.start(); // Ensure audio context is started
                     state.synth.triggerAttackRelease("C3", "32n"); // Play a low, short note for errors
                 }
+                ui.scannerStatus.textContent = "Error de Procesamiento.";
+                ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700');
+                ui.scannerStatus.classList.add('text-red-700');
             }
         }
 
@@ -1066,8 +1029,13 @@
          * @param {object} errorMessage The error message.
          */
         function onScanError(errorMessage) {
-            // console.warn("Scan error:", errorMessage); // Log errors, but don't display to user for minor errors
-             console.log("DEBUG SCANNER: Scan error (may be continuous):", errorMessage);
+            // Only update status to "ESCANDEANDO..." if it's not already showing a result or error
+            if (!ui.scannerStatus.textContent.includes('¡') && !ui.scannerStatus.textContent.includes('Error')) {
+                ui.scannerStatus.textContent = "ESCANDEANDO...";
+                ui.scannerStatus.classList.remove('text-green-700', 'text-red-700');
+                ui.scannerStatus.classList.add('text-blue-700');
+            }
+            // console.warn("Scan error:", errorMessage); // Uncomment for debugging if needed
         }
 
         // --- TICKET GENERATOR FUNCTIONALITY ---
@@ -1086,215 +1054,111 @@
          */
         function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container, showName, showLocation, showAddress) {
             const qrItemDiv = document.createElement('div');
-            // Cambiado a bg-gray-900 para que el texto blanco se vea mejor
-            qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-800 text-center mx-auto'; 
+            qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-900 text-center mx-auto'; 
             
-            // Wrapper para el QR y el logo para manejar el posicionamiento
+            // Wrapper for QR and logo to handle positioning
             const qrCodeContainerWrapper = document.createElement('div');
             qrCodeContainerWrapper.className = 'qrcode-container-wrapper';
 
             const qrCodeContainerDiv = document.createElement('div');
             qrCodeContainerDiv.id = `qrcode-${ticketId}`;
             qrCodeContainerDiv.className = 'qrcode-container'; 
+            // Ensure the container for QRCode.js is empty before generating
+            qrCodeContainerDiv.innerHTML = '';
 
-            // NO AÑADIR EL LOGO AQUÍ COMO UN ELEMENTO IMG SEPARADO
-            // El logo y el nombre se dibujarán directamente en el canvas del QR.
-            // const logoImg = document.createElement('img');
-            // logoImg.src = config.logoUrl;
-            // logoImg.alt = "Logo VYTMUSIC";
-            // logoImg.className = 'qrcode-logo';
-            // qrCodeContainerDiv.appendChild(logoImg); // Esto ya no es necesario aquí
-            
-            qrCodeContainerWrapper.appendChild(qrCodeContainerDiv); 
+            const logoImg = document.createElement('img');
+            logoImg.src = config.logoUrl;
+            logoImg.alt = "VYTMUSIC Logo";
+            logoImg.className = 'qrcode-logo';
+
+            qrCodeContainerWrapper.appendChild(qrCodeContainerDiv);
+            qrCodeContainerWrapper.appendChild(logoImg); // Add logo on top of QR
 
             const infoTextDiv = document.createElement('div');
-            infoTextDiv.className = 'qr-info-text'; // Color de texto ajustado en CSS global
+            infoTextDiv.className = 'qr-info-text';
 
             let showAddressHtml = '';
             if (showAddress) {
-                // Verificar si es un enlace de Google Maps
+                // Check if it's a Google Maps link
                 if (showAddress.startsWith('http') && (showAddress.includes('google.com/maps') || showAddress.includes('maps.app.goo.gl'))) {
-                    showAddressHtml = `<p class="show-details-display">Dirección: <a href="${showAddress}" target="_blank" class="text-sky-600 hover:underline">Ver en Mapa</a></p>`;
+                    showAddressHtml = `<p class="text-sm text-gray-400">Dirección: <a href="${showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a></p>`;
                 } else {
-                    showAddressHtml = `<p class="show-details-display">Dirección: ${showAddress}</p>`;
+                    showAddressHtml = `<p class="text-sm text-gray-400">Dirección: ${showAddress}</p>`;
                 }
             }
 
             infoTextDiv.innerHTML = `
-                <h3 class="text-sky-600">VYT-MUSIC</h3>
-                <p class="text-gray-50">CERTAMEN DE CANTO</p>
-                <p class="small-text text-gray-300">¡Tu entrada para el evento!</p>
-                <p class="name-display text-white">${name}</p> <!-- Nombre del invitado en recuadro celeste -->
-                <p class="show-details-display text-gray-50">Show: ${showName || 'N/A'}</p>
-                <p class="show-details-display text-gray-50">Lugar: ${showLocation || 'N/A'}</p>
+                <h3>VYT-MUSIC</h3>
+                <p>CERTAMEN DE CANTO</p>
+                <p class="name-display">${name}</p>
+                <p class="text-sm text-gray-400">Show: ${showName || 'N/A'}</p>
+                <p class="text-sm text-gray-400">Lugar: ${showLocation || 'N/A'}</p>
                 ${showAddressHtml}
-                <p class="prefix-display text-gray-50">Artista: ${prefix}</p> <!-- Cambiado de "Prefijo:" a "Artista:" -->
-                <p class="seat-location-display text-gray-50">Ubicación: ${seatLocation || 'No Asignado'}</p>
-                <p class="id-display text-gray-400">ID: ${ticketId}</p>
-                <a href="https://wa.me/3417422062" target="_blank" class="whatsapp-link-box">
-                    <span class="main-text">INSCRÍBETE</span>
-                    <span class="vyt-music-text">VYT-MUSIC</span>
-                    <span class="certamen-text">CERTAMEN DE CANTO</span>
-                    <img src="https://i.imgur.com/lUNzBH1.png" alt="WhatsApp Icon" class="whatsapp-icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/25D366/ffffff?text=WA';">
-                </a>
+                <p class="prefix-display">Prefijo: ${prefix}</p>
+                <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
+                <p class="id-display">ID: ${ticketId}</p>
+                <p class="call-to-action">¡INSCRÍBETE!</p>
+                <p class="whatsapp-info">WhatsApp: 3417422062</p>
             `;
 
             qrItemDiv.appendChild(qrCodeContainerWrapper);
             qrItemDiv.appendChild(infoTextDiv);
-            container.appendChild(qrItemDiv); // Usar el contenedor proporcionado
+            container.appendChild(qrItemDiv); // Use provided container
 
-            // Generar el código QR
-            const qrcodeInstance = new QRCode(qrCodeContainerDiv.id, {
+            new QRCode(qrCodeContainerDiv.id, {
                 text: qrData,
-                width: 1080, // Tamaño aumentado
-                height: 1080, // Tamaño aumentado
+                width: 1080, // Increased size
+                height: 1080, // Increased size
                 colorDark: "#000000",
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
 
-            // Dibujar el logo y el nombre directamente en el canvas del QR
-            const qrCanvas = qrCodeContainerDiv.querySelector('canvas');
-            if (qrCanvas) {
-                const ctx = qrCanvas.getContext('2d');
-                const canvasWidth = qrCanvas.width;
-                const canvasHeight = qrCanvas.height;
-
-                // Asegurarse de que el logo esté cargado antes de dibujarlo
-                state.logoImage.onload = () => {
-                    // Save the current state of the canvas
-                    ctx.save();
-
-                    // Draw a white background rectangle for the logo and text to ensure visibility
-                    const logoAreaSize = canvasWidth * 0.3; // Example size for the white area
-                    const logoAreaX = (canvasWidth - logoAreaSize) / 2;
-                    const logoAreaY = (canvasHeight - logoAreaSize) / 2;
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(logoAreaX, logoAreaY, logoAreaSize, logoAreaSize);
-
-                    const logoSize = canvasWidth * 0.18; // 18% del ancho del QR
-                    const logoX = (canvasWidth - logoSize) / 2;
-                    const logoY = (canvasHeight - logoSize) / 2 - (canvasHeight * 0.03); // Slightly above center for text below
-                    
-                    ctx.drawImage(state.logoImage, logoX, logoY, logoSize, logoSize);
-                    
-                    // Dibujar el nombre del invitado debajo del logo
-                    ctx.font = `${canvasWidth * 0.03}px Inter, sans-serif`; // Ajustar tamaño de fuente relativo al tamaño del QR
-                    ctx.fillStyle = '#000000'; // Texto negro
-                    ctx.textAlign = 'center';
-                    const textY = logoY + logoSize + (canvasHeight * 0.02); // Posición debajo del logo
-                    ctx.fillText(name, canvasWidth / 2, textY);
-
-                    // Restore the canvas state (important if you had other transformations)
-                    ctx.restore();
-                };
-
-                // Si la imagen ya está cargada, dibujar inmediatamente
-                if (state.logoImage.complete) {
-                    state.logoImage.onload(); // Disparar manualmente onload si ya está cargada
-                } else {
-                    // Establecer onerror para fallback si la imagen no se carga
-                    state.logoImage.onerror = () => {
-                        console.error("DEBUG GENERATOR: Error al cargar el logo para dibujar en el QR.");
-                        displayMessage('Error al cargar el logo para el QR. El QR se generará sin logo.', 'warning');
-                    };
-                }
-            } else {
-                console.error("DEBUG GENERATOR: No se encontró el canvas del QR después de la generación.");
-            }
-
-            // Sección de Redes Sociales (copiada del visor para consistencia)
-            const socialMediaContainer = document.createElement('div');
-            socialMediaContainer.className = 'social-icons-container';
-            socialMediaContainer.innerHTML = `
-                <a href="https://www.instagram.com/vytmusicrosario/" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/E1306C/ffffff?text=IG';">
-                </a>
-                <a href="https://www.facebook.com/vocesytalentos" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/4267B2/ffffff?text=FB';">
-                </a>
-                <a href="https://www.tiktok.com/@vyt.music.rosario" target="_blank" class="social-icon">
-                    <img src="https://i.imgur.com/fe7f60a3-dbd7-4185-9c8b-d85feae0a1e9.webp" alt="TikTok Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=TT';">
-                </a>
-                <a href="https://www.youtube.com/@VYTMUSICCONCURSODECANTO" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YouTube Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/FF0000/ffffff?text=YT';">
-                </a>
-            `;
-            qrItemDiv.appendChild(socialMediaContainer);
-
-            // Crear botón de descarga para cada QR
+            // Create download button for each QR
             const downloadBtn = document.createElement('button');
             downloadBtn.textContent = 'Descargar QR';
             downloadBtn.className = 'download-qr-btn';
             downloadBtn.addEventListener('click', () => {
-                console.log(`DEBUG GENERATOR: DOWNLOAD: Attempting to download QR for ticket ID: ${ticketId}`);
-                const qrCanvasToDownload = qrCodeContainerDiv.querySelector('canvas');
-                console.log(`DEBUG GENERATOR: DOWNLOAD: qrCanvasToDownload found:`, qrCanvasToDownload);
-
-                if (qrCanvasToDownload) {
-                    try {
-                        console.log("DEBUG GENERATOR: DOWNLOAD: Attempting to get data URL from canvas.");
-                        const dataURL = qrCanvasToDownload.toDataURL('image/png');
-                        console.log(`DEBUG GENERATOR: DOWNLOAD: Data URL generated (first 50 chars): ${dataURL.substring(0, 50)}...`); 
-                        
-                        if (dataURL && dataURL !== 'data:,') { // Check if dataURL is valid
-                            const a = document.createElement('a');
-                            a.href = dataURL;
-                            a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
-                            console.log(`DEBUG GENERATOR: DOWNLOAD: Setting download filename to: ${a.download}`);
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            displayMessage('QR descargado exitosamente.', 'success');
-                            console.log(`DEBUG GENERATOR: DOWNLOAD: Download initiated successfully.`);
-                        } else {
-                            displayMessage('El QR generado no es una imagen válida para descargar. (DataURL inválida)', 'error');
-                            console.error('DEBUG GENERATOR: DOWNLOAD: Invalid dataURL:', dataURL);
-                        }
-                    } catch (error) {
-                        console.error('DEBUG GENERATOR: DOWNLOAD: Error during toDataURL or download process:', error);
-                        displayMessage(`Error al descargar el QR: ${error.message}. Revisa la consola.`, 'error');
-                    }
+                const qrCanvas = qrCodeContainerDiv.querySelector('canvas');
+                if (qrCanvas) {
+                    const dataURL = qrCanvas.toDataURL('image/png');
+                    const a = document.createElement('a');
+                    a.href = dataURL;
+                    a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
                 } else {
-                    displayMessage('No se pudo encontrar el canvas del QR para descargar.', 'error');
-                    console.error('DEBUG GENERATOR: DOWNLOAD: Canvas element not found for download. qrCodeContainerDiv:', qrCodeContainerDiv);
+                    displayMessage('Could not find QR canvas to download.', 'error');
                 }
             });
             qrItemDiv.appendChild(downloadBtn);
-            console.log(`DEBUG GENERATOR: Ticket ${ticketId} generado y añadido a currentBatchGeneratedTickets.`);
         }
 
         /**
          * Shares the current batch of generated QRs.
          */
         async function shareCurrentBatch() {
-            console.log("DEBUG GENERATOR: shareCurrentBatch called.");
-            console.log("DEBUG GENERATOR: currentBatchGeneratedTickets length:", state.currentBatchGeneratedTickets.length);
             if (state.currentBatchGeneratedTickets.length === 0) {
                 displayMessage('No QRs generated in the current batch to share.', 'warning');
-                console.log("DEBUG GENERATOR: No tickets in current batch to share. Modal not shown.");
                 return;
             }
             setLoading(true);
             try {
                 const ticketIdsToShare = state.currentBatchGeneratedTickets.map(ticket => ticket.id);
-                console.log("DEBUG GENERATOR: Ticket IDs to share:", ticketIdsToShare);
                 const batchId = await Firebase.saveSharedBatch(ticketIdsToShare);
-                console.log("DEBUG GENERATOR: Batch ID from Firebase:", batchId);
                 if (batchId) {
                     // Construct the shareable link relative to the current path
                     const currentPath = window.location.pathname;
                     const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1); // Get path up to the last slash
                     const shareableLink = `${window.location.origin}${basePath}shared_qr_viewer.html?batchId=${batchId}`;
-                    console.log("DEBUG GENERATOR: Generated shareable link:", shareableLink);
                     showShareLinkModal(shareableLink);
                     displayMessage('QR batch shared successfully!', 'success');
                 } else {
                     displayMessage('Error generating link to share batch.', 'error');
-                    console.error("DEBUG GENERATOR: Firebase.saveSharedBatch returned null batchId. Modal not shown.");
                 }
             } catch (error) {
-                console.error('DEBUG GENERATOR: Error sharing QR batch:', error);
+                console.error('Error sharing QR batch:', error);
                 displayMessage('Error sharing QR batch. Check console.', 'error');
             } finally {
                 setLoading(false);
@@ -1396,29 +1260,30 @@
         async function startApp() {
             cacheUIElements();
             setLoading(true);
-            console.log("DEBUG GENERATOR: Iniciando aplicación y caché de UI.");
+            console.log("Iniciando aplicación y caché de UI.");
 
             try {
                 const app = initializeApp(config.firebase);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
-                state.synth = new Tone.Synth().toDestination(); // Initialize Tone.js synth once
-                console.log("DEBUG GENERATOR: Aplicación Firebase, Firestore, Auth y Tone.js inicializados.");
+                // Initialize Tone.js synth for sound effects
+                state.synth = new Tone.Synth().toDestination(); 
+                console.log("Aplicación Firebase, Firestore, Auth y Tone.js inicializados.");
             } catch (error) {
-                console.error("DEBUG GENERATOR: Error al inicializar Firebase:", error);
+                console.error("Error al inicializar Firebase:", error);
                 displayMessage("Error crítico al conectar con Firebase. La aplicación no puede continuar.", "error");
                 setLoading(false);
                 return;
             }
 
             onAuthStateChanged(state.auth, async (user) => {
-                console.log("DEBUG GENERATOR: Estado de autenticación cambiado. Usuario:", user ? user.uid : "null");
+                console.log("Estado de autenticación cambiado. Usuario:", user ? user.uid : "null");
                 if (user) {
                     state.userId = user.uid;
                     ui.currentUserIdDisplay.textContent = state.userId;
                     state.isFirebaseReady = true;
                     displayMessage('Firebase inicializado y usuario autenticado.', 'info');
-                    console.log("DEBUG GENERATOR: Usuario autenticado. ID:", state.userId);
+                    console.log("Usuario autenticado. ID:", state.userId);
                     
                     setupFirestoreListeners();
 
@@ -1427,14 +1292,14 @@
                 } else {
                     try {
                         if (config.initialAuthToken) {
-                            console.log("DEBUG GENERATOR: Intentando iniciar sesión con token personalizado.");
+                            console.log("Intentando iniciar sesión con token personalizado.");
                             await signInWithCustomToken(state.auth, config.initialAuthToken);
                         } else {
-                            console.log("DEBUG GENERATOR: Intentando iniciar sesión de forma anónima.");
+                            console.log("Intentando iniciar sesión de forma anónima.");
                             await signInAnonymously(state.auth);
                         }
                     } catch (error) {
-                        console.error("DEBUG GENERATOR: Error de autenticación:", error);
+                        console.error("Error de autenticación:", error);
                         displayMessage(`Error de autenticación: ${error.message}.`, 'error');
                         state.userId = 'offline-' + crypto.randomUUID().substring(0,8);
                         ui.currentUserIdDisplay.textContent = `Error de autenticación / ID Temporal`;
@@ -1442,19 +1307,12 @@
                     }
                 }
                 setLoading(false);
-                console.log("DEBUG GENERATOR: Carga inicial completa.");
+                console.log("Carga inicial completa.");
             });
 
             state.logoImage.src = config.logoUrl;
-            state.logoImage.onerror = () => {
-                ui.logoErrorMessage.classList.remove('hidden');
-                console.error("DEBUG GENERATOR: Error al cargar el logo principal del generador.");
-            };
-            state.logoImage.onload = () => {
-                console.log("DEBUG GENERATOR: Logo principal del generador cargado correctamente.");
-            };
             setupEventListeners();
-            console.log("DEBUG GENERATOR: Detectores de eventos configurados.");
+            console.log("Detectores de eventos configurados.");
         }
 
         /**
@@ -1462,10 +1320,10 @@
          */
         function setupFirestoreListeners() {
             if (!state.isFirebaseReady || !state.userId) {
-                console.warn("DEBUG GENERATOR: Firebase o ID de usuario no listos para configurar los oyentes de Firestore.");
+                console.warn("Firebase o ID de usuario no listos para configurar los oyentes de Firestore.");
                 return;
             }
-            console.log("DEBUG GENERATOR: Configurando oyentes de Firestore para el usuario:", state.userId);
+            console.log("Configurando oyentes de Firestore para el usuario:", state.userId);
 
             // Listener for ticket counts
             if (state.ticketCountsListenerUnsubscribe) state.ticketCountsListenerUnsubscribe();
@@ -1482,7 +1340,7 @@
                 state.totalGeneratedTickets = snapshot.size;
                 state.totalUsedTickets = usedCount;
             }, (error) => {
-                console.error("DEBUG GENERATOR: Error al escuchar los recuentos de tickets:", error);
+                console.error("Error al escuchar los recuentos de tickets:", error);
                 displayMessage('Error al cargar los recuentos de tickets.', 'error');
             });
 
@@ -1493,7 +1351,7 @@
                 state.allTicketsData = tickets;
                 renderAllTickets(tickets);
             }, (error) => {
-                console.error("DEBUG GENERATOR: Error al escuchar todos los tickets:", error);
+                console.error("Error al escuchar todos los tickets:", error);
                 displayMessage('Error al cargar la lista de tickets.', 'error');
             });
 
@@ -1504,7 +1362,7 @@
                 const historyItems = snapshot.docs.map(doc => doc.data());
                 renderScanHistory(historyItems);
             }, (error) => {
-                console.error("DEBUG GENERATOR: Error al escuchar el historial de escaneo:", error);
+                console.error("Error al escuchar el historial de escaneo:", error);
                 displayMessage('Error al cargar el historial de escaneo.', 'error');
             });
         }
@@ -1524,10 +1382,10 @@
 
             // QR Scanner: Restart Scan Button
             ui.restartScanBtn.addEventListener('click', () => {
-                console.log("DEBUG SCANNER: Botón 'Reiniciar Escáner' clickeado.");
+                console.log("Botón 'Reiniciar Escáner' clickeado.");
                 ui.scannedTicketInfo.classList.add('hidden');
+                ui.scannedQrResultDisplay.classList.add('hidden'); // Hide raw QR data display
                 ui.markUsedBtn.classList.add('hidden'); // Asegurarse de que esto esté oculto al reiniciar
-                // No ocultar el botón de reiniciar a sí mismo, ya que debe estar siempre visible
                 startQrScanner(); // Reiniciar el escáner completamente
             });
 
@@ -1550,7 +1408,7 @@
                                 flashScanResult('used');
                             }
                         } catch (error) {
-                            console.error('DEBUG GENERATOR: Error al marcar el ticket como usado:', error);
+                            console.error('Error al marcar el ticket como usado:', error);
                             displayMessage('Error al marcar el ticket como usado. Revisa la consola.', 'error');
                         } finally {
                             setLoading(false);
@@ -1564,7 +1422,7 @@
                 e.preventDefault();
                 setLoading(true);
                 ui.generatedTicketsContainer.innerHTML = '';
-                state.currentBatchGeneratedTickets = []; // Clear previous batch
+                state.currentBatchGeneratedTickets = [];
 
                 const showName = ui.showNameInput.value.trim();
                 const showLocation = ui.showLocationInput.value.trim();
@@ -1574,8 +1432,6 @@
                 const seatLocation = ui.ticketSeatLocationInput.value.trim();
 
                 const names = batchNamesRaw.split(/[\n,]+/).map(name => name.trim()).filter(name => name);
-                console.log("DEBUG GENERATOR: Nombres procesados para generación:", names);
-
 
                 if (names.length === 0 || !ticketPrefix || !showName || !showLocation) {
                     displayMessage('Por favor, ingresa un nombre de show, ubicación, prefijo y al menos un nombre.', 'warning');
@@ -1610,13 +1466,9 @@
                     }
                     await batch.commit();
                     displayMessage(`${names.length} tickets generados exitosamente.`, 'success');
-                    // Ensure the share button is shown only if tickets were successfully generated
-                    if (state.currentBatchGeneratedTickets.length > 0) {
-                        ui.shareBatchQrsBtn.classList.remove('hidden'); // Show share button
-                        console.log("DEBUG GENERATOR: Share button should now be visible after successful generation.");
-                    }
+                    ui.shareBatchQrsBtn.classList.remove('hidden'); // Show share button
                 } catch (error) {
-                    console.error('DEBUG GENERATOR: Error al generar tickets en lote:', error);
+                    console.error('Error al generar tickets en lote:', error);
                     displayMessage('Error al generar tickets. Revisa la consola.', 'error');
                 } finally {
                     setLoading(false);
@@ -1633,7 +1485,6 @@
                     ui.generatedTicketsContainer.innerHTML = '';
                     state.currentBatchGeneratedTickets = [];
                     ui.shareBatchQrsBtn.classList.add('hidden');
-                    console.log("DEBUG GENERATOR: Share button hidden after reset.");
                 });
             });
 
