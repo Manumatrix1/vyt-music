@@ -81,7 +81,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            display: flex; /* Usar flexbox para centrar el contenido (QR y logo) */
+            display: flex;
             justify-content: center;
             align-items: center;
         }
@@ -120,13 +120,13 @@
         }
 
         .qr-info-text p {
-            font-size: 1.25rem; /* Texto más pequeño para "Certamen de Canto" */
+            font-size: 1.1rem; /* Texto para "Certamen de Canto" - Aún más pequeño */
             margin-bottom: 0.5rem;
             color: #f9fafb; /* Cambiado a blanco */
         }
         /* Estilo para el texto adicional debajo de "Certamen de Canto" */
         .qr-info-text .small-text {
-            font-size: 1rem; /* Más pequeño que el texto normal */
+            font-size: 0.9rem; /* Más pequeño que el texto normal */
             color: #cbd5e1; /* Un gris claro para el texto secundario */
             margin-top: -0.25rem; /* Ajustar el margen superior si es necesario */
             margin-bottom: 0.5rem;
@@ -146,10 +146,16 @@
 
         .qr-info-text .id-display,
         .qr-info-text .prefix-display,
-        .qr-info-text .seat-location-display {
+        .qr-info-text .seat-location-display,
+        .qr-info-text .show-details-display { /* Nuevo estilo para detalles del show */
             font-size: 1.5rem; /* Otras visualizaciones de información */
             color: #f9fafb; /* Cambiado a blanco */
         }
+        .qr-info-text .show-details-display a {
+            color: #38bdf8; /* Color azul para enlaces */
+            text-decoration: underline;
+        }
+
 
         .qr-info-text .whatsapp-link-box {
             background-color: #22c55e; /* Verde de WhatsApp */
@@ -202,18 +208,30 @@
             background-color: #0ea5e9; /* Azul cielo más oscuro */
         }
         /* Estilos específicos para el encabezado en shared_qr_viewer.html */
+        .header-production-text { /* Nuevo estilo para PRODUCCIONES */
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #cbd5e1; /* Gris claro */
+            margin-bottom: 0.25rem;
+        }
         .header-small-text {
-            font-size: 1.1rem; /* Tamaño para "Certamen de Canto" en el header */
+            font-size: 1rem; /* Tamaño para "Certamen de Canto" en el header - Más pequeño */
             color: #cbd5e1; /* Gris claro */
             margin-top: 0.25rem;
             margin-bottom: 0.25rem;
         }
-        .header-prefix-text {
-            font-size: 1.5rem; /* Tamaño para el prefijo en el header */
+        .header-show-name { /* Nuevo estilo para Nombre del Show en el header */
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #f9fafb; /* Blanco para el prefijo */
+            color: #f9fafb;
             margin-top: 0.5rem;
         }
+        .header-artist-name { /* Nuevo estilo para Artista en el header */
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin-top: 0.25rem;
+        }
+
         /* Estilos para los iconos de redes sociales */
         .social-icons-container {
             display: flex;
@@ -252,9 +270,11 @@
             <img src="https://i.imgur.com/rqkZi9P.png" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 150px;" 
                  onerror="this.onerror=null;this.src='https://placehold.co/150x150/ffffff/000000?text=Logo'; document.getElementById('logo-error-message').classList.remove('hidden');">
             <p id="logo-error-message" class="text-red-400 text-sm mt-1 hidden">Error al cargar el logo. Verifica la imagen.</p>
+            <p class="header-production-text">PRODUCCIONES</p> <!-- Nuevo: PRODUCCIONES -->
             <h1 class="text-3xl sm:text-4xl font-bold text-sky-400">VYTMUSIC</h1>
             <p class="header-small-text">CERTAMEN DE CANTO</p>
-            <p id="batch-prefix-display" class="header-prefix-text">Artista: Cargando...</p> <!-- Texto cambiado a "Artista:" -->
+            <p id="batch-show-name-display" class="header-show-name">Show: Cargando...</p> <!-- Nuevo: Nombre del Show -->
+            <p id="batch-artist-name-display" class="header-artist-name">Artista: Cargando...</p> <!-- Nuevo: Artista -->
         </header>
 
         <div id="message-container" class="mb-4"></div>
@@ -303,7 +323,8 @@
             const ids = [
                 'loading-overlay', 'message-container', 'logo-error-message',
                 'shared-batch-qrs-container',
-                'batch-prefix-display' // Añadido el nuevo elemento del prefijo
+                'batch-show-name-display', // Nuevo elemento para el nombre del show
+                'batch-artist-name-display' // Nuevo elemento para el nombre del artista
             ];
             ids.forEach(id => {
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
@@ -343,8 +364,11 @@
          * @param {string} seatLocation La ubicación del asiento asignada.
          * @param {string} qrData Los datos a codificar en el QR.
          * @param {HTMLElement} container El contenedor donde se añadirá el elemento QR.
+         * @param {string} showName Nombre del show.
+         * @param {string} showLocation Lugar del show.
+         * @param {string} showAddress Dirección del show (puede ser un link de Google Maps).
          */
-        function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container) {
+        function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container, showName, showLocation, showAddress) {
             const qrItemDiv = document.createElement('div');
             qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-900 text-center mx-auto'; 
             
@@ -367,11 +391,24 @@
             const infoTextDiv = document.createElement('div');
             infoTextDiv.className = 'qr-info-text';
 
+            let showAddressHtml = '';
+            if (showAddress) {
+                // Verificar si es un enlace de Google Maps
+                if (showAddress.startsWith('http') && (showAddress.includes('google.com/maps') || showAddress.includes('maps.app.goo.gl'))) {
+                    showAddressHtml = `<p class="show-details-display">Dirección: <a href="${showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a></p>`;
+                } else {
+                    showAddressHtml = `<p class="show-details-display">Dirección: ${showAddress}</p>`;
+                }
+            }
+
             infoTextDiv.innerHTML = `
                 <h3>VYT-MUSIC</h3>
                 <p>CERTAMEN DE CANTO</p>
                 <p class="small-text">¡Tu entrada para el evento!</p>
                 <p class="name-display">${name}</p> <!-- Nombre del invitado en recuadro celeste -->
+                <p class="show-details-display">Show: ${showName || 'N/A'}</p>
+                <p class="show-details-display">Lugar: ${showLocation || 'N/A'}</p>
+                ${showAddressHtml}
                 <p class="prefix-display">Artista: ${prefix}</p> <!-- Cambiado de "Prefijo:" a "Artista:" -->
                 <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
                 <p class="id-display">ID: ${ticketId}</p>
@@ -466,6 +503,9 @@
                     return [];
                 }
                 const tickets = [];
+                // Firestore no soporta consultas 'in' con más de 10 elementos directamente.
+                // Para lotes grandes, se necesitaría dividir en sub-consultas o un enfoque diferente.
+                // Para este caso, iteramos individualmente.
                 for (const id of ticketIds) {
                     const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, id);
                     const docSnap = await getDoc(ticketRef);
@@ -484,32 +524,47 @@
         async function loadAndDisplaySharedBatch(batchId) {
             setLoading(true);
             ui.sharedBatchQrsContainer.innerHTML = ''; // Limpiar contenido previo
-            ui.batchPrefixDisplay.textContent = 'Artista: Cargando...'; // Resetear el texto del artista
+            ui.batchShowNameDisplay.textContent = 'Show: Cargando...'; // Resetear el texto del show
+            ui.batchArtistNameDisplay.textContent = 'Artista: Cargando...'; // Resetear el texto del artista
 
             try {
                 const sharedBatch = await Firebase.getSharedBatch(batchId);
                 if (sharedBatch && sharedBatch.ticketIds && sharedBatch.ticketIds.length > 0) {
                     const tickets = await Firebase.getTicketsByIds(sharedBatch.ticketIds);
                     if (tickets.length > 0) {
-                        // Actualizar el prefijo del lote en el encabezado a "Artista: [Prefijo]"
-                        ui.batchPrefixDisplay.textContent = `Artista: ${tickets[0].prefix || 'N/A'}`;
+                        // Actualizar el nombre del show y el artista en el encabezado
+                        ui.batchShowNameDisplay.textContent = `Show: ${tickets[0].showName || 'N/A'}`;
+                        ui.batchArtistNameDisplay.textContent = `Artista: ${tickets[0].prefix || 'N/A'}`;
 
                         tickets.forEach(ticket => {
-                            generateQrCodeForTicket(ticket.id, ticket.name, ticket.prefix, ticket.seatLocation, ticket.id, ui.sharedBatchQrsContainer);
+                            generateQrCodeForTicket(
+                                ticket.id, 
+                                ticket.name, 
+                                ticket.prefix, 
+                                ticket.seatLocation, 
+                                ticket.id, 
+                                ui.sharedBatchQrsContainer,
+                                ticket.showName, // Pasar showName
+                                ticket.showLocation, // Pasar showLocation
+                                ticket.showAddress // Pasar showAddress
+                            );
                         });
                         displayMessage(`Lote con ${tickets.length} QRs cargado.`, 'success');
                     } else {
                         displayMessage('No se encontraron tickets en este lote compartido.', 'warning');
-                        ui.batchPrefixDisplay.textContent = 'Artista: N/A';
+                        ui.batchShowNameDisplay.textContent = 'Show: N/A';
+                        ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
                     }
                 } else {
                     displayMessage('Lote compartido no encontrado o vacío.', 'error');
-                    ui.batchPrefixDisplay.textContent = 'Artista: N/A';
+                    ui.batchShowNameDisplay.textContent = 'Show: N/A';
+                    ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
                 }
             } catch (error) {
                 console.error('Error al cargar el lote compartido:', error);
                 displayMessage('Error al cargar el lote compartido. Consulta la consola.', 'error');
-                ui.batchPrefixDisplay.textContent = 'Artista: Error';
+                ui.batchShowNameDisplay.textContent = 'Show: Error';
+                ui.batchArtistNameDisplay.textContent = 'Artista: Error';
             } finally {
                 setLoading(false);
             }
@@ -562,7 +617,8 @@
                 await loadAndDisplaySharedBatch(batchId);
             } else {
                 displayMessage('No se encontró un ID de lote en la URL.', 'warning');
-                ui.batchPrefixDisplay.textContent = 'Artista: Lote no especificado'; // Mensaje alternativo
+                ui.batchShowNameDisplay.textContent = 'Show: Lote no especificado'; // Mensaje alternativo
+                ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
                 setLoading(false);
             }
             console.log("Carga inicial completa.");
