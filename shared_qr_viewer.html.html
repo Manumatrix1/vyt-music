@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VYTMUSIC - Lote de QRs Compartidos</title>
+    <title>VYTMUSIC - Lote de Entradas Compartido</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,12 +22,9 @@
             font-family: 'Inter', sans-serif;
             background-color: #111827; /* bg-gray-900 */
             color: #f9fafb; /* text-gray-50 */
-            min-height: 100vh; /* Asegura que el body ocupe al menos toda la altura de la ventana */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-        }
-        .container {
-            flex-grow: 1; /* Permite que el contenedor principal crezca para llenar el espacio */
         }
         .hidden { display: none !important; }
         
@@ -112,7 +109,7 @@
         .qr-info-text {
             text-align: center;
             margin-top: 1rem;
-            color: #000; /* Texto negro para legibilidad en fondo blanco */
+            color: #f9fafb; /* Cambiado a blanco para mejor contraste en fondo oscuro */
         }
 
         .qr-info-text h3 {
@@ -125,7 +122,7 @@
         .qr-info-text p {
             font-size: 1.1rem; /* Texto para "Certamen de Canto" - Aún más pequeño */
             margin-bottom: 0.5rem;
-            color: #000; /* Texto negro */
+            color: #f9fafb; /* Cambiado a blanco */
         }
         /* Estilo para el texto adicional debajo de "Certamen de Canto" */
         .qr-info-text .small-text {
@@ -152,7 +149,7 @@
         .qr-info-text .seat-location-display,
         .qr-info-text .show-details-display { /* Nuevo estilo para detalles del show */
             font-size: 1.5rem; /* Otras visualizaciones de información */
-            color: #000; /* Texto negro */
+            color: #f9fafb; /* Cambiado a blanco */
         }
         .qr-info-text .show-details-display a {
             color: #38bdf8; /* Color azul para enlaces */
@@ -363,7 +360,7 @@
          * Genera un código QR para una entrada y lo muestra en la interfaz.
          * @param {string} ticketId El ID único de la entrada.
          * @param {string} name El nombre de la persona.
-         * @param {string} prefix El prefijo de la entrada (ahora usado como Artista).
+         * @param {string} prefix El prefijo de la entrada.
          * @param {string} seatLocation La ubicación del asiento asignada.
          * @param {string} qrData Los datos a codificar en el QR.
          * @param {HTMLElement} container El contenedor donde se añadirá el elemento QR.
@@ -373,7 +370,6 @@
          */
         function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container, showName, showLocation, showAddress) {
             const qrItemDiv = document.createElement('div');
-            // Cambiado a bg-gray-900 para que el texto blanco se vea mejor
             qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-900 text-center mx-auto'; 
             
             // Wrapper para el QR y el logo para manejar el posicionamiento
@@ -393,7 +389,6 @@
             qrCodeContainerWrapper.appendChild(qrCodeContainerDiv); 
 
             const infoTextDiv = document.createElement('div');
-            // Cambiado a #f9fafb para que el texto sea blanco
             infoTextDiv.className = 'qr-info-text';
 
             let showAddressHtml = '';
@@ -421,7 +416,7 @@
                     <span class="main-text">INSCRÍBETE</span>
                     <span class="vyt-music-text">VYT-MUSIC</span>
                     <span class="certamen-text">CERTAMEN DE CANTO</span>
-                    <img src="https://i.imgur.com/lUNzBH1.png" alt="WhatsApp Icon" class="whatsapp-icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/25D366/ffffff?text=WA';">
+                    <img src="https://i.imgur.com/lUNzBH1.png" alt="" class="whatsapp-icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/25D366/ffffff?text=WA';">
                 </a>
             `;
 
@@ -463,16 +458,16 @@
             socialMediaContainer.className = 'social-icons-container';
             socialMediaContainer.innerHTML = `
                 <a href="https://www.instagram.com/vytmusicrosario/" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/E1306C/ffffff?text=IG';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/E1306C/ffffff?text=IG';">
                 </a>
                 <a href="https://www.facebook.com/vocesytalentos" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/4267B2/ffffff?text=FB';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/4267B2/ffffff?text=FB';">
                 </a>
                 <a href="https://www.tiktok.com/@vyt.music.rosario" target="_blank" class="social-icon">
-                    <img src="https://i.imgur.com/fe7f60a3-dbd7-4185-9c8b-d85feae0a1e9.webp" alt="TikTok Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=TT';">
+                    <img src="tiktok-logo-icon-free-png.webp" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=TT';">
                 </a>
                 <a href="https://www.youtube.com/@VYTMUSICCONCURSODECANTO" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YouTube Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/FF0000/ffffff?text=YT';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/FF0000/ffffff?text=YT';">
                 </a>
             `;
             qrItemDiv.appendChild(socialMediaContainer);
@@ -488,23 +483,15 @@
              */
             async getSharedBatch(batchId) {
                 if (!state.isFirebaseReady) {
-                    console.error("DEBUG: Firebase no está listo. No se puede obtener el lote compartido.");
                     displayMessage('Firebase no está listo para obtener el lote compartido.', 'error');
                     return null;
                 }
                 const sharedBatchRef = doc(state.db, `artifacts/${config.appId}/public/data/sharedBatches`, batchId);
-                try {
-                    const docSnap = await getDoc(sharedBatchRef);
-                    if (docSnap.exists()) {
-                        console.log("DEBUG: Lote compartido encontrado:", docSnap.data());
-                        return docSnap.data();
-                    }
-                    console.log("DEBUG: Lote compartido no encontrado para ID:", batchId);
-                    return null;
-                } catch (error) {
-                    console.error("DEBUG: Error al obtener el lote compartido de Firestore:", error);
-                    return null;
+                const docSnap = await getDoc(sharedBatchRef);
+                if (docSnap.exists()) {
+                    return docSnap.data();
                 }
+                return null;
             },
             /**
              * Obtiene múltiples entradas por sus IDs.
@@ -512,8 +499,7 @@
              * @returns {Array<object>} Array de datos de entradas.
              */
             async getTicketsByIds(ticketIds) {
-                if (!state.isFirebaseReady || !ticketIds || ticketIds.length === 0) {
-                    console.error("DEBUG: Firebase no está listo o no se proporcionaron IDs de tickets. No se pueden obtener los tickets.");
+                if (!state.isFirebaseReady || ticketIds.length === 0) {
                     return [];
                 }
                 const tickets = [];
@@ -522,19 +508,11 @@
                 // Para este caso, iteramos individualmente.
                 for (const id of ticketIds) {
                     const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, id);
-                    try {
-                        const docSnap = await getDoc(ticketRef);
-                        if (docSnap.exists()) {
-                            tickets.push(docSnap.data());
-                            console.log("DEBUG: Ticket obtenido:", docSnap.data().id);
-                        } else {
-                            console.warn("DEBUG: Ticket no encontrado para ID:", id);
-                        }
-                    } catch (error) {
-                        console.error(`DEBUG: Error al obtener el ticket ${id} de Firestore:`, error);
+                    const docSnap = await getDoc(ticketRef);
+                    if (docSnap.exists()) {
+                        tickets.push(docSnap.data());
                     }
                 }
-                console.log("DEBUG: Todos los tickets obtenidos:", tickets);
                 return tickets;
             }
         };
@@ -552,10 +530,8 @@
             try {
                 const sharedBatch = await Firebase.getSharedBatch(batchId);
                 if (sharedBatch && sharedBatch.ticketIds && sharedBatch.ticketIds.length > 0) {
-                    console.log("DEBUG: Lote compartido encontrado y tiene ticketIds. Procediendo a obtener tickets.");
                     const tickets = await Firebase.getTicketsByIds(sharedBatch.ticketIds);
                     if (tickets.length > 0) {
-                        console.log("DEBUG: Tickets obtenidos. Renderizando QRs.");
                         // Actualizar el nombre del show y el artista en el encabezado
                         ui.batchShowNameDisplay.textContent = `Show: ${tickets[0].showName || 'N/A'}`;
                         ui.batchArtistNameDisplay.textContent = `Artista: ${tickets[0].prefix || 'N/A'}`;
@@ -566,7 +542,7 @@
                                 ticket.name, 
                                 ticket.prefix, 
                                 ticket.seatLocation, 
-                                ticket.id, // QR data is the ticket ID
+                                ticket.id, 
                                 ui.sharedBatchQrsContainer,
                                 ticket.showName, // Pasar showName
                                 ticket.showLocation, // Pasar showLocation
@@ -575,25 +551,22 @@
                         });
                         displayMessage(`Lote con ${tickets.length} QRs cargado.`, 'success');
                     } else {
-                        console.log("DEBUG: No se encontraron tickets en este lote.");
                         displayMessage('No se encontraron tickets en este lote compartido.', 'warning');
                         ui.batchShowNameDisplay.textContent = 'Show: N/A';
                         ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
                     }
                 } else {
-                    console.log("DEBUG: Lote compartido no encontrado o ticketIds vacío/nulo.");
-                    ui.batchShowNameDisplay.textContent = 'Show: Lote no encontrado';
+                    displayMessage('Lote compartido no encontrado o vacío.', 'error');
+                    ui.batchShowNameDisplay.textContent = 'Show: N/A';
                     ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
-                    displayMessage('El lote de QRs no fue encontrado o está vacío.', 'error');
                 }
             } catch (error) {
-                console.error('DEBUG: Error general al cargar el lote compartido:', error);
+                console.error('Error al cargar el lote compartido:', error);
+                displayMessage('Error al cargar el lote compartido. Consulta la consola.', 'error');
                 ui.batchShowNameDisplay.textContent = 'Show: Error';
                 ui.batchArtistNameDisplay.textContent = 'Artista: Error';
-                displayMessage('Error al cargar el lote compartido. Revisa la consola para más detalles.', 'error');
             } finally {
                 setLoading(false);
-                console.log("DEBUG: Carga del visor de QRs compartidos completa.");
             }
         }
 
@@ -605,15 +578,15 @@
         async function startApp() {
             cacheUIElements();
             setLoading(true);
-            console.log("DEBUG: Iniciando aplicación de visor de QRs compartidos.");
+            console.log("Iniciando aplicación y caché de UI.");
 
             try {
                 const app = initializeApp(config.firebase);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
-                console.log("DEBUG: Aplicación Firebase, Firestore y Auth inicializados.");
+                console.log("Aplicación Firebase, Firestore y Auth inicializados.");
             } catch (error) {
-                console.error("DEBUG: Error al inicializar Firebase:", error);
+                console.error("Error al inicializar Firebase:", error);
                 displayMessage("Error crítico al conectar con Firebase. La aplicación no puede continuar.", "error");
                 setLoading(false);
                 return;
@@ -623,9 +596,9 @@
             try {
                 await signInAnonymously(state.auth);
                 state.isFirebaseReady = true;
-                console.log("DEBUG: Autenticación anónima exitosa.");
+                console.log("Autenticación anónima exitosa.");
             } catch (error) {
-                console.error("DEBUG: Error de autenticación anónima:", error);
+                console.error("Error de autenticación anónima:", error);
                 displayMessage(`Error de autenticación: ${error.message}. No se podrán cargar los QRs.`, 'error');
                 setLoading(false);
                 return;
@@ -635,17 +608,11 @@
             state.logoImage.src = config.logoUrl;
             state.logoImage.onerror = () => {
                 ui.logoErrorMessage.classList.remove('hidden');
-                console.error("DEBUG: Error al cargar el logo principal del visor.");
-            };
-            state.logoImage.onload = () => {
-                console.log("DEBUG: Logo principal del visor cargado correctamente.");
             };
 
             // Verificar el batchId en la URL
             const urlParams = new URLSearchParams(window.location.search);
             const batchId = urlParams.get('batchId');
-            console.log("DEBUG: Batch ID de la URL:", batchId);
-
             if (batchId) {
                 await loadAndDisplaySharedBatch(batchId);
             } else {
@@ -654,7 +621,7 @@
                 ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
                 setLoading(false);
             }
-            console.log("DEBUG: Carga inicial del visor completa.");
+            console.log("Carga inicial completa.");
         }
 
         // Iniciar la aplicación cuando el DOM esté completamente cargado
