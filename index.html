@@ -348,12 +348,12 @@
                         <button id="restart-scan-btn" class="mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700">Reiniciar Escáner</button>
                     </div>
                     <div id="scanned-ticket-info" class="hidden mt-6 bg-gray-900 p-4 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Información de la Entrada</h3>
-                        <p><strong>ID:</strong> <span id="current-scanned-ticket-id" class="break-all"></span></p>
-                        <p><strong>Prefijo:</strong> <span id="current-scanned-ticket-prefix"></span></p>
-                        <p><strong>Nombre:</strong> <span id="current-scanned-ticket-name"></span></p>
-                        <p><strong>Ubicación:</strong> <span id="current-scanned-ticket-seat-location"></span></p>
-                        <p><strong>Estado:</strong> <span id="current-scanned-ticket-status"></span></p>
+                        <h3 class="text-xl font-bold mb-2">Información de la Entrada Escaneada</h3>
+                        <p><strong>ID:</strong> <span id="current-scanned-ticket-id" class="break-all text-sky-300"></span></p>
+                        <p><strong>Prefijo:</strong> <span id="current-scanned-ticket-prefix" class="text-sky-300"></span></p>
+                        <p><strong>Nombre:</strong> <span id="current-scanned-ticket-name" class="text-sky-300"></span></p>
+                        <p><strong>Ubicación:</strong> <span id="current-scanned-ticket-seat-location" class="text-sky-300"></span></p>
+                        <p class="mt-4 text-lg font-semibold">Estado del Ticket: <span id="current-scanned-ticket-status" class="text-2xl font-bold p-2 rounded-md"></span></p>
                         <div class="mt-4 text-center">
                             <button id="mark-used-btn" class="hidden w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700">Marcar como Usado</button>
                         </div>
@@ -843,9 +843,18 @@
                     onScanError
                 ).then(() => {
                     console.log("QR scanner started successfully.");
+                    displayMessage('Cámara iniciada. Lista para escanear.', 'info');
                 }).catch(err => {
                     console.error("Error starting scanner:", err);
-                    displayMessage('No se pudo iniciar la cámara. Asegúrate de otorgar los permisos.', 'error');
+                    let errorMessage = 'No se pudo iniciar la cámara. Asegúrate de otorgar los permisos y que no esté en uso por otra aplicación.';
+                    if (err.name === 'NotAllowedError') {
+                        errorMessage = 'Acceso a la cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
+                    } else if (err.name === 'NotFoundError') {
+                        errorMessage = 'No se encontró ninguna cámara. Asegúrate de tener una cámara conectada y funcionando.';
+                    } else if (err.name === 'NotReadableError') {
+                        errorMessage = 'La cámara ya está en uso o no se puede acceder a ella. Cierra otras aplicaciones que la usen.';
+                    }
+                    displayMessage(errorMessage, 'error');
                 });
             });
         }
@@ -876,6 +885,10 @@
          */
         async function onScanSuccess(decodedText, decodedResult) {
             console.log("QR scanned successfully:", decodedText);
+            ui.scannedTicketInfo.classList.remove('hidden');
+            console.log("Scanned ticket info section unhidden."); // Confirming visibility
+            ui.markUsedBtn.classList.add('hidden'); // Hide mark used button by default
+
             if (state.scanner) {
                  // Pause scanner to display result
                  if(state.scanner.isScanning) {
@@ -883,9 +896,6 @@
                     console.log("Scanner paused.");
                 }
             }
-
-            ui.scannedTicketInfo.classList.remove('hidden');
-            ui.markUsedBtn.classList.add('hidden'); // Hide mark used button by default
 
             try {
                 const ticketId = decodedText;
@@ -899,7 +909,7 @@
                     ui.currentScannedTicketName.textContent = 'N/A';
                     ui.currentScannedTicketSeatLocation.textContent = 'N/A';
                     ui.currentScannedTicketStatus.textContent = 'INVÁLIDO';
-                    ui.currentScannedTicketStatus.className = 'font-bold text-red-500';
+                    ui.currentScannedTicketStatus.className = 'text-red-500 bg-red-100 px-3 py-1 rounded-md'; // Enhanced styling
                     flashScanResult('invalid');
                     Firebase.saveScanEvent({ id: ticketId }, 'invalid');
                 } else {
@@ -912,13 +922,13 @@
                     if (ticketData.used) {
                         displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) YA USADO.`, 'warning');
                         ui.currentScannedTicketStatus.textContent = 'USADO';
-                        ui.currentScannedTicketStatus.className = 'font-bold text-yellow-500';
+                        ui.currentScannedTicketStatus.className = 'text-yellow-700 bg-yellow-100 px-3 py-1 rounded-md'; // Enhanced styling
                         flashScanResult('used');
                         Firebase.saveScanEvent(ticketData, 'used');
                     } else {
                         displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) DISPONIBLE.`, 'success');
                         ui.currentScannedTicketStatus.textContent = 'DISPONIBLE';
-                        ui.currentScannedTicketStatus.className = 'font-bold text-green-500';
+                        ui.currentScannedTicketStatus.className = 'text-green-700 bg-green-100 px-3 py-1 rounded-md'; // Enhanced styling
                         ui.markUsedBtn.classList.remove('hidden');
                         state.currentScannedTicketId = ticketData.id;
                         flashScanResult('valid');
@@ -929,7 +939,7 @@
                 console.error('Error al procesar el escaneo:', error);
                 displayMessage('Error al escanear el ticket. Inténtalo de nuevo.', 'error');
                 ui.currentScannedTicketStatus.textContent = 'ERROR';
-                ui.currentScannedTicketStatus.className = 'font-bold text-red-500';
+                ui.currentScannedTicketStatus.className = 'text-red-500 bg-red-100 px-3 py-1 rounded-md'; // Enhanced styling
                 flashScanResult('invalid');
             }
         }
@@ -1304,7 +1314,7 @@
                                 displayMessage(`Ticket ${ui.currentScannedTicketName.textContent} marcado como USADO.`, 'success');
                                 ui.markUsedBtn.classList.add('hidden');
                                 ui.currentScannedTicketStatus.textContent = 'USADO';
-                                ui.currentScannedTicketStatus.className = 'font-bold text-yellow-500';
+                                ui.currentScannedTicketStatus.className = 'text-yellow-700 bg-yellow-100 px-3 py-1 rounded-md'; // Enhanced styling
                                 flashScanResult('used');
                             }
                         } catch (error) {
