@@ -1067,6 +1067,7 @@
          */
         function onScanError(errorMessage) {
             // console.warn("Scan error:", errorMessage); // Log errors, but don't display to user for minor errors
+             console.log("DEBUG GENERATOR: Scan error (may be continuous):", errorMessage);
         }
 
         // --- TICKET GENERATOR FUNCTIONALITY ---
@@ -1226,17 +1227,35 @@
             downloadBtn.textContent = 'Descargar QR';
             downloadBtn.className = 'download-qr-btn';
             downloadBtn.addEventListener('click', () => {
+                console.log(`DEBUG GENERATOR: Attempting to download QR for ticket ID: ${ticketId}`);
                 const qrCanvasToDownload = qrCodeContainerDiv.querySelector('canvas');
+                console.log(`DEBUG GENERATOR: qrCanvasToDownload found:`, qrCanvasToDownload);
+
                 if (qrCanvasToDownload) {
-                    const dataURL = qrCanvasToDownload.toDataURL('image/png');
-                    const a = document.createElement('a');
-                    a.href = dataURL;
-                    a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
+                    try {
+                        const dataURL = qrCanvasToDownload.toDataURL('image/png');
+                        console.log(`DEBUG GENERATOR: dataURL generated: ${dataURL.substring(0, 50)}...`); // Log first 50 chars
+                        
+                        if (dataURL && dataURL !== 'data:,') { // Check if dataURL is valid
+                            const a = document.createElement('a');
+                            a.href = dataURL;
+                            a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            displayMessage('QR descargado exitosamente.', 'success');
+                            console.log(`DEBUG GENERATOR: Download initiated for ${a.download}`);
+                        } else {
+                            displayMessage('El QR generado no es una imagen válida para descargar. (DataURL inválida)', 'error');
+                            console.error('DEBUG GENERATOR: Invalid dataURL:', dataURL);
+                        }
+                    } catch (error) {
+                        console.error('DEBUG GENERATOR: Error during toDataURL or download process:', error);
+                        displayMessage(`Error al descargar el QR: ${error.message}. Revisa la consola.`, 'error');
+                    }
                 } else {
                     displayMessage('No se pudo encontrar el canvas del QR para descargar.', 'error');
+                    console.error('DEBUG GENERATOR: Canvas element not found for download. qrCodeContainerDiv:', qrCodeContainerDiv);
                 }
             });
             qrItemDiv.appendChild(downloadBtn);
