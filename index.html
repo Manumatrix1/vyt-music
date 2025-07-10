@@ -1161,17 +1161,33 @@
 
                 // Asegurarse de que el logo esté cargado antes de dibujarlo
                 state.logoImage.onload = () => {
-                    ctx.drawImage(state.logoImage, (canvasWidth - logoSize) / 2, (canvasHeight - logoSize) / 2 - (canvasHeight * 0.03), logoSize, logoSize);
+                    // Save the current state of the canvas
+                    ctx.save();
+
+                    // Draw a white background rectangle for the logo and text to ensure visibility
+                    const logoAreaSize = canvasWidth * 0.3; // Example size for the white area
+                    const logoAreaX = (canvasWidth - logoAreaSize) / 2;
+                    const logoAreaY = (canvasHeight - logoAreaSize) / 2;
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(logoAreaX, logoAreaY, logoAreaSize, logoAreaSize);
+
+                    const logoSize = canvasWidth * 0.18; // 18% del ancho del QR
+                    const logoX = (canvasWidth - logoSize) / 2;
+                    const logoY = (canvasHeight - logoSize) / 2 - (canvasHeight * 0.03); // Slightly above center for text below
+                    
+                    ctx.drawImage(state.logoImage, logoX, logoY, logoSize, logoSize);
                     
                     // Dibujar el nombre del invitado debajo del logo
                     ctx.font = `${canvasWidth * 0.03}px Inter, sans-serif`; // Ajustar tamaño de fuente relativo al tamaño del QR
                     ctx.fillStyle = '#000000'; // Texto negro
                     ctx.textAlign = 'center';
-                    const textY = (canvasHeight - logoSize) / 2 + logoSize + (canvasHeight * 0.02); // Posición debajo del logo
+                    const textY = logoY + logoSize + (canvasHeight * 0.02); // Posición debajo del logo
                     ctx.fillText(name, canvasWidth / 2, textY);
+
+                    // Restore the canvas state (important if you had other transformations)
+                    ctx.restore();
                 };
 
-                const logoSize = canvasWidth * 0.18; // 18% del ancho del QR
                 // Si la imagen ya está cargada, dibujar inmediatamente
                 if (state.logoImage.complete) {
                     state.logoImage.onload(); // Disparar manualmente onload si ya está cargada
