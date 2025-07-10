@@ -1035,8 +1035,10 @@
                 const ticketIdsToShare = state.currentBatchGeneratedTickets.map(ticket => ticket.id);
                 const batchId = await Firebase.saveSharedBatch(ticketIdsToShare);
                 if (batchId) {
-                    // The link now points to the separate viewing page
-                    const shareableLink = `${window.location.origin}/shared_qr_viewer.html?batchId=${batchId}`;
+                    // Construct the shareable link relative to the current path
+                    const currentPath = window.location.pathname;
+                    const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1); // Get path up to the last slash
+                    const shareableLink = `${window.location.origin}${basePath}shared_qr_viewer.html?batchId=${batchId}`;
                     showShareLinkModal(shareableLink);
                     displayMessage('QR batch shared successfully!', 'success');
                 } else {
