@@ -154,7 +154,7 @@
         .qr-info-text .whatsapp-link-box {
             background-color: #22c55e; /* Verde de WhatsApp */
             color: white;
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1.25rem; /* Padding ajustado para un botón más pequeño */
             border-radius: 0.75rem;
             margin-top: 1.5rem;
             display: inline-flex; /* Para alinear el texto y el icono */
@@ -164,23 +164,28 @@
             text-decoration: none; /* Quitar subrayado del enlace */
             font-weight: bold;
             transition: background-color 0.3s ease;
+            max-width: 300px; /* Limitar el ancho máximo del botón */
         }
         .qr-info-text .whatsapp-link-box:hover {
             background-color: #16a34a; /* Verde más oscuro al pasar el ratón */
         }
         .qr-info-text .whatsapp-link-box .main-text {
-            font-size: 1.75rem; /* Tamaño para "INSCRÍBETE A VYT-MUSIC" */
+            font-size: 1.5rem; /* Tamaño para "INSCRÍBETE" - Grande */
             line-height: 1.2;
         }
-        .qr-info-text .whatsapp-link-box .sub-text {
-            font-size: 1.25rem; /* Tamaño para "CERTAMEN DE CANTO" */
-            margin-top: 0.25rem;
+        .qr-info-text .whatsapp-link-box .vyt-music-text {
+            font-size: 1.1rem; /* Tamaño para "VYT-MUSIC" - Mediano */
+            margin-top: 0.1rem;
         }
-        .qr-info-text .whatsapp-link-box svg {
-            margin-top: 0.75rem; /* Espacio entre texto y icono */
-            width: 2.5em; /* Tamaño del icono */
-            height: 2.5em;
-            fill: white; /* Color del icono */
+        .qr-info-text .whatsapp-link-box .certamen-text {
+            font-size: 0.9rem; /* Tamaño para "CERTAMEN DE CANTO" - Pequeño */
+            margin-top: 0.1rem;
+        }
+        .qr-info-text .whatsapp-icon {
+            margin-top: 0.5rem; /* Espacio entre texto y icono */
+            width: 2em; /* Tamaño del icono */
+            height: 2em;
+            /* fill: white; // No es necesario para imágenes PNG */
         }
 
         .download-qr-btn {
@@ -346,11 +351,10 @@
                 <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
                 <p class="id-display">ID: ${ticketId}</p>
                 <a href="https://wa.me/3417422062" target="_blank" class="whatsapp-link-box">
-                    <span class="main-text">INSCRÍBETE A VYT-MUSIC</span>
-                    <span class="sub-text">CERTAMEN DE CANTO</span>
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                        <path d="M12.04 2C7.57 2 4.02 5.48 4.02 9.87c0 1.45.4 2.85 1.16 4.09L4 20l5.06-1.34c1.18.66 2.51 1.04 3.06 1.04h.01c4.47 0 8.02-3.48 8.02-7.87S16.51 2 12.04 2zM17.15 15.24c-.11.18-.53.45-.98.54-.45.09-.87.14-1.29.07-.42-.07-1.02-.27-1.61-.67-.6-.4-1.28-.98-1.84-1.57-.55-.59-1.03-1.17-1.43-1.6-.4-.44-.8-.9-1.07-1.35-.27-.45-.03-.7-.03-.95.03-.25.24-.59.39-.78.15-.19.3-.35.45-.54.15-.19.2-.34.25-.49.05-.15.03-.28-.03-.42-.06-.14-.3-.72-.41-.98-.11-.26-.22-.3-.3-.32-.08-.02-.18-.02-.27-.02-.09 0-.25.03-.39.07-.14.04-.37.15-.56.34-.19.19-.41.45-.61.64-.2.2-.4.4-.59.62-.19.22-.37.45-.52.67-.15.22-.29.47-.41.72-.12.25-.2.5-.27.75-.07.25-.09.5-.09.75 0 1.15.7 2.25 1.45 3.15.75.9 1.7 1.6 2.7 2.1.95.5 1.9.8 2.8.95.9.15 1.8.05 2.5-.2.7-.25 1.25-.6 1.65-.95.4-.35.65-.75.8-1.1.15-.35.15-.65.1-.8z"/>
-                    </svg>
+                    <span class="main-text">INSCRÍBETE</span>
+                    <span class="vyt-music-text">VYT-MUSIC</span>
+                    <span class="certamen-text">CERTAMEN DE CANTO</span>
+                    <img src="carita Recurso 1.png" alt="WhatsApp Logo" class="whatsapp-icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/25D366/ffffff?text=WA';">
                 </a>
             `;
 
