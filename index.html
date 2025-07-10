@@ -800,10 +800,12 @@
 
             // Specific logic when changing sections
             if (sectionToShow.id === 'qr-scanner-section') {
+                console.log("Entering QR Scanner section. Starting scanner.");
                 startQrScanner();
                 ui.scannedTicketInfo.classList.add('hidden');
                 ui.restartScanBtn.classList.add('hidden');
             } else {
+                console.log("Exiting QR Scanner section. Stopping scanner.");
                 stopQrScanner();
             }
             if (sectionToShow.id === 'batch-ticket-generator-section') {
@@ -823,24 +825,27 @@
          * Starts the QR scanner.
          */
         function startQrScanner() {
-            if (state.scanner && state.scanner.isScanning) {
-                return;
-            }
-            
-            if (!state.scanner) {
-                state.scanner = new Html5Qrcode("qr-code-reader");
-            }
-            
-            ui.qrCodeReader.innerHTML = ""; // Clear container before starting
-            
-            state.scanner.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: {width: 250, height: 250}, disableFlip: false }, 
-                onScanSuccess, 
-                onScanError
-            ).catch(err => {
-                console.error("Error starting scanner:", err);
-                displayMessage('Could not start camera. Make sure to grant permissions.', 'error');
+            console.log("Attempting to start QR scanner.");
+            // Always stop scanner cleanly before starting to avoid conflicts
+            stopQrScanner().then(() => {
+                if (!state.scanner) {
+                    state.scanner = new Html5Qrcode("qr-code-reader");
+                    console.log("Html5Qrcode instance created.");
+                }
+                
+                ui.qrCodeReader.innerHTML = ""; // Clear container before starting
+                
+                state.scanner.start(
+                    { facingMode: "environment" }, 
+                    { fps: 10, qrbox: {width: 250, height: 250}, disableFlip: false }, 
+                    onScanSuccess, 
+                    onScanError
+                ).then(() => {
+                    console.log("QR scanner started successfully.");
+                }).catch(err => {
+                    console.error("Error starting scanner:", err);
+                    displayMessage('No se pudo iniciar la cámara. Asegúrate de otorgar los permisos.', 'error');
+                });
             });
         }
 
@@ -848,9 +853,19 @@
         /**
          * Stops the QR scanner.
          */
-        function stopQrScanner() {
+        async function stopQrScanner() {
             if (state.scanner && state.scanner.isScanning) {
-                state.scanner.stop().catch(err => console.error("Error stopping scanner:", err));
+                console.log("Attempting to stop QR scanner.");
+                try {
+                    await state.scanner.stop();
+                    console.log("QR scanner stopped successfully.");
+                } catch (err) {
+                    console.error("Error stopping scanner:", err);
+                }
+            } else if (state.scanner) {
+                console.log("Scanner exists but is not scanning. No need to stop.");
+            } else {
+                console.log("Scanner instance does not exist.");
             }
         }
 
@@ -859,15 +874,18 @@
          * @param {string} decodedText The decoded text from the QR.
          */
         async function onScanSuccess(decodedText, decodedResult) {
+            console.log("QR scanned successfully:", decodedText);
             if (state.scanner) {
                  // Pause scanner to display result
                  if(state.scanner.isScanning) {
                     await state.scanner.pause(true);
+                    console.log("Scanner paused.");
                 }
             }
 
             ui.scannedTicketInfo.classList.remove('hidden');
-            ui.restartScanBtn.classList.add('hidden'); // Keep hidden until explicitly needed again
+            ui.restartScanBtn.classList.remove('hidden'); // Show restart scan button
+            ui.markUsedBtn.classList.add('hidden'); // Hide mark used button by default
 
             try {
                 const ticketId = decodedText;
@@ -875,12 +893,12 @@
                 const ticketDoc = await getDoc(ticketDocRef);
 
                 if (!ticketDoc.exists()) {
-                    displayMessage('Ticket not found. Invalid ID.', 'error');
+                    displayMessage('Ticket no encontrado. ID inválido.', 'error');
                     ui.currentScannedTicketId.textContent = ticketId;
                     ui.currentScannedTicketPrefix.textContent = 'N/A';
                     ui.currentScannedTicketName.textContent = 'N/A';
                     ui.currentScannedTicketSeatLocation.textContent = 'N/A';
-                    ui.currentScannedTicketStatus.textContent = 'INVALID';
+                    ui.currentScannedTicketStatus.textContent = 'INVÁLIDO';
                     ui.currentScannedTicketStatus.className = 'font-bold text-red-500';
                     flashScanResult('invalid');
                     Firebase.saveScanEvent({ id: ticketId }, 'invalid');
@@ -889,17 +907,17 @@
                     ui.currentScannedTicketId.textContent = ticketData.id;
                     ui.currentScannedTicketPrefix.textContent = ticketData.prefix;
                     ui.currentScannedTicketName.textContent = ticketData.name;
-                    ui.currentScannedTicketSeatLocation.textContent = ticketData.seatLocation || 'Not Assigned';
+                    ui.currentScannedTicketSeatLocation.textContent = ticketData.seatLocation || 'No Asignado';
 
                     if (ticketData.used) {
-                        displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) ALREADY USED.`, 'warning');
-                        ui.currentScannedTicketStatus.textContent = 'USED';
+                        displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) YA USADO.`, 'warning');
+                        ui.currentScannedTicketStatus.textContent = 'USADO';
                         ui.currentScannedTicketStatus.className = 'font-bold text-yellow-500';
                         flashScanResult('used');
                         Firebase.saveScanEvent(ticketData, 'used');
                     } else {
-                        displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) AVAILABLE.`, 'success');
-                        ui.currentScannedTicketStatus.textContent = 'AVAILABLE';
+                        displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) DISPONIBLE.`, 'success');
+                        ui.currentScannedTicketStatus.textContent = 'DISPONIBLE';
                         ui.currentScannedTicketStatus.className = 'font-bold text-green-500';
                         ui.markUsedBtn.classList.remove('hidden');
                         state.currentScannedTicketId = ticketData.id;
@@ -907,15 +925,12 @@
                         Firebase.saveScanEvent(ticketData, 'valid');
                     }
                 }
-                // Show restart scan button after processing, regardless of result
-                ui.restartScanBtn.classList.remove('hidden');
             } catch (error) {
-                console.error('Error processing scan:', error);
-                displayMessage('Error scanning ticket. Please try again.', 'error');
+                console.error('Error al procesar el escaneo:', error);
+                displayMessage('Error al escanear el ticket. Inténtalo de nuevo.', 'error');
                 ui.currentScannedTicketStatus.textContent = 'ERROR';
                 ui.currentScannedTicketStatus.className = 'font-bold text-red-500';
                 flashScanResult('invalid');
-                ui.restartScanBtn.classList.remove('hidden'); // Show restart button also in case of error
             }
         }
 
@@ -924,7 +939,7 @@
          * @param {object} errorMessage The error message.
          */
         function onScanError(errorMessage) {
-            // Ignore common errors that do not impede functionality
+            // console.warn("Scan error:", errorMessage); // Log errors, but don't display to user for minor errors
         }
 
         // --- TICKET GENERATOR FUNCTIONALITY ---
@@ -1147,28 +1162,28 @@
         async function startApp() {
             cacheUIElements();
             setLoading(true);
-            console.log("Starting application and caching UI.");
+            console.log("Iniciando aplicación y caché de UI.");
 
             try {
                 const app = initializeApp(config.firebase);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
-                console.log("Firebase App, Firestore, and Auth initialized.");
+                console.log("Aplicación Firebase, Firestore y Auth inicializados.");
             } catch (error) {
-                console.error("Error initializing Firebase:", error);
-                displayMessage("Critical error connecting to Firebase. Application cannot continue.", "error");
+                console.error("Error al inicializar Firebase:", error);
+                displayMessage("Error crítico al conectar con Firebase. La aplicación no puede continuar.", "error");
                 setLoading(false);
                 return;
             }
 
             onAuthStateChanged(state.auth, async (user) => {
-                console.log("Auth state changed. User:", user ? user.uid : "null");
+                console.log("Estado de autenticación cambiado. Usuario:", user ? user.uid : "null");
                 if (user) {
                     state.userId = user.uid;
                     ui.currentUserIdDisplay.textContent = state.userId;
                     state.isFirebaseReady = true;
-                    displayMessage('Firebase initialized and user authenticated.', 'info');
-                    console.log("User authenticated. ID:", state.userId);
+                    displayMessage('Firebase inicializado y usuario autenticado.', 'info');
+                    console.log("Usuario autenticado. ID:", state.userId);
                     
                     setupFirestoreListeners();
 
@@ -1177,27 +1192,27 @@
                 } else {
                     try {
                         if (config.initialAuthToken) {
-                            console.log("Attempting to sign in with custom token.");
+                            console.log("Intentando iniciar sesión con token personalizado.");
                             await signInWithCustomToken(state.auth, config.initialAuthToken);
                         } else {
-                            console.log("Attempting to sign in anonymously.");
+                            console.log("Intentando iniciar sesión de forma anónima.");
                             await signInAnonymously(state.auth);
                         }
                     } catch (error) {
-                        console.error("Authentication error:", error);
-                        displayMessage(`Authentication error: ${error.message}.`, 'error');
+                        console.error("Error de autenticación:", error);
+                        displayMessage(`Error de autenticación: ${error.message}.`, 'error');
                         state.userId = 'offline-' + crypto.randomUUID().substring(0,8);
-                        ui.currentUserIdDisplay.textContent = `Authentication Error / Temporary ID`;
+                        ui.currentUserIdDisplay.textContent = `Error de autenticación / ID Temporal`;
                         // Listeners are not configured if authentication fails
                     }
                 }
                 setLoading(false);
-                console.log("Initial load complete.");
+                console.log("Carga inicial completa.");
             });
 
             state.logoImage.src = config.logoUrl;
             setupEventListeners();
-            console.log("Event listeners configured.");
+            console.log("Detectores de eventos configurados.");
         }
 
         /**
@@ -1205,10 +1220,10 @@
          */
         function setupFirestoreListeners() {
             if (!state.isFirebaseReady || !state.userId) {
-                console.warn("Firebase or user ID not ready to set up Firestore listeners.");
+                console.warn("Firebase o ID de usuario no listos para configurar los oyentes de Firestore.");
                 return;
             }
-            console.log("Setting up Firestore listeners for user:", state.userId);
+            console.log("Configurando oyentes de Firestore para el usuario:", state.userId);
 
             // Listener for ticket counts
             if (state.ticketCountsListenerUnsubscribe) state.ticketCountsListenerUnsubscribe();
@@ -1225,8 +1240,8 @@
                 state.totalGeneratedTickets = snapshot.size;
                 state.totalUsedTickets = usedCount;
             }, (error) => {
-                console.error("Error listening to ticket counts:", error);
-                displayMessage('Error loading ticket counts.', 'error');
+                console.error("Error al escuchar los recuentos de tickets:", error);
+                displayMessage('Error al cargar los recuentos de tickets.', 'error');
             });
 
             // Listener for all tickets
@@ -1236,8 +1251,8 @@
                 state.allTicketsData = tickets;
                 renderAllTickets(tickets);
             }, (error) => {
-                console.error("Error listening to all tickets:", error);
-                displayMessage('Error loading ticket list.', 'error');
+                console.error("Error al escuchar todos los tickets:", error);
+                displayMessage('Error al cargar la lista de tickets.', 'error');
             });
 
             // Listener for current user's scan history
@@ -1247,8 +1262,8 @@
                 const historyItems = snapshot.docs.map(doc => doc.data());
                 renderScanHistory(historyItems);
             }, (error) => {
-                console.error("Error listening to scan history:", error);
-                displayMessage('Error loading scan history.', 'error');
+                console.error("Error al escuchar el historial de escaneo:", error);
+                displayMessage('Error al cargar el historial de escaneo.', 'error');
             });
         }
 
@@ -1267,19 +1282,17 @@
 
             // QR Scanner: Restart Scan Button
             ui.restartScanBtn.addEventListener('click', () => {
+                console.log("Botón 'Escanear de Nuevo' clickeado.");
                 ui.scannedTicketInfo.classList.add('hidden');
-                ui.restartScanBtn.classList.add('hidden');
-                if (state.scanner && !state.scanner.isScanning) {
-                    state.scanner.resume();
-                } else {
-                    startQrScanner();
-                }
+                ui.markUsedBtn.classList.add('hidden'); // Ensure this is hidden on restart
+                ui.restartScanBtn.classList.add('hidden'); // Hide itself until next scan
+                startQrScanner(); // Restart the scanner completely
             });
 
             // QR Scanner: Mark as Used Button
             ui.markUsedBtn.addEventListener('click', () => {
                 if (state.currentScannedTicketId) {
-                    showConfirmation('Confirm Ticket Usage', `Are you sure you want to mark ticket ${ui.currentScannedTicketName.textContent} (ID: ${state.currentScannedTicketId}) as USED?`, async () => {
+                    showConfirmation('Confirmar Uso de Ticket', `¿Estás seguro de que quieres marcar el ticket ${ui.currentScannedTicketName.textContent} (ID: ${state.currentScannedTicketId}) como USADO?`, async () => {
                         setLoading(true);
                         try {
                             const success = await Firebase.updateTicket(state.currentScannedTicketId, {
@@ -1288,15 +1301,15 @@
                                 usedBy: state.userId
                             });
                             if (success) {
-                                displayMessage(`Ticket ${ui.currentScannedTicketName.textContent} marked as USED.`, 'success');
+                                displayMessage(`Ticket ${ui.currentScannedTicketName.textContent} marcado como USADO.`, 'success');
                                 ui.markUsedBtn.classList.add('hidden');
-                                ui.currentScannedTicketStatus.textContent = 'USED';
+                                ui.currentScannedTicketStatus.textContent = 'USADO';
                                 ui.currentScannedTicketStatus.className = 'font-bold text-yellow-500';
                                 flashScanResult('used');
                             }
                         } catch (error) {
-                            console.error('Error marking ticket as used:', error);
-                            displayMessage('Error marking ticket as used. Check console.', 'error');
+                            console.error('Error al marcar el ticket como usado:', error);
+                            displayMessage('Error al marcar el ticket como usado. Revisa la consola.', 'error');
                         } finally {
                             setLoading(false);
                         }
@@ -1321,7 +1334,7 @@
                 const names = batchNamesRaw.split(/[\n,]+/).map(name => name.trim()).filter(name => name);
 
                 if (names.length === 0 || !ticketPrefix || !showName || !showLocation) {
-                    displayMessage('Please enter a show name, location, prefix, and at least one name.', 'warning');
+                    displayMessage('Por favor, ingresa un nombre de show, ubicación, prefijo y al menos un nombre.', 'warning');
                     setLoading(false);
                     return;
                 }
@@ -1352,11 +1365,11 @@
                         generateQrCodeForTicket(ticketId, name, ticketPrefix, seatLocation, ticketId, ui.generatedTicketsContainer, showName, showLocation, showAddress);
                     }
                     await batch.commit();
-                    displayMessage(`${names.length} tickets generated successfully.`, 'success');
+                    displayMessage(`${names.length} tickets generados exitosamente.`, 'success');
                     ui.shareBatchQrsBtn.classList.remove('hidden'); // Show share button
                 } catch (error) {
-                    console.error('Error generating batch tickets:', error);
-                    displayMessage('Error generating tickets. Check console.', 'error');
+                    console.error('Error al generar tickets en lote:', error);
+                    displayMessage('Error al generar tickets. Revisa la consola.', 'error');
                 } finally {
                     setLoading(false);
                 }
