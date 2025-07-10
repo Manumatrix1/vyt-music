@@ -135,7 +135,7 @@
         .qrcode-logo {
             position: absolute;
             z-index: 10; /* Asegura que el logo esté encima del QR */
-            width: 25%; /* Ajusta el tamaño del logo según sea necesario */
+            width: 18%; /* Ajustado a un porcentaje más pequeño para evitar que se corte */
             height: auto;
             border-radius: 50%; /* Hace el logo circular si se desea */
             background-color: white; /* Fondo para que el logo se destaque */
@@ -340,7 +340,7 @@
                     <h2 class="text-2xl font-bold mb-4">Lista de Todas las Entradas</h2>
                     <input type="text" id="all-tickets-search-input" placeholder="Buscar por nombre, ID o ubicación..." class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 mb-4">
                     <ul id="all-tickets-list" class="space-y-3">
-                        <li class="text-center text-gray-400">Cargando entradas...</li>
+                        <li class="text-center text-gray-400">Aún no se han generado entradas.</li>
                     </ul>
                 </div>
             </section>
@@ -424,7 +424,7 @@
                 'mark-used-btn', 'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input',
                 'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input',
                 'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message',
-                'share-batch-qrs-btn', // Renombrado de download-all-qrs-btn
+                'share-batch-qrs-btn', 
                 'ticket-seat-location-input', 'current-scanned-ticket-seat-location',
                 // Nuevos elementos para la confirmación de reinicio
                 'reset-confirmation-modal', 'reset-confirm-input', 'reset-modal-cancel-btn', 'reset-modal-confirm-btn',
