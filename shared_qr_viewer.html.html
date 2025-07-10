@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VYTMUSIC - Lote de Entradas Compartido</title>
+    <title>VYTMUSIC - Lote de QRs Compartidos</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,9 +22,12 @@
             font-family: 'Inter', sans-serif;
             background-color: #111827; /* bg-gray-900 */
             color: #f9fafb; /* text-gray-50 */
-            min-height: 100vh;
+            min-height: 100vh; /* Asegura que el body ocupe al menos toda la altura de la ventana */
             display: flex;
             flex-direction: column;
+        }
+        .container {
+            flex-grow: 1; /* Permite que el contenedor principal crezca para llenar el espacio */
         }
         .hidden { display: none !important; }
         
@@ -380,12 +383,14 @@
             qrCodeContainerDiv.id = `qrcode-${ticketId}`;
             qrCodeContainerDiv.className = 'qrcode-container'; 
 
-            const logoImg = document.createElement('img');
-            logoImg.src = config.logoUrl;
-            logoImg.alt = "Logo VYTMUSIC";
-            logoImg.className = 'qrcode-logo';
-
-            qrCodeContainerDiv.appendChild(logoImg); // Añadir logo dentro del contenedor del QR para centrarlo con flexbox
+            // NO AÑADIR EL LOGO AQUÍ COMO UN ELEMENTO IMG SEPARADO
+            // El logo y el nombre se dibujarán directamente en el canvas del QR.
+            // const logoImg = document.createElement('img');
+            // logoImg.src = config.logoUrl;
+            // logoImg.alt = "Logo VYTMUSIC";
+            // logoImg.className = 'qrcode-logo';
+            // qrCodeContainerDiv.appendChild(logoImg); // Esto ya no es necesario aquí
+            
             qrCodeContainerWrapper.appendChild(qrCodeContainerDiv); 
 
             const infoTextDiv = document.createElement('div');
@@ -416,7 +421,7 @@
                     <span class="main-text">INSCRÍBETE</span>
                     <span class="vyt-music-text">VYT-MUSIC</span>
                     <span class="certamen-text">CERTAMEN DE CANTO</span>
-                    <img src="https://i.imgur.com/lUNzBH1.png" alt="" class="whatsapp-icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/25D366/ffffff?text=WA';">
+                    <img src="https://i.imgur.com/lUNzBH1.png" alt="WhatsApp Icon" class="whatsapp-icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/25D366/ffffff?text=WA';">
                 </a>
             `;
 
@@ -424,7 +429,8 @@
             qrItemDiv.appendChild(infoTextDiv);
             container.appendChild(qrItemDiv); // Usar el contenedor proporcionado
 
-            new QRCode(qrCodeContainerDiv.id, {
+            // Generar el código QR
+            const qrcodeInstance = new QRCode(qrCodeContainerDiv.id, {
                 text: qrData,
                 width: 1080, // Tamaño aumentado
                 height: 1080, // Tamaño aumentado
@@ -433,14 +439,64 @@
                 correctLevel: QRCode.CorrectLevel.H
             });
 
+            // Dibujar el logo y el nombre directamente en el canvas del QR
+            const qrCanvas = qrCodeContainerDiv.querySelector('canvas');
+            if (qrCanvas) {
+                const ctx = qrCanvas.getContext('2d');
+                const canvasWidth = qrCanvas.width;
+                const canvasHeight = qrCanvas.height;
+
+                // Asegurarse de que el logo esté cargado antes de dibujarlo
+                state.logoImage.onload = () => {
+                    // Save the current state of the canvas
+                    ctx.save();
+
+                    // Draw a white background rectangle for the logo and text to ensure visibility
+                    const logoAreaSize = canvasWidth * 0.3; // Example size for the white area
+                    const logoAreaX = (canvasWidth - logoAreaSize) / 2;
+                    const logoAreaY = (canvasHeight - logoAreaSize) / 2;
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(logoAreaX, logoAreaY, logoAreaSize, logoAreaSize);
+
+                    const logoSize = canvasWidth * 0.18; // 18% del ancho del QR
+                    const logoX = (canvasWidth - logoSize) / 2;
+                    const logoY = (canvasHeight - logoSize) / 2 - (canvasHeight * 0.03); // Slightly above center for text below
+                    
+                    ctx.drawImage(state.logoImage, logoX, logoY, logoSize, logoSize);
+                    
+                    // Dibujar el nombre del invitado debajo del logo
+                    ctx.font = `${canvasWidth * 0.03}px Inter, sans-serif`; // Ajustar tamaño de fuente relativo al tamaño del QR
+                    ctx.fillStyle = '#000000'; // Texto negro
+                    ctx.textAlign = 'center';
+                    const textY = logoY + logoSize + (canvasHeight * 0.02); // Posición debajo del logo
+                    ctx.fillText(name, canvasWidth / 2, textY);
+
+                    // Restore the canvas state (important if you had other transformations)
+                    ctx.restore();
+                };
+
+                // Si la imagen ya está cargada, dibujar inmediatamente
+                if (state.logoImage.complete) {
+                    state.logoImage.onload(); // Disparar manualmente onload si ya está cargada
+                } else {
+                    // Establecer onerror para fallback si la imagen no se carga
+                    state.logoImage.onerror = () => {
+                        console.error("DEBUG VIEWER: Error al cargar el logo para dibujar en el QR.");
+                        displayMessage('Error al cargar el logo para el QR. El QR se generará sin logo.', 'warning');
+                    };
+                }
+            } else {
+                console.error("DEBUG VIEWER: No se encontró el canvas del QR después de la generación.");
+            }
+
             // Crear botón de descarga para cada QR
             const downloadBtn = document.createElement('button');
             downloadBtn.textContent = 'Descargar QR';
             downloadBtn.className = 'download-qr-btn';
             downloadBtn.addEventListener('click', () => {
-                const qrCanvas = qrCodeContainerDiv.querySelector('canvas');
-                if (qrCanvas) {
-                    const dataURL = qrCanvas.toDataURL('image/png');
+                const qrCanvasToDownload = qrCodeContainerDiv.querySelector('canvas');
+                if (qrCanvasToDownload) {
+                    const dataURL = qrCanvasToDownload.toDataURL('image/png');
                     const a = document.createElement('a');
                     a.href = dataURL;
                     a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
@@ -453,21 +509,21 @@
             });
             qrItemDiv.appendChild(downloadBtn);
 
-            // Sección de Redes Sociales
+            // Sección de Redes Sociales (copiada del visor para consistencia)
             const socialMediaContainer = document.createElement('div');
             socialMediaContainer.className = 'social-icons-container';
             socialMediaContainer.innerHTML = `
                 <a href="https://www.instagram.com/vytmusicrosario/" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/E1306C/ffffff?text=IG';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/E1306C/ffffff?text=IG';">
                 </a>
                 <a href="https://www.facebook.com/vocesytalentos" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/4267B2/ffffff?text=FB';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/4267B2/ffffff?text=FB';">
                 </a>
                 <a href="https://www.tiktok.com/@vyt.music.rosario" target="_blank" class="social-icon">
-                    <img src="tiktok-logo-icon-free-png.webp" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=TT';">
+                    <img src="https://i.imgur.com/fe7f60a3-dbd7-4185-9c8b-d85feae0a1e9.webp" alt="TikTok Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=TT';">
                 </a>
                 <a href="https://www.youtube.com/@VYTMUSICCONCURSODECANTO" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/FF0000/ffffff?text=YT';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YouTube Icon" onerror="this.onerror=null;this.src='https://placehold.co/50x50/FF0000/ffffff?text=YT';">
                 </a>
             `;
             qrItemDiv.appendChild(socialMediaContainer);
@@ -487,11 +543,16 @@
                     return null;
                 }
                 const sharedBatchRef = doc(state.db, `artifacts/${config.appId}/public/data/sharedBatches`, batchId);
-                const docSnap = await getDoc(sharedBatchRef);
-                if (docSnap.exists()) {
-                    return docSnap.data();
+                try {
+                    const docSnap = await getDoc(sharedBatchRef);
+                    if (docSnap.exists()) {
+                        return docSnap.data();
+                    }
+                    return null;
+                } catch (error) {
+                    console.error("DEBUG VIEWER: Error al obtener el lote compartido de Firestore:", error);
+                    return null;
                 }
-                return null;
             },
             /**
              * Obtiene múltiples entradas por sus IDs.
@@ -499,7 +560,7 @@
              * @returns {Array<object>} Array de datos de entradas.
              */
             async getTicketsByIds(ticketIds) {
-                if (!state.isFirebaseReady || ticketIds.length === 0) {
+                if (!state.isFirebaseReady || !ticketIds || ticketIds.length === 0) {
                     return [];
                 }
                 const tickets = [];
@@ -508,9 +569,15 @@
                 // Para este caso, iteramos individualmente.
                 for (const id of ticketIds) {
                     const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, id);
-                    const docSnap = await getDoc(ticketRef);
-                    if (docSnap.exists()) {
-                        tickets.push(docSnap.data());
+                    try {
+                        const docSnap = await getDoc(ticketRef);
+                        if (docSnap.exists()) {
+                            tickets.push(docSnap.data());
+                        } else {
+                            console.warn("DEBUG VIEWER: Ticket no encontrado para ID:", id);
+                        }
+                    } catch (error) {
+                        console.error(`DEBUG VIEWER: Error al obtener el ticket ${id} de Firestore:`, error);
                     }
                 }
                 return tickets;
@@ -530,8 +597,10 @@
             try {
                 const sharedBatch = await Firebase.getSharedBatch(batchId);
                 if (sharedBatch && sharedBatch.ticketIds && sharedBatch.ticketIds.length > 0) {
+                    console.log("DEBUG VIEWER: Lote compartido encontrado y tiene ticketIds. Procediendo a obtener tickets.");
                     const tickets = await Firebase.getTicketsByIds(sharedBatch.ticketIds);
                     if (tickets.length > 0) {
+                        console.log("DEBUG VIEWER: Tickets obtenidos. Renderizando QRs.");
                         // Actualizar el nombre del show y el artista en el encabezado
                         ui.batchShowNameDisplay.textContent = `Show: ${tickets[0].showName || 'N/A'}`;
                         ui.batchArtistNameDisplay.textContent = `Artista: ${tickets[0].prefix || 'N/A'}`;
@@ -542,7 +611,7 @@
                                 ticket.name, 
                                 ticket.prefix, 
                                 ticket.seatLocation, 
-                                ticket.id, 
+                                ticket.id, // QR data is the ticket ID
                                 ui.sharedBatchQrsContainer,
                                 ticket.showName, // Pasar showName
                                 ticket.showLocation, // Pasar showLocation
@@ -551,22 +620,25 @@
                         });
                         displayMessage(`Lote con ${tickets.length} QRs cargado.`, 'success');
                     } else {
+                        console.log("DEBUG VIEWER: No se encontraron tickets en este lote.");
                         displayMessage('No se encontraron tickets en este lote compartido.', 'warning');
                         ui.batchShowNameDisplay.textContent = 'Show: N/A';
                         ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
                     }
                 } else {
-                    displayMessage('Lote compartido no encontrado o vacío.', 'error');
-                    ui.batchShowNameDisplay.textContent = 'Show: N/A';
+                    console.log("DEBUG VIEWER: Lote compartido no encontrado o ticketIds vacío/nulo.");
+                    ui.batchShowNameDisplay.textContent = 'Show: Lote no encontrado';
                     ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
+                    displayMessage('El lote de QRs no fue encontrado o está vacío.', 'error');
                 }
             } catch (error) {
-                console.error('Error al cargar el lote compartido:', error);
-                displayMessage('Error al cargar el lote compartido. Consulta la consola.', 'error');
+                console.error('DEBUG VIEWER: Error general al cargar el lote compartido:', error);
                 ui.batchShowNameDisplay.textContent = 'Show: Error';
                 ui.batchArtistNameDisplay.textContent = 'Artista: Error';
+                displayMessage('Error al cargar el lote compartido. Revisa la consola para más detalles.', 'error');
             } finally {
                 setLoading(false);
+                console.log("DEBUG VIEWER: Carga del visor de QRs compartidos completa.");
             }
         }
 
@@ -578,15 +650,15 @@
         async function startApp() {
             cacheUIElements();
             setLoading(true);
-            console.log("Iniciando aplicación y caché de UI.");
+            console.log("DEBUG VIEWER: Iniciando aplicación de visor de QRs compartidos.");
 
             try {
                 const app = initializeApp(config.firebase);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
-                console.log("Aplicación Firebase, Firestore y Auth inicializados.");
+                console.log("DEBUG VIEWER: Aplicación Firebase, Firestore y Auth inicializados.");
             } catch (error) {
-                console.error("Error al inicializar Firebase:", error);
+                console.error("DEBUG VIEWER: Error al inicializar Firebase:", error);
                 displayMessage("Error crítico al conectar con Firebase. La aplicación no puede continuar.", "error");
                 setLoading(false);
                 return;
@@ -596,9 +668,9 @@
             try {
                 await signInAnonymously(state.auth);
                 state.isFirebaseReady = true;
-                console.log("Autenticación anónima exitosa.");
+                console.log("DEBUG VIEWER: Autenticación anónima exitosa.");
             } catch (error) {
-                console.error("Error de autenticación anónima:", error);
+                console.error("DEBUG VIEWER: Error de autenticación anónima:", error);
                 displayMessage(`Error de autenticación: ${error.message}. No se podrán cargar los QRs.`, 'error');
                 setLoading(false);
                 return;
@@ -608,11 +680,17 @@
             state.logoImage.src = config.logoUrl;
             state.logoImage.onerror = () => {
                 ui.logoErrorMessage.classList.remove('hidden');
+                console.error("DEBUG VIEWER: Error al cargar el logo principal del visor.");
+            };
+            state.logoImage.onload = () => {
+                console.log("DEBUG VIEWER: Logo principal del visor cargado correctamente.");
             };
 
             // Verificar el batchId en la URL
             const urlParams = new URLSearchParams(window.location.search);
             const batchId = urlParams.get('batchId');
+            console.log("DEBUG VIEWER: Batch ID de la URL:", batchId);
+
             if (batchId) {
                 await loadAndDisplaySharedBatch(batchId);
             } else {
@@ -621,7 +699,7 @@
                 ui.batchArtistNameDisplay.textContent = 'Artista: N/A';
                 setLoading(false);
             }
-            console.log("Carga inicial completa.");
+            console.log("DEBUG VIEWER: Carga inicial del visor completa.");
         }
 
         // Iniciar la aplicación cuando el DOM esté completamente cargado
