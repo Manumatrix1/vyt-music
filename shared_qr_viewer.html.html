@@ -151,6 +151,16 @@
             font-weight: bold;
             color: #38bdf8; /* Cambiado a azul cielo como el logo */
             margin-top: 1rem;
+            display: flex; /* Para alinear el texto y el icono */
+            align-items: center;
+            justify-content: center;
+            text-decoration: none; /* Quitar subrayado del enlace */
+        }
+        .qr-info-text .call-to-action svg {
+            margin-left: 0.5rem; /* Espacio entre texto y icono */
+            width: 1.5em; /* Tamaño del icono */
+            height: 1.5em;
+            fill: #38bdf8; /* Color del icono */
         }
 
         .qr-info-text .whatsapp-info {
@@ -179,9 +189,10 @@
             margin-bottom: 0.25rem;
         }
         .header-prefix-text {
-            font-size: 1rem; /* Tamaño para el prefijo en el header */
-            color: #94a3b8; /* Gris más oscuro */
-            margin-top: 0.25rem;
+            font-size: 1.5rem; /* Tamaño para el prefijo en el header */
+            font-weight: bold;
+            color: #f9fafb; /* Blanco para el prefijo */
+            margin-top: 0.5rem;
         }
     </style>
 </head>
@@ -198,15 +209,13 @@
             <p id="logo-error-message" class="text-red-400 text-sm mt-1 hidden">Error al cargar el logo. Verifica la imagen.</p>
             <h1 class="text-3xl sm:text-4xl font-bold text-sky-400">VYTMUSIC</h1>
             <p class="header-small-text">CERTAMEN DE CANTO</p> <!-- Movido aquí -->
-            <p id="batch-prefix-display" class="header-prefix-text">Prefijo del Lote: Cargando...</p> <!-- Nuevo elemento para el prefijo -->
-            <p class="text-lg text-gray-300">Lote de Entradas Compartido</p>
+            <p id="batch-prefix-display" class="header-prefix-text">Cargando Prefijo...</p> <!-- Nuevo elemento para el prefijo -->
         </header>
 
         <div id="message-container" class="mb-4"></div>
 
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
-            <h2 class="text-2xl font-bold mb-4 text-center" id="shared-batch-title">Cargando Lote de QRs...</h2>
-            <p class="text-gray-300 mb-4 text-center" id="shared-batch-info"></p>
+            <!-- Eliminados h2 id="shared-batch-title" y p id="shared-batch-info" -->
             <div id="shared-batch-qrs-container" class="mt-6 space-y-4">
                 <!-- Los QRs compartidos se cargarán aquí -->
             </div>
@@ -249,7 +258,7 @@
         function cacheUIElements() {
             const ids = [
                 'loading-overlay', 'message-container', 'logo-error-message',
-                'shared-batch-title', 'shared-batch-info', 'shared-batch-qrs-container',
+                'shared-batch-qrs-container',
                 'batch-prefix-display' // Añadido el nuevo elemento del prefijo
             ];
             ids.forEach(id => {
@@ -317,13 +326,17 @@
             infoTextDiv.innerHTML = `
                 <h3>VYT-MUSIC</h3>
                 <p>CERTAMEN DE CANTO</p>
-                <p class="small-text">¡Tu entrada para el evento!</p> <!-- Nuevo texto aquí -->
+                <p class="small-text">¡Tu entrada para el evento!</p>
                 <p class="name-display">${name}</p>
                 <p class="prefix-display">Prefijo: ${prefix}</p>
                 <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
                 <p class="id-display">ID: ${ticketId}</p>
-                <p class="call-to-action">¡INSCRÍBETE!</p>
-                <p class="whatsapp-info">WhatsApp: 3417422062</p>
+                <a href="https://wa.me/3417422062" target="_blank" class="call-to-action">
+                    CERTAMEN DE CANTO
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M12.04 2C7.57 2 4.02 5.48 4.02 9.87c0 1.45.4 2.85 1.16 4.09L4 20l5.06-1.34c1.18.66 2.51 1.04 3.06 1.04h.01c4.47 0 8.02-3.48 8.02-7.87S16.51 2 12.04 2zM17.15 15.24c-.11.18-.53.45-.98.54-.45.09-.87.14-1.29.07-.42-.07-1.02-.27-1.61-.67-.6-.4-1.28-.98-1.84-1.57-.55-.59-1.03-1.17-1.43-1.6-.4-.44-.8-.9-1.07-1.35-.27-.45-.03-.7-.03-.95.03-.25.24-.59.39-.78.15-.19.3-.35.45-.54.15-.19.2-.34.25-.49.05-.15.03-.28-.03-.42-.06-.14-.3-.72-.41-.98-.11-.26-.22-.3-.3-.32-.08-.02-.18-.02-.27-.02-.09 0-.25.03-.39.07-.14.04-.37.15-.56.34-.19.19-.41.45-.61.64-.2.2-.4.4-.59.62-.19.22-.37.45-.52.67-.15.22-.29.47-.41.72-.12.25-.2.5-.27.75-.07.25-.09.5-.09.75 0 1.15.7 2.25 1.45 3.15.75.9 1.7 1.6 2.7 2.1.95.5 1.9.8 2.8.95.9.15 1.8.05 2.5-.2.7-.25 1.25-.6 1.65-.95.4-.35.65-.75.8-1.1.15-.35.15-.65.1-.8z"/>
+                    </svg>
+                </a>
             `;
 
             qrItemDiv.appendChild(qrCodeContainerWrapper);
@@ -408,38 +421,38 @@
         async function loadAndDisplaySharedBatch(batchId) {
             setLoading(true);
             ui.sharedBatchQrsContainer.innerHTML = ''; // Limpiar contenido previo
-            ui.sharedBatchInfo.textContent = 'Cargando lote...';
-            ui.batchPrefixDisplay.textContent = 'Prefijo del Lote: Cargando...'; // Resetear el prefijo
+            // ui.sharedBatchInfo.textContent = 'Cargando lote...'; // Eliminado
+            ui.batchPrefixDisplay.textContent = 'Cargando Prefijo...'; // Resetear el prefijo
 
             try {
                 const sharedBatch = await Firebase.getSharedBatch(batchId);
                 if (sharedBatch && sharedBatch.ticketIds && sharedBatch.ticketIds.length > 0) {
-                    ui.sharedBatchTitle.textContent = `Lote de QRs Compartido: ${batchId.substring(0, 8)}...`;
-                    ui.sharedBatchInfo.textContent = `Este lote contiene ${sharedBatch.ticketIds.length} QRs.`;
+                    // ui.sharedBatchTitle.textContent = `Lote de QRs Compartido: ${batchId.substring(0, 8)}...`; // Eliminado
+                    // ui.sharedBatchInfo.textContent = `Este lote contiene ${sharedBatch.ticketIds.length} QRs.`; // Eliminado
                     const tickets = await Firebase.getTicketsByIds(sharedBatch.ticketIds);
                     if (tickets.length > 0) {
                         // Actualizar el prefijo del lote en el encabezado
-                        ui.batchPrefixDisplay.textContent = `Prefijo del Lote: ${tickets[0].prefix || 'N/A'}`;
+                        ui.batchPrefixDisplay.textContent = `${tickets[0].prefix || 'N/A'}`; // Solo el prefijo
 
                         tickets.forEach(ticket => {
                             generateQrCodeForTicket(ticket.id, ticket.name, ticket.prefix, ticket.seatLocation, ticket.id, ui.sharedBatchQrsContainer);
                         });
                         displayMessage(`Lote con ${tickets.length} QRs cargado.`, 'success');
                     } else {
-                        ui.sharedBatchInfo.textContent = 'No se encontraron tickets en este lote compartido.';
+                        // ui.sharedBatchInfo.textContent = 'No se encontraron tickets en este lote compartido.'; // Eliminado
                         displayMessage('No se encontraron tickets para este lote compartido.', 'warning');
-                        ui.batchPrefixDisplay.textContent = 'Prefijo del Lote: N/A';
+                        ui.batchPrefixDisplay.textContent = 'N/A';
                     }
                 } else {
-                    ui.sharedBatchInfo.textContent = 'Lote compartido no encontrado o vacío.';
+                    // ui.sharedBatchInfo.textContent = 'Lote compartido no encontrado o vacío.'; // Eliminado
                     displayMessage('Lote compartido no encontrado o vacío.', 'error');
-                    ui.batchPrefixDisplay.textContent = 'Prefijo del Lote: N/A';
+                    ui.batchPrefixDisplay.textContent = 'N/A';
                 }
             } catch (error) {
                 console.error('Error al cargar el lote compartido:', error);
-                ui.sharedBatchInfo.textContent = 'Error al cargar el lote compartido.';
+                // ui.sharedBatchInfo.textContent = 'Error al cargar el lote compartido.'; // Eliminado
                 displayMessage('Error al cargar el lote compartido. Consulta la consola.', 'error');
-                ui.batchPrefixDisplay.textContent = 'Prefijo del Lote: Error';
+                ui.batchPrefixDisplay.textContent = 'Error';
             } finally {
                 setLoading(false);
             }
@@ -491,9 +504,10 @@
             if (batchId) {
                 await loadAndDisplaySharedBatch(batchId);
             } else {
-                ui.sharedBatchTitle.textContent = 'No se ha especificado un lote de QRs.';
-                ui.sharedBatchInfo.textContent = 'Por favor, utiliza un enlace proporcionado para ver un lote de QRs.';
+                // ui.sharedBatchTitle.textContent = 'No se ha especificado un lote de QRs.'; // Eliminado
+                // ui.sharedBatchInfo.textContent = 'Por favor, utiliza un enlace proporcionado para ver un lote de QRs.'; // Eliminado
                 displayMessage('No se encontró un ID de lote en la URL.', 'warning');
+                ui.batchPrefixDisplay.textContent = 'Lote no especificado'; // Mensaje alternativo
                 setLoading(false);
             }
             console.log("Carga inicial completa.");
