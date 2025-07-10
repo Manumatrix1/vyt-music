@@ -344,7 +344,8 @@
                     <h2 class="text-2xl font-bold mb-4 text-center">Escanear Código QR</h2>
                     <div id="qr-code-reader"></div>
                     <div class="text-center">
-                        <button id="restart-scan-btn" class="hidden mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700">Escanear de Nuevo</button>
+                        <!-- El botón Reiniciar Escáner ahora siempre visible -->
+                        <button id="restart-scan-btn" class="mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700">Reiniciar Escáner</button>
                     </div>
                     <div id="scanned-ticket-info" class="hidden mt-6 bg-gray-900 p-4 rounded-lg">
                         <h3 class="text-xl font-bold mb-2">Información de la Entrada</h3>
@@ -803,7 +804,7 @@
                 console.log("Entering QR Scanner section. Starting scanner.");
                 startQrScanner();
                 ui.scannedTicketInfo.classList.add('hidden');
-                ui.restartScanBtn.classList.add('hidden');
+                // The restart button is now always visible, so no need to hide it here initially
             } else {
                 console.log("Exiting QR Scanner section. Stopping scanner.");
                 stopQrScanner();
@@ -884,7 +885,6 @@
             }
 
             ui.scannedTicketInfo.classList.remove('hidden');
-            ui.restartScanBtn.classList.remove('hidden'); // Show restart scan button
             ui.markUsedBtn.classList.add('hidden'); // Hide mark used button by default
 
             try {
@@ -1282,11 +1282,11 @@
 
             // QR Scanner: Restart Scan Button
             ui.restartScanBtn.addEventListener('click', () => {
-                console.log("Botón 'Escanear de Nuevo' clickeado.");
+                console.log("Botón 'Reiniciar Escáner' clickeado.");
                 ui.scannedTicketInfo.classList.add('hidden');
-                ui.markUsedBtn.classList.add('hidden'); // Ensure this is hidden on restart
-                ui.restartScanBtn.classList.add('hidden'); // Hide itself until next scan
-                startQrScanner(); // Restart the scanner completely
+                ui.markUsedBtn.classList.add('hidden'); // Asegurarse de que esto esté oculto al reiniciar
+                // No ocultar el botón de reiniciar a sí mismo, ya que debe estar siempre visible
+                startQrScanner(); // Reiniciar el escáner completamente
             });
 
             // QR Scanner: Mark as Used Button
