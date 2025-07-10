@@ -899,12 +899,12 @@
 
             // Specific logic when changing sections
             if (sectionToShow.id === 'qr-scanner-section') {
-                console.log("DEBUG GENERATOR: Entering QR Scanner section. Starting scanner.");
+                console.log("DEBUG SCANNER: Entering QR Scanner section. Starting scanner.");
                 startQrScanner();
                 ui.scannedTicketInfo.classList.add('hidden');
                 // The restart button is now always visible, so no need to hide it here initially
             } else {
-                console.log("DEBUG GENERATOR: Exiting QR Scanner section. Stopping scanner.");
+                console.log("DEBUG SCANNER: Exiting QR Scanner section. Stopping scanner.");
                 stopQrScanner();
             }
             if (sectionToShow.id === 'batch-ticket-generator-section') {
@@ -927,12 +927,12 @@
          * Starts the QR scanner.
          */
         function startQrScanner() {
-            console.log("DEBUG GENERATOR: Attempting to start QR scanner.");
+            console.log("DEBUG SCANNER: Attempting to start QR scanner.");
             // Always stop scanner cleanly before starting to avoid conflicts
             stopQrScanner().then(() => {
                 if (!state.scanner) {
                     state.scanner = new Html5Qrcode("qr-code-reader");
-                    console.log("DEBUG GENERATOR: Html5Qrcode instance created.");
+                    console.log("DEBUG SCANNER: Html5Qrcode instance created.");
                 }
                 
                 ui.qrCodeReader.innerHTML = ""; // Clear container before starting
@@ -943,10 +943,10 @@
                     onScanSuccess, 
                     onScanError
                 ).then(() => {
-                    console.log("DEBUG GENERATOR: QR scanner started successfully.");
+                    console.log("DEBUG SCANNER: QR scanner started successfully.");
                     displayMessage('Cámara iniciada. Lista para escanear.', 'info');
                 }).catch(err => {
-                    console.error("DEBUG GENERATOR: Error starting scanner:", err);
+                    console.error("DEBUG SCANNER: Error starting scanner:", err);
                     let errorMessage = 'No se pudo iniciar la cámara. Asegúrate de otorgar los permisos y que no esté en uso por otra aplicación.';
                     if (err.name === 'NotAllowedError') {
                         errorMessage = 'Acceso a la cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
@@ -966,17 +966,17 @@
          */
         async function stopQrScanner() {
             if (state.scanner && state.scanner.isScanning) {
-                console.log("DEBUG GENERATOR: Attempting to stop QR scanner.");
+                console.log("DEBUG SCANNER: Attempting to stop QR scanner.");
                 try {
                     await state.scanner.stop();
-                    console.log("DEBUG GENERATOR: QR scanner stopped successfully.");
+                    console.log("DEBUG SCANNER: QR scanner stopped successfully.");
                 } catch (err) {
-                    console.error("DEBUG GENERATOR: Error stopping scanner:", err);
+                    console.error("DEBUG SCANNER: Error stopping scanner:", err);
                 }
             } else if (state.scanner) {
-                console.log("DEBUG GENERATOR: Scanner exists but is not scanning. No need to stop.");
+                console.log("DEBUG SCANNER: Scanner exists but is not scanning. No need to stop.");
             } else {
-                console.log("DEBUG GENERATOR: Scanner instance does not exist.");
+                console.log("DEBUG SCANNER: Scanner instance does not exist.");
             }
         }
 
@@ -985,16 +985,16 @@
          * @param {string} decodedText The decoded text from the QR.
          */
         async function onScanSuccess(decodedText, decodedResult) {
-            console.log("DEBUG GENERATOR: QR scanned successfully:", decodedText);
+            console.log("DEBUG SCANNER: QR scanned successfully:", decodedText);
             ui.scannedTicketInfo.classList.remove('hidden');
-            console.log("DEBUG GENERATOR: Scanned ticket info section unhidden."); // Confirming visibility
+            console.log("DEBUG SCANNER: Scanned ticket info section unhidden."); // Confirming visibility
             ui.markUsedBtn.classList.add('hidden'); // Hide mark used button by default
 
             if (state.scanner) {
                  // Pause scanner to display result
                  if(state.scanner.isScanning) {
                     await state.scanner.pause(true);
-                    console.log("DEBUG GENERATOR: Scanner paused.");
+                    console.log("DEBUG SCANNER: Scanner paused.");
                 }
             }
 
@@ -1049,7 +1049,7 @@
                     }
                 }
             } catch (error) {
-                console.error('DEBUG GENERATOR: Error al procesar el escaneo:', error);
+                console.error('DEBUG SCANNER: Error al procesar el escaneo:', error);
                 displayMessage('Error al escanear el ticket. Inténtalo de nuevo.', 'error');
                 ui.currentScannedTicketStatus.textContent = 'ERROR';
                 ui.currentScannedTicketStatus.className = 'text-red-500 bg-red-100 px-3 py-1 rounded-md'; // Enhanced styling
@@ -1067,7 +1067,7 @@
          */
         function onScanError(errorMessage) {
             // console.warn("Scan error:", errorMessage); // Log errors, but don't display to user for minor errors
-             console.log("DEBUG GENERATOR: Scan error (may be continuous):", errorMessage);
+             console.log("DEBUG SCANNER: Scan error (may be continuous):", errorMessage);
         }
 
         // --- TICKET GENERATOR FUNCTIONALITY ---
@@ -1227,35 +1227,37 @@
             downloadBtn.textContent = 'Descargar QR';
             downloadBtn.className = 'download-qr-btn';
             downloadBtn.addEventListener('click', () => {
-                console.log(`DEBUG GENERATOR: Attempting to download QR for ticket ID: ${ticketId}`);
+                console.log(`DEBUG GENERATOR: DOWNLOAD: Attempting to download QR for ticket ID: ${ticketId}`);
                 const qrCanvasToDownload = qrCodeContainerDiv.querySelector('canvas');
-                console.log(`DEBUG GENERATOR: qrCanvasToDownload found:`, qrCanvasToDownload);
+                console.log(`DEBUG GENERATOR: DOWNLOAD: qrCanvasToDownload found:`, qrCanvasToDownload);
 
                 if (qrCanvasToDownload) {
                     try {
+                        console.log("DEBUG GENERATOR: DOWNLOAD: Attempting to get data URL from canvas.");
                         const dataURL = qrCanvasToDownload.toDataURL('image/png');
-                        console.log(`DEBUG GENERATOR: dataURL generated: ${dataURL.substring(0, 50)}...`); // Log first 50 chars
+                        console.log(`DEBUG GENERATOR: DOWNLOAD: Data URL generated (first 50 chars): ${dataURL.substring(0, 50)}...`); 
                         
                         if (dataURL && dataURL !== 'data:,') { // Check if dataURL is valid
                             const a = document.createElement('a');
                             a.href = dataURL;
                             a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
+                            console.log(`DEBUG GENERATOR: DOWNLOAD: Setting download filename to: ${a.download}`);
                             document.body.appendChild(a);
                             a.click();
                             document.body.removeChild(a);
                             displayMessage('QR descargado exitosamente.', 'success');
-                            console.log(`DEBUG GENERATOR: Download initiated for ${a.download}`);
+                            console.log(`DEBUG GENERATOR: DOWNLOAD: Download initiated successfully.`);
                         } else {
                             displayMessage('El QR generado no es una imagen válida para descargar. (DataURL inválida)', 'error');
-                            console.error('DEBUG GENERATOR: Invalid dataURL:', dataURL);
+                            console.error('DEBUG GENERATOR: DOWNLOAD: Invalid dataURL:', dataURL);
                         }
                     } catch (error) {
-                        console.error('DEBUG GENERATOR: Error during toDataURL or download process:', error);
+                        console.error('DEBUG GENERATOR: DOWNLOAD: Error during toDataURL or download process:', error);
                         displayMessage(`Error al descargar el QR: ${error.message}. Revisa la consola.`, 'error');
                     }
                 } else {
                     displayMessage('No se pudo encontrar el canvas del QR para descargar.', 'error');
-                    console.error('DEBUG GENERATOR: Canvas element not found for download. qrCodeContainerDiv:', qrCodeContainerDiv);
+                    console.error('DEBUG GENERATOR: DOWNLOAD: Canvas element not found for download. qrCodeContainerDiv:', qrCodeContainerDiv);
                 }
             });
             qrItemDiv.appendChild(downloadBtn);
@@ -1522,7 +1524,7 @@
 
             // QR Scanner: Restart Scan Button
             ui.restartScanBtn.addEventListener('click', () => {
-                console.log("DEBUG GENERATOR: Botón 'Reiniciar Escáner' clickeado.");
+                console.log("DEBUG SCANNER: Botón 'Reiniciar Escáner' clickeado.");
                 ui.scannedTicketInfo.classList.add('hidden');
                 ui.markUsedBtn.classList.add('hidden'); // Asegurarse de que esto esté oculto al reiniciar
                 // No ocultar el botón de reiniciar a sí mismo, ya que debe estar siempre visible
