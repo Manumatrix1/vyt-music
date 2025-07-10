@@ -215,11 +215,12 @@
         };
 
         const config = {
-            appId: typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod',
-            firebase: typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
-                authDomain: "vyt-music.firebaseapp.com",
-                projectId: "vyt-music",
+            // Hardcode appId and firebase config as they are not passed from the main app
+            appId: 'vytmusic-app-prod', // Replace with your actual Firebase App ID if different
+            firebase: {
+                apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU", // Replace with your actual Firebase API Key
+                authDomain: "vyt-music.firebaseapp.com", // Replace with your actual Firebase Auth Domain
+                projectId: "vyt-music", // Replace with your actual Firebase Project ID
                 storageBucket: "vyt-music.appspot.com",
                 messagingSenderId: "574981837817",
                 appId: "1:574981837817:web:a29933a22bbfd51a086328"
