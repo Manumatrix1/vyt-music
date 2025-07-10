@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VYTMUSIC - Lote de Entradas Compartido</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+    <style>
+        /* Estilos base personalizados */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+            color: #f9fafb; /* text-gray-50 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .hidden { display: none !important; }
+        
+        /* Overlay de carga */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.3s ease;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #38bdf8; /* light blue */
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Estilos para el contenedor del QR generado */
+        .generated-qr-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%; /* Ocupa todo el ancho disponible */
+            max-width: 1100px; /* Limita el ancho máximo para pantallas grandes */
+            margin-left: auto;
+            margin-right: auto;
+            background-color: white; /* Fondo blanco para el QR y el texto */
+            padding: 1rem; /* Espaciado alrededor del contenido */
+            border-radius: 0.5rem; /* Esquinas redondeadas */
+            color: #000; /* Texto negro para legibilidad en fondo blanco */
+            position: relative; /* Necesario para el posicionamiento absoluto del logo */
+            overflow: hidden; /* Oculta el desbordamiento del logo */
+        }
+
+        .qrcode-container-wrapper {
+            position: relative;
+            width: 100%; /* Hacerlo responsivo */
+            max-width: 1080px; /* Tamaño máximo es 1080px */
+            padding-bottom: 100%; /* Relación de aspecto 1:1 (altura = ancho) */
+            height: 0; /* Importante para el truco de padding-bottom */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white; /* Asegura fondo blanco para el QR */
+            border-radius: 0.25rem;
+            overflow: hidden; /* Oculta el desbordamiento del propio QR */
+        }
+
+        .qrcode-container {
+            position: absolute; /* Posiciona el código QR absolutamente dentro de su contenedor */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Asegura que el canvas generado por qrcode.js llene su padre responsivo */
+        .qrcode-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain; /* Asegura que el código QR no se estire */
+        }
+
+        .qrcode-logo {
+            position: absolute;
+            z-index: 10; /* Asegura que el logo esté encima del QR */
+            width: 25%; /* Ajusta el tamaño del logo según sea necesario */
+            height: auto;
+            border-radius: 50%; /* Hace el logo circular si se desea */
+            background-color: white; /* Fondo para que el logo se destaque */
+            padding: 5px; /* Relleno alrededor del logo */
+        }
+
+        .qr-info-text {
+            text-align: center;
+            margin-top: 1rem;
+            color: #000; /* Texto negro para legibilidad en fondo blanco */
+        }
+
+        .qr-info-text h3 {
+            font-size: 2.5rem; /* Título VYT-MUSIC */
+            font-weight: bold;
+            color: #38bdf8; /* Color azul cielo para VYT-MUSIC */
+            margin-bottom: 0.25rem;
+        }
+
+        .qr-info-text p {
+            font-size: 1.25rem; /* Texto más pequeño para "Certamen de Canto" */
+            margin-bottom: 0.5rem;
+            color: #000; /* Texto negro */
+        }
+
+        .qr-info-text .name-display {
+            font-size: 2rem; /* Visualización del nombre */
+            font-weight: 600;
+            margin-top: 1rem;
+            color: #000; /* Texto negro */
+        }
+
+        .qr-info-text .id-display,
+        .qr-info-text .prefix-display,
+        .qr-info-text .seat-location-display {
+            font-size: 1.5rem; /* Otras visualizaciones de información */
+            color: #000; /* Texto negro */
+        }
+
+        .qr-info-text .call-to-action {
+            font-size: 1.75rem; /* "¡INSCRÍBETE!" */
+            font-weight: bold;
+            color: #38bdf8; /* Cambiado a azul cielo como el logo */
+            margin-top: 1rem;
+        }
+
+        .qr-info-text .whatsapp-info {
+            font-size: 1.5rem; /* Número de WhatsApp */
+            color: #22c55e; /* Color verde */
+            margin-top: 0.5rem;
+        }
+        .download-qr-btn {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #38bdf8; /* Azul cielo */
+            color: white;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .download-qr-btn:hover {
+            background-color: #0ea5e9; /* Azul cielo más oscuro */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Overlay de carga -->
+    <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
+    
+    <!-- Contenedor Principal para el Visor de Lote Compartido -->
+    <div class="container mx-auto max-w-4xl p-4 sm:p-6 flex-grow">
+        <header class="text-center mb-6">
+            <img src="https://i.imgur.com/rqkZi9P.png" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 150px;" 
+                 onerror="this.onerror=null;this.src='https://placehold.co/150x150/ffffff/000000?text=Logo'; document.getElementById('logo-error-message').classList.remove('hidden');">
+            <p id="logo-error-message" class="text-red-400 text-sm mt-1 hidden">Error al cargar el logo. Verifica la imagen.</p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-sky-400">VYTMUSIC</h1>
+            <p class="text-lg text-gray-300">Lote de Entradas Compartido</p>
+        </header>
+
+        <div id="message-container" class="mb-4"></div>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+            <h2 class="text-2xl font-bold mb-4 text-center" id="shared-batch-title">Cargando Lote de QRs...</h2>
+            <p class="text-gray-300 mb-4 text-center" id="shared-batch-info"></p>
+            <div id="shared-batch-qrs-container" class="mt-6 space-y-4">
+                <!-- Los QRs compartidos se cargarán aquí -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+        // --- ESTADO GLOBAL Y CONFIGURACIÓN ---
+        const state = {
+            db: null,
+            auth: null,
+            isFirebaseReady: false,
+            logoImage: new Image(),
+        };
+
+        const config = {
+            appId: typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod',
+            firebase: typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
+                authDomain: "vyt-music.firebaseapp.com",
+                projectId: "vyt-music",
+                storageBucket: "vyt-music.appspot.com",
+                messagingSenderId: "574981837817",
+                appId: "1:574981837817:web:a29933a22bbfd51a086328"
+            },
+            logoUrl: 'https://i.imgur.com/rqkZi9P.png' 
+        };
+
+        // --- ELEMENTOS DE LA INTERFAZ DE USUARIO ---
+        const ui = {};
+
+        /**
+         * Función centralizada para consultar y almacenar todos los elementos de la interfaz de usuario.
+         */
+        function cacheUIElements() {
+            const ids = [
+                'loading-overlay', 'message-container', 'logo-error-message',
+                'shared-batch-title', 'shared-batch-info', 'shared-batch-qrs-container'
+            ];
+            ids.forEach(id => {
+                const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
+                ui[camelCaseId] = document.getElementById(id);
+            });
+        }
+
+        // --- FUNCIONES DE UTILIDAD Y UI ---
+
+        /**
+         * Muestra un mensaje al usuario.
+         * @param {string} message El mensaje a mostrar.
+         * @param {'success'|'error'|'warning'|'info'} type El tipo de mensaje.
+         */
+        function displayMessage(message, type = 'success') {
+            const colors = {
+                success: 'bg-green-500 text-white', error: 'bg-red-500 text-white',
+                warning: 'bg-yellow-500 text-black', info: 'bg-sky-500 text-white'
+            };
+            ui.messageContainer.innerHTML = `<div class="p-4 rounded-md mb-4 text-sm font-semibold ${colors[type]}">${message}</div>`;
+            setTimeout(() => { ui.messageContainer.innerHTML = ''; }, 5000);
+        }
+
+        /**
+         * Muestra u oculta el overlay de carga principal.
+         * @param {boolean} show True para mostrar, false para ocultar.
+         */
+        function setLoading(show) {
+            ui.loadingOverlay.classList.toggle('hidden', !show);
+        }
+
+        /**
+         * Genera un código QR para una entrada y lo muestra en la interfaz.
+         * @param {string} ticketId El ID único de la entrada.
+         * @param {string} name El nombre de la persona.
+         * @param {string} prefix El prefijo de la entrada.
+         * @param {string} seatLocation La ubicación del asiento asignada.
+         * @param {string} qrData Los datos a codificar en el QR.
+         * @param {HTMLElement} container El contenedor donde se añadirá el elemento QR.
+         */
+        function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container) {
+            const qrItemDiv = document.createElement('div');
+            qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-900 text-center mx-auto'; 
+            
+            // Wrapper para el QR y el logo para manejar el posicionamiento
+            const qrCodeContainerWrapper = document.createElement('div');
+            qrCodeContainerWrapper.className = 'qrcode-container-wrapper';
+
+            const qrCodeContainerDiv = document.createElement('div');
+            qrCodeContainerDiv.id = `qrcode-${ticketId}`;
+            qrCodeContainerDiv.className = 'qrcode-container'; 
+
+            const logoImg = document.createElement('img');
+            logoImg.src = config.logoUrl;
+            logoImg.alt = "Logo VYTMUSIC";
+            logoImg.className = 'qrcode-logo';
+
+            qrCodeContainerWrapper.appendChild(qrCodeContainerDiv);
+            qrCodeContainerWrapper.appendChild(logoImg); // Añadir logo encima del QR
+
+            const infoTextDiv = document.createElement('div');
+            infoTextDiv.className = 'qr-info-text';
+
+            infoTextDiv.innerHTML = `
+                <h3>VYT-MUSIC</h3>
+                <p>CERTAMEN DE CANTO</p>
+                <p class="name-display">${name}</p>
+                <p class="prefix-display">Prefijo: ${prefix}</p>
+                <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
+                <p class="id-display">ID: ${ticketId}</p>
+                <p class="call-to-action">¡INSCRÍBETE!</p>
+                <p class="whatsapp-info">WhatsApp: 3417422062</p>
+            `;
+
+            qrItemDiv.appendChild(qrCodeContainerWrapper);
+            qrItemDiv.appendChild(infoTextDiv);
+            container.appendChild(qrItemDiv); // Usar el contenedor proporcionado
+
+            new QRCode(qrCodeContainerDiv.id, {
+                text: qrData,
+                width: 1080, // Tamaño aumentado
+                height: 1080, // Tamaño aumentado
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Crear botón de descarga para cada QR
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = 'Descargar QR';
+            downloadBtn.className = 'download-qr-btn';
+            downloadBtn.addEventListener('click', () => {
+                const qrCanvas = qrCodeContainerDiv.querySelector('canvas');
+                if (qrCanvas) {
+                    const dataURL = qrCanvas.toDataURL('image/png');
+                    const a = document.createElement('a');
+                    a.href = dataURL;
+                    a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    displayMessage('No se pudo encontrar el canvas del QR para descargar.', 'error');
+                }
+            });
+            qrItemDiv.appendChild(downloadBtn);
+        }
+
+        // --- LÓGICA DE FIREBASE Y DATOS ---
+
+        const Firebase = {
+            /**
+             * Obtiene un lote compartido por su ID.
+             * @param {string} batchId El ID del lote compartido.
+             * @returns {object|null} Los datos del lote compartido o null si no se encuentra.
+             */
+            async getSharedBatch(batchId) {
+                if (!state.isFirebaseReady) {
+                    displayMessage('Firebase no está listo para obtener el lote compartido.', 'error');
+                    return null;
+                }
+                const sharedBatchRef = doc(state.db, `artifacts/${config.appId}/public/data/sharedBatches`, batchId);
+                const docSnap = await getDoc(sharedBatchRef);
+                if (docSnap.exists()) {
+                    return docSnap.data();
+                }
+                return null;
+            },
+            /**
+             * Obtiene múltiples entradas por sus IDs.
+             * @param {Array<string>} ticketIds Array de IDs de entradas a obtener.
+             * @returns {Array<object>} Array de datos de entradas.
+             */
+            async getTicketsByIds(ticketIds) {
+                if (!state.isFirebaseReady || ticketIds.length === 0) {
+                    return [];
+                }
+                const tickets = [];
+                for (const id of ticketIds) {
+                    const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, id);
+                    const docSnap = await getDoc(ticketRef);
+                    if (docSnap.exists()) {
+                        tickets.push(docSnap.data());
+                    }
+                }
+                return tickets;
+            }
+        };
+
+        /**
+         * Carga y muestra un lote compartido de QRs basado en un batchId de la URL.
+         * @param {string} batchId El ID del lote compartido a cargar.
+         */
+        async function loadAndDisplaySharedBatch(batchId) {
+            setLoading(true);
+            ui.sharedBatchQrsContainer.innerHTML = ''; // Limpiar contenido previo
+            ui.sharedBatchInfo.textContent = 'Cargando lote...';
+
+            try {
+                const sharedBatch = await Firebase.getSharedBatch(batchId);
+                if (sharedBatch && sharedBatch.ticketIds && sharedBatch.ticketIds.length > 0) {
+                    ui.sharedBatchTitle.textContent = `Lote de QRs Compartido: ${batchId.substring(0, 8)}...`;
+                    ui.sharedBatchInfo.textContent = `Este lote contiene ${sharedBatch.ticketIds.length} QRs.`;
+                    const tickets = await Firebase.getTicketsByIds(sharedBatch.ticketIds);
+                    if (tickets.length > 0) {
+                        tickets.forEach(ticket => {
+                            generateQrCodeForTicket(ticket.id, ticket.name, ticket.prefix, ticket.seatLocation, ticket.id, ui.sharedBatchQrsContainer);
+                        });
+                        displayMessage(`Lote con ${tickets.length} QRs cargado.`, 'success');
+                    } else {
+                        ui.sharedBatchInfo.textContent = 'No se encontraron tickets en este lote compartido.';
+                        displayMessage('No se encontraron tickets para este lote compartido.', 'warning');
+                    }
+                } else {
+                    ui.sharedBatchInfo.textContent = 'Lote compartido no encontrado o vacío.';
+                    displayMessage('Lote compartido no encontrado o vacío.', 'error');
+                }
+            } catch (error) {
+                console.error('Error al cargar el lote compartido:', error);
+                ui.sharedBatchInfo.textContent = 'Error al cargar el lote compartido.';
+                displayMessage('Error al cargar el lote compartido. Consulta la consola.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // --- INICIALIZACIÓN ---
+
+        /**
+         * Inicializa la aplicación.
+         */
+        async function startApp() {
+            cacheUIElements();
+            setLoading(true);
+            console.log("Iniciando aplicación y caché de UI.");
+
+            try {
+                const app = initializeApp(config.firebase);
+                state.db = getFirestore(app);
+                state.auth = getAuth(app);
+                console.log("Aplicación Firebase, Firestore y Auth inicializados.");
+            } catch (error) {
+                console.error("Error al inicializar Firebase:", error);
+                displayMessage("Error crítico al conectar con Firebase. La aplicación no puede continuar.", "error");
+                setLoading(false);
+                return;
+            }
+
+            // En esta página, solo necesitamos autenticación anónima para leer datos públicos
+            try {
+                await signInAnonymously(state.auth);
+                state.isFirebaseReady = true;
+                console.log("Autenticación anónima exitosa.");
+            } catch (error) {
+                console.error("Error de autenticación anónima:", error);
+                displayMessage(`Error de autenticación: ${error.message}. No se podrán cargar los QRs.`, 'error');
+                setLoading(false);
+                return;
+            }
+
+            // Cargar el logo
+            state.logoImage.src = config.logoUrl;
+            state.logoImage.onerror = () => {
+                ui.logoErrorMessage.classList.remove('hidden');
+            };
+
+            // Verificar el batchId en la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const batchId = urlParams.get('batchId');
+            if (batchId) {
+                await loadAndDisplaySharedBatch(batchId);
+            } else {
+                ui.sharedBatchTitle.textContent = 'No se ha especificado un lote de QRs.';
+                ui.sharedBatchInfo.textContent = 'Por favor, utiliza un enlace proporcionado para ver un lote de QRs.';
+                displayMessage('No se encontró un ID de lote en la URL.', 'warning');
+                setLoading(false);
+            }
+            console.log("Carga inicial completa.");
+        }
+
+        // Iniciar la aplicación cuando el DOM esté completamente cargado
+        document.addEventListener('DOMContentLoaded', startApp);
+    </script>
+</body>
+</html>
