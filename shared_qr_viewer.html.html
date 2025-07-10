@@ -214,6 +214,30 @@
             color: #f9fafb; /* Blanco para el prefijo */
             margin-top: 0.5rem;
         }
+        /* Estilos para los iconos de redes sociales */
+        .social-icons-container {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem; /* Espacio entre los iconos */
+            margin-top: 2rem; /* Espacio superior */
+            padding-top: 1.5rem;
+            border-top: 1px solid #374151; /* Línea separadora */
+        }
+        .social-icon {
+            width: 3.5rem; /* Tamaño de los iconos */
+            height: 3.5rem;
+            border-radius: 50%; /* Hacerlos circulares */
+            overflow: hidden; /* Asegurar que la imagen se ajuste */
+            transition: transform 0.2s ease-in-out;
+        }
+        .social-icon:hover {
+            transform: scale(1.1); /* Efecto de crecimiento al pasar el ratón */
+        }
+        .social-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ajustar la imagen dentro del círculo */
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -347,7 +371,7 @@
                 <p>CERTAMEN DE CANTO</p>
                 <p class="small-text">¡Tu entrada para el evento!</p>
                 <p class="name-display">${name}</p> <!-- Nombre del invitado en recuadro celeste -->
-                <p class="prefix-display">Prefijo: ${prefix}</p>
+                <p class="prefix-display">Artista: ${prefix}</p> <!-- Cambiado de "Prefijo:" a "Artista:" -->
                 <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
                 <p class="id-display">ID: ${ticketId}</p>
                 <a href="https://wa.me/3417422062" target="_blank" class="whatsapp-link-box">
