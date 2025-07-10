@@ -215,10 +215,6 @@
         .download-qr-btn:hover {
             background-color: #0ea5e9; /* Azul cielo más oscuro */
         }
-        /* Hidden audio element for beep sound */
-        .hidden-audio {
-            display: none;
-        }
     </style>
 </head>
 <body class="antialiased">
@@ -348,22 +344,7 @@
             <section id="qr-scanner-section" class="section">
                 <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-bold mb-4 text-center">Escanear Código QR</h2>
-                    <!-- QR Code Reader Container -->
-                    <div id="qr-code-reader" class="w-full bg-gray-100 rounded-lg overflow-hidden mb-6 aspect-video flex items-center justify-center">
-                        <!-- The QR scanner will render here -->
-                    </div>
-
-                    <!-- Status Message for Scanner -->
-                    <div id="scanner-status" class="text-xl font-semibold text-blue-700 mb-4 h-8 flex items-center justify-center">
-                        Cargando escáner...
-                    </div>
-
-                    <!-- Scanned QR Data Display -->
-                    <div id="scanned-qr-result-display" class="bg-green-100 text-green-800 p-4 rounded-lg text-lg font-medium break-words hidden">
-                        <p class="font-bold mb-2">Información del QR:</p>
-                        <p id="qr-data-content"></p>
-                    </div>
-
+                    <div id="qr-code-reader"></div>
                     <div class="text-center">
                         <!-- El botón Reiniciar Escáner ahora siempre visible -->
                         <button id="restart-scan-btn" class="mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700">Reiniciar Escáner</button>
@@ -416,13 +397,6 @@
             </section>
         </main>
     </div>
-
-    <!-- Audio element for beep sound -->
-    <audio id="beep-sound" class="hidden-audio" preload="auto">
-        <!-- Base64 encoded MP3 for a short beep sound -->
-        <source src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjM1LjEwMAAAAAAAAAAAAAAA//tQZAAAAAAAAnRtcwAAAAAAAAAAJAAAAAAAAAABU09VTkQgQ0xPVUQgLSBBdWRpbyBDb3B5cmlnaHQgZnJlZSBzb3VuZHMgZm9yIHlvdXIgcHJvamVjdHMuIC0gQmVlcCBTb3VuZCBFLmcuIFNjYW5uZXIgYmVlcC4gLSBodHRwczovL3NvdW5kY2xvdWQuY29tL3NvdW5kY2xvdWQvMjUwNDc1MzI4AAAAAAAAAAAAAP/7UmQAAADSAAAAICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCg==" type="audio/mpeg">
-        Tu navegador no soporta el elemento de audio.
-    </audio>
 
     <!-- Firebase SDKs -->
     <script type="module">
@@ -489,9 +463,7 @@
                 // Elements for shared batch viewer
                 'shared-batch-viewer-section', 'shared-batch-title', 'shared-batch-info', 'shared-batch-qrs-container',
                 // New elements for show details
-                'show-name-input', 'show-location-input', 'show-address-input',
-                // New elements for QR scanner status and result display
-                'scanner-status', 'scanned-qr-result-display', 'qr-data-content', 'beep-sound'
+                'show-name-input', 'show-location-input', 'show-address-input'
             ];
             ids.forEach(id => {
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
@@ -835,7 +807,6 @@
                 console.log("Entering QR Scanner section. Starting scanner.");
                 startQrScanner();
                 ui.scannedTicketInfo.classList.add('hidden');
-                ui.scannedQrResultDisplay.classList.add('hidden'); // Hide raw QR data display
                 // The restart button is now always visible, so no need to hide it here initially
             } else {
                 console.log("Exiting QR Scanner section. Stopping scanner.");
@@ -867,11 +838,7 @@
                 }
                 
                 ui.qrCodeReader.innerHTML = ""; // Clear container before starting
-                ui.scannerStatus.textContent = "Cargando escáner..."; // Initial status
-                ui.scannedQrResultDisplay.classList.add('hidden'); // Hide previous result
-                ui.scannedTicketInfo.classList.add('hidden'); // Hide ticket info
-                ui.markUsedBtn.classList.add('hidden'); // Hide mark used button
-
+                
                 state.scanner.start(
                     { facingMode: "environment" }, 
                     { fps: 10, qrbox: {width: 250, height: 250}, disableFlip: false }, 
@@ -879,9 +846,6 @@
                     onScanError
                 ).then(() => {
                     console.log("QR scanner started successfully.");
-                    ui.scannerStatus.textContent = "ESCANDEANDO..."; // Ready to scan
-                    ui.scannerStatus.classList.remove('text-red-700', 'text-green-700');
-                    ui.scannerStatus.classList.add('text-blue-700');
                     displayMessage('Cámara iniciada. Lista para escanear.', 'info');
                 }).catch(err => {
                     console.error("Error starting scanner:", err);
@@ -893,9 +857,6 @@
                     } else if (err.name === 'NotReadableError') {
                         errorMessage = 'La cámara ya está en uso o no se puede acceder a ella. Cierra otras aplicaciones que la usen.';
                     }
-                    ui.scannerStatus.textContent = `Error: ${errorMessage}`;
-                    ui.scannerStatus.classList.remove('text-blue-700');
-                    ui.scannerStatus.classList.add('text-red-700');
                     displayMessage(errorMessage, 'error');
                 });
             });
@@ -911,14 +872,8 @@
                 try {
                     await state.scanner.stop();
                     console.log("QR scanner stopped successfully.");
-                    ui.scannerStatus.textContent = "Escáner detenido.";
-                    ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700', 'text-red-700');
-                    ui.scannerStatus.classList.add('text-gray-500');
                 } catch (err) {
                     console.error("Error stopping scanner:", err);
-                    ui.scannerStatus.textContent = "Error al detener el escáner.";
-                    ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700');
-                    ui.scannerStatus.classList.add('text-red-700');
                 }
             } else if (state.scanner) {
                 console.log("Scanner exists but is not scanning. No need to stop.");
@@ -933,12 +888,8 @@
          */
         async function onScanSuccess(decodedText, decodedResult) {
             console.log("QR scanned successfully:", decodedText);
-            
-            // Display raw QR data
-            ui.qrDataContent.textContent = decodedText;
-            ui.scannedQrResultDisplay.classList.remove('hidden');
-            
             ui.scannedTicketInfo.classList.remove('hidden');
+            console.log("Scanned ticket info section unhidden."); // Confirming visibility
             ui.markUsedBtn.classList.add('hidden'); // Hide mark used button by default
 
             if (state.scanner) {
@@ -968,9 +919,6 @@
                         await Tone.start(); // Ensure audio context is started
                         state.synth.triggerAttackRelease("C3", "32n"); // Play a low, short note for invalid
                     }
-                    ui.scannerStatus.textContent = "¡Ticket Inválido!";
-                    ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700');
-                    ui.scannerStatus.classList.add('text-red-700');
                 } else {
                     const ticketData = ticketDoc.data();
                     ui.currentScannedTicketId.textContent = ticketData.id;
@@ -988,9 +936,6 @@
                             await Tone.start(); // Ensure audio context is started
                             state.synth.triggerAttackRelease("G3", "16n"); // Play a slightly lower, short note for used
                         }
-                        ui.scannerStatus.textContent = "¡Ticket Ya Usado!";
-                        ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700');
-                        ui.scannerStatus.classList.add('text-yellow-700');
                     } else {
                         displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) DISPONIBLE.`, 'success');
                         ui.currentScannedTicketStatus.textContent = 'DISPONIBLE';
@@ -1003,9 +948,6 @@
                             await Tone.start(); // Ensure audio context is started
                             state.synth.triggerAttackRelease("C4", "8n"); // Play a middle C note for valid
                         }
-                        ui.scannerStatus.textContent = "¡Escaneo Completado!";
-                        ui.scannerStatus.classList.remove('text-blue-700', 'text-red-700');
-                        ui.scannerStatus.classList.add('text-green-700');
                     }
                 }
             } catch (error) {
@@ -1018,9 +960,6 @@
                     await Tone.start(); // Ensure audio context is started
                     state.synth.triggerAttackRelease("C3", "32n"); // Play a low, short note for errors
                 }
-                ui.scannerStatus.textContent = "Error de Procesamiento.";
-                ui.scannerStatus.classList.remove('text-blue-700', 'text-green-700');
-                ui.scannerStatus.classList.add('text-red-700');
             }
         }
 
@@ -1029,13 +968,7 @@
          * @param {object} errorMessage The error message.
          */
         function onScanError(errorMessage) {
-            // Only update status to "ESCANDEANDO..." if it's not already showing a result or error
-            if (!ui.scannerStatus.textContent.includes('¡') && !ui.scannerStatus.textContent.includes('Error')) {
-                ui.scannerStatus.textContent = "ESCANDEANDO...";
-                ui.scannerStatus.classList.remove('text-green-700', 'text-red-700');
-                ui.scannerStatus.classList.add('text-blue-700');
-            }
-            // console.warn("Scan error:", errorMessage); // Uncomment for debugging if needed
+            // console.warn("Scan error:", errorMessage); // Log errors, but don't display to user for minor errors
         }
 
         // --- TICKET GENERATOR FUNCTIONALITY ---
@@ -1053,7 +986,6 @@
          * @param {string} showAddress Address of the show (can be a Google Maps link).
          */
         function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container, showName, showLocation, showAddress) {
-            console.log(`Creating QR item for ticketId: ${ticketId}`); // Debugging log
             const qrItemDiv = document.createElement('div');
             qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-900 text-center mx-auto'; 
             
@@ -1064,8 +996,6 @@
             const qrCodeContainerDiv = document.createElement('div');
             qrCodeContainerDiv.id = `qrcode-${ticketId}`;
             qrCodeContainerDiv.className = 'qrcode-container'; 
-            // Ensure the container for QRCode.js is empty before generating
-            qrCodeContainerDiv.innerHTML = '';
 
             const logoImg = document.createElement('img');
             logoImg.src = config.logoUrl;
@@ -1103,18 +1033,17 @@
             `;
 
             qrItemDiv.appendChild(qrCodeContainerWrapper);
+            qrItemDiv.appendChild(infoTextDiv);
             container.appendChild(qrItemDiv); // Use provided container
-            console.log(`QR item for ${ticketId} appended to container.`); // Debugging log
 
             new QRCode(qrCodeContainerDiv.id, {
                 text: qrData,
-                width: 256, // Reduced size for better web display and potential compatibility
-                height: 256, // Reduced size for better web display and potential compatibility
+                width: 1080, // Increased size
+                height: 1080, // Increased size
                 colorDark: "#000000",
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
-            console.log(`QRCode.js initiated for ${qrCodeContainerDiv.id}`); // Debugging log
 
             // Create download button for each QR
             const downloadBtn = document.createElement('button');
@@ -1193,7 +1122,6 @@
                         <p class="text-sm text-gray-400">Show: ${ticket.showName || 'N/A'}</p>
                         <p class="text-sm text-gray-400">Lugar: ${ticket.showLocation || 'N/A'}</p>
                         ${ticket.showAddress ? `<p class="text-sm text-gray-400">Dirección: ${ticket.showAddress.startsWith('http') ? `<a href="${ticket.showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a>` : ticket.showAddress}</p>` : ''}
-                        <p class="text-xs text-gray-500">Generado por: ${ticket.generatedBy}</p>
                     </div>
                     <div class="mt-2 sm:mt-0">
                         <span class="px-3 py-1 rounded-full text-xs font-semibold ${ticket.used ? 'bg-yellow-600' : 'bg-green-600'}">
@@ -1269,8 +1197,7 @@
                 const app = initializeApp(config.firebase);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
-                // Initialize Tone.js synth for sound effects
-                state.synth = new Tone.Synth().toDestination(); 
+                state.synth = new Tone.Synth().toDestination(); // Initialize Tone.js synth
                 console.log("Aplicación Firebase, Firestore, Auth y Tone.js inicializados.");
             } catch (error) {
                 console.error("Error al inicializar Firebase:", error);
@@ -1387,8 +1314,8 @@
             ui.restartScanBtn.addEventListener('click', () => {
                 console.log("Botón 'Reiniciar Escáner' clickeado.");
                 ui.scannedTicketInfo.classList.add('hidden');
-                ui.scannedQrResultDisplay.classList.add('hidden'); // Hide raw QR data display
                 ui.markUsedBtn.classList.add('hidden'); // Asegurarse de que esto esté oculto al reiniciar
+                // No ocultar el botón de reiniciar a sí mismo, ya que debe estar siempre visible
                 startQrScanner(); // Reiniciar el escáner completamente
             });
 
@@ -1447,7 +1374,6 @@
                     const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
 
                     for (const name of names) {
-                        console.log(`Generating ticket for: ${name}`); // Debugging log
                         const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
                         const ticketRef = doc(ticketsCollectionRef, ticketId);
                         const ticketData = {
@@ -1467,9 +1393,8 @@
                         state.currentBatchGeneratedTickets.push({ ...ticketData, qrDataUrl: ticketId });
                         // Pass prefix, seatLocation, showName, showLocation, showAddress to generateQrCodeForTicket function
                         generateQrCodeForTicket(ticketId, name, ticketPrefix, seatLocation, ticketId, ui.generatedTicketsContainer, showName, showLocation, showAddress);
-                        console.log(`Ticket ${ticketId} generated and appended to UI container.`); // Debugging log
                     }
-                    await batch.commit(); // This saves to Firestore
+                    await batch.commit();
                     displayMessage(`${names.length} tickets generados exitosamente.`, 'success');
                     ui.shareBatchQrsBtn.classList.remove('hidden'); // Show share button
                 } catch (error) {
