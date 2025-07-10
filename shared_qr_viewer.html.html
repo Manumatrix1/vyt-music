@@ -215,12 +215,11 @@
         };
 
         const config = {
-            // Hardcode appId and firebase config as they are not passed from the main app
-            appId: 'vytmusic-app-prod', // Replace with your actual Firebase App ID if different
-            firebase: {
-                apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU", // Replace with your actual Firebase API Key
-                authDomain: "vyt-music.firebaseapp.com", // Replace with your actual Firebase Auth Domain
-                projectId: "vyt-music", // Replace with your actual Firebase Project ID
+            appId: typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod',
+            firebase: typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
+                authDomain: "vyt-music.firebaseapp.com",
+                projectId: "vyt-music",
                 storageBucket: "vyt-music.appspot.com",
                 messagingSenderId: "574981837817",
                 appId: "1:574981837817:web:a29933a22bbfd51a086328"
@@ -280,17 +279,14 @@
              */
             async getSharedBatch(batchId) {
                 if (!state.isFirebaseReady) {
-                    console.error("DEBUG: Firebase is not ready. Cannot get shared batch.");
                     displayMessage('Firebase is not ready to get shared batch.', 'error');
                     return null;
                 }
                 const sharedBatchRef = doc(state.db, `artifacts/${config.appId}/public/data/sharedBatches`, batchId);
                 const docSnap = await getDoc(sharedBatchRef);
                 if (docSnap.exists()) {
-                    console.log("DEBUG: Shared batch found:", docSnap.data());
                     return docSnap.data();
                 }
-                console.log("DEBUG: Shared batch not found for ID:", batchId);
                 return null;
             },
             /**
@@ -300,7 +296,6 @@
              */
             async getTicketsByIds(ticketIds) {
                 if (!state.isFirebaseReady || ticketIds.length === 0) {
-                    console.error("DEBUG: Firebase is not ready or no ticket IDs provided. Cannot get tickets.");
                     return [];
                 }
                 const tickets = [];
@@ -312,12 +307,8 @@
                     const docSnap = await getDoc(ticketRef);
                     if (docSnap.exists()) {
                         tickets.push(docSnap.data());
-                        console.log("DEBUG: Fetched ticket:", docSnap.data().id);
-                    } else {
-                        console.warn("DEBUG: Ticket not found for ID:", id);
                     }
                 }
-                console.log("DEBUG: All tickets fetched:", tickets);
                 return tickets;
             }
         };
@@ -473,15 +464,15 @@
         async function startApp() {
             cacheUIElements();
             setLoading(true);
-            console.log("DEBUG: Iniciando aplicación de visor de QRs compartidos.");
+            console.log("Iniciando aplicación de visor de QRs compartidos.");
 
             try {
                 const app = initializeApp(config.firebase);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
-                console.log("DEBUG: Aplicación Firebase, Firestore y Auth inicializados.");
+                console.log("Aplicación Firebase, Firestore y Auth inicializados.");
             } catch (error) {
-                console.error("DEBUG: Error al inicializar Firebase:", error);
+                console.error("Error al inicializar Firebase:", error);
                 displayMessage("Error crítico al conectar con Firebase. La aplicación no puede continuar.", "error");
                 setLoading(false);
                 return;
@@ -492,9 +483,9 @@
                 await signInAnonymously(state.auth);
                 state.userId = state.auth.currentUser?.uid || 'anonymous';
                 state.isFirebaseReady = true;
-                console.log("DEBUG: Sesión anónima iniciada para visor de QRs. User ID:", state.userId);
+                console.log("Sesión anónima iniciada para visor de QRs.");
             } catch (error) {
-                console.error("DEBUG: Error al iniciar sesión anónimamente:", error);
+                console.error("Error al iniciar sesión anónimamente:", error);
                 displayMessage("No se pudo autenticar para ver los QRs. Intenta de nuevo.", "error");
                 setLoading(false);
                 return;
@@ -503,10 +494,10 @@
             // Load the logo image once
             state.logoImage.src = config.logoUrl;
             state.logoImage.onload = () => {
-                console.log("DEBUG: Logo image loaded successfully.");
+                console.log("Logo image loaded successfully.");
             };
             state.logoImage.onerror = () => {
-                console.error("DEBUG: Failed to load logo image from URL:", config.logoUrl);
+                console.error("Failed to load logo image from URL:", config.logoUrl);
                 ui.logoError.classList.remove('hidden'); // Show error message if logo fails to load
                 displayMessage('Error al cargar el logo principal. La aplicación funcionará, pero las imágenes QR descargadas podrían no incluir el logo.', 'warning');
             };
@@ -514,7 +505,6 @@
             // Get batchId from URL
             const urlParams = new URLSearchParams(window.location.search);
             const batchId = urlParams.get('batchId');
-            console.log("DEBUG: Batch ID from URL:", batchId);
 
             if (!batchId) {
                 ui.sharedBatchTitle.textContent = 'Error: Lote no especificado';
@@ -556,13 +546,13 @@
                     displayMessage('El lote de QRs no fue encontrado.', 'error');
                 }
             } catch (error) {
-                console.error('DEBUG: Error al cargar el lote compartido:', error);
+                console.error('Error al cargar el lote compartido:', error);
                 ui.sharedBatchTitle.textContent = 'Error al cargar el lote';
                 ui.sharedBatchInfo.textContent = 'Hubo un error al intentar cargar los QRs. Por favor, inténtalo de nuevo.';
                 displayMessage('Error al cargar el lote compartido. Revisa la consola.', 'error');
             } finally {
                 setLoading(false);
-                console.log("DEBUG: Carga del visor de QRs compartidos completa.");
+                console.log("Carga del visor de QRs compartidos completa.");
             }
         }
 
