@@ -104,10 +104,10 @@
             max-width: 1100px; /* Limita el ancho máximo para pantallas grandes */
             margin-left: auto;
             margin-right: auto;
-            background-color: white; /* Fondo blanco para el QR y el texto */
+            background-color: #1f2937; /* Fondo oscuro para el contenedor del QR */
             padding: 1rem; /* Espaciado alrededor del contenido */
             border-radius: 0.5rem; /* Esquinas redondeadas */
-            color: #000; /* Texto negro para legibilidad en fondo blanco */
+            color: #f9fafb; /* Texto claro para legibilidad en fondo oscuro */
             position: relative; /* Necesario para el posicionamiento absoluto del logo */
             overflow: hidden; /* Oculta el desbordamiento del logo */
         }
@@ -160,7 +160,7 @@
         .qr-info-text {
             text-align: center;
             margin-top: 1rem;
-            color: #000; /* Texto negro para legibilidad en fondo blanco */
+            color: #f9fafb; /* Texto claro para legibilidad en fondo oscuro */
         }
 
         .qr-info-text h3 {
@@ -173,7 +173,7 @@
         .qr-info-text p {
             font-size: 1.1rem; /* Texto para "Certamen de Canto" - Aún más pequeño */
             margin-bottom: 0.5rem;
-            color: #000; /* Texto negro */
+            color: #f9fafb; /* Texto claro */
         }
         /* Estilo para el texto adicional debajo de "Certamen de Canto" */
         .qr-info-text .small-text {
@@ -200,7 +200,7 @@
         .qr-info-text .seat-location-display,
         .qr-info-text .show-details-display { /* Nuevo estilo para detalles del show */
             font-size: 1.5rem; /* Otras visualizaciones de información */
-            color: #000; /* Texto negro */
+            color: #f9fafb; /* Texto claro */
         }
         .qr-info-text .show-details-display a {
             color: #38bdf8; /* Color azul para enlaces */
@@ -1086,7 +1086,7 @@
         function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container, showName, showLocation, showAddress) {
             const qrItemDiv = document.createElement('div');
             // Cambiado a bg-gray-900 para que el texto blanco se vea mejor
-            qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-white text-center mx-auto'; 
+            qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-800 text-center mx-auto'; 
             
             // Wrapper para el QR y el logo para manejar el posicionamiento
             const qrCodeContainerWrapper = document.createElement('div');
@@ -1121,15 +1121,15 @@
 
             infoTextDiv.innerHTML = `
                 <h3 class="text-sky-600">VYT-MUSIC</h3>
-                <p class="text-gray-800">CERTAMEN DE CANTO</p>
-                <p class="small-text text-gray-700">¡Tu entrada para el evento!</p>
+                <p class="text-gray-50">CERTAMEN DE CANTO</p>
+                <p class="small-text text-gray-300">¡Tu entrada para el evento!</p>
                 <p class="name-display text-white">${name}</p> <!-- Nombre del invitado en recuadro celeste -->
-                <p class="show-details-display text-gray-800">Show: ${showName || 'N/A'}</p>
-                <p class="show-details-display text-gray-800">Lugar: ${showLocation || 'N/A'}</p>
+                <p class="show-details-display text-gray-50">Show: ${showName || 'N/A'}</p>
+                <p class="show-details-display text-gray-50">Lugar: ${showLocation || 'N/A'}</p>
                 ${showAddressHtml}
-                <p class="prefix-display text-gray-800">Artista: ${prefix}</p> <!-- Cambiado de "Prefijo:" a "Artista:" -->
-                <p class="seat-location-display text-gray-800">Ubicación: ${seatLocation || 'No Asignado'}</p>
-                <p class="id-display text-gray-600">ID: ${ticketId}</p>
+                <p class="prefix-display text-gray-50">Artista: ${prefix}</p> <!-- Cambiado de "Prefijo:" a "Artista:" -->
+                <p class="seat-location-display text-gray-50">Ubicación: ${seatLocation || 'No Asignado'}</p>
+                <p class="id-display text-gray-400">ID: ${ticketId}</p>
                 <a href="https://wa.me/3417422062" target="_blank" class="whatsapp-link-box">
                     <span class="main-text">INSCRÍBETE</span>
                     <span class="vyt-music-text">VYT-MUSIC</span>
