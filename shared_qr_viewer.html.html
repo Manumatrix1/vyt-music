@@ -218,14 +218,15 @@
         .social-icons-container {
             display: flex;
             justify-content: center;
-            gap: 1rem; /* Espacio entre los iconos, reducido */
+            flex-wrap: wrap; /* Permite que los elementos se envuelvan si no caben en una línea */
+            gap: 0.8rem; /* Espacio entre los iconos, reducido aún más */
             margin-top: 1.5rem; /* Espacio superior, reducido */
             padding-top: 1rem; /* Padding superior, reducido */
             border-top: 1px solid #374151; /* Línea separadora */
         }
         .social-icon {
-            width: 2.5rem; /* Tamaño de los iconos, reducido */
-            height: 2.5rem; /* Tamaño de los iconos, reducido */
+            width: 2rem; /* Tamaño de los iconos, reducido */
+            height: 2rem; /* Tamaño de los iconos, reducido */
             border-radius: 50%; /* Hacerlos circulares */
             overflow: hidden; /* Asegurar que la imagen se ajuste */
             transition: transform 0.2s ease-in-out;
@@ -420,16 +421,16 @@
             socialMediaContainer.className = 'social-icons-container';
             socialMediaContainer.innerHTML = `
                 <a href="https://www.instagram.com/vytmusicrosario/" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram Logo" onerror="this.onerror=null;this.src='https://placehold.co/50x50/E1306C/ffffff?text=IG';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/E1306C/ffffff?text=IG';">
                 </a>
                 <a href="https://www.facebook.com/vocesytalentos" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook Logo" onerror="this.onerror=null;this.src='https://placehold.co/50x50/4267B2/ffffff?text=FB';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/4267B2/ffffff?text=FB';">
                 </a>
-                <a href="https://tr.ee/wfLqv_ODVO" target="_blank" class="social-icon">
-                    <img src="tiktok-logo-icon-free-png.webp" alt="TikTok Logo" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=TT';">
+                <a href="https://www.tiktok.com/@vyt.music.rosario" target="_blank" class="social-icon">
+                    <img src="tiktok-logo-icon-free-png.webp" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=TT';">
                 </a>
                 <a href="https://www.youtube.com/@VYTMUSICCONCURSODECANTO" target="_blank" class="social-icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YouTube Logo" onerror="this.onerror=null;this.src='https://placehold.co/50x50/FF0000/ffffff?text=YT';">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="" onerror="this.onerror=null;this.src='https://placehold.co/50x50/FF0000/ffffff?text=YT';">
                 </a>
             `;
             qrItemDiv.appendChild(socialMediaContainer);
