@@ -494,17 +494,36 @@
             downloadBtn.textContent = 'Descargar QR';
             downloadBtn.className = 'download-qr-btn';
             downloadBtn.addEventListener('click', () => {
+                console.log(`DEBUG VIEWER: Attempting to download QR for ticket ID: ${ticketId}, Name: ${name}`);
                 const qrCanvasToDownload = qrCodeContainerDiv.querySelector('canvas');
+                console.log(`DEBUG VIEWER: qrCanvasToDownload found:`, qrCanvasToDownload);
+
                 if (qrCanvasToDownload) {
-                    const dataURL = qrCanvasToDownload.toDataURL('image/png');
-                    const a = document.createElement('a');
-                    a.href = dataURL;
-                    a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
+                    try {
+                        const dataURL = qrCanvasToDownload.toDataURL('image/png');
+                        console.log(`DEBUG VIEWER: dataURL generated: ${dataURL.substring(0, 50)}...`); // Log first 50 chars
+                        
+                        if (dataURL && dataURL !== 'data:,') { // Check if dataURL is valid
+                            const a = document.createElement('a');
+                            a.href = dataURL;
+                            // Set download filename to include the name and ticket ID
+                            a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            displayMessage('QR descargado exitosamente.', 'success');
+                            console.log(`DEBUG VIEWER: Download initiated for ${a.download}`);
+                        } else {
+                            displayMessage('El QR generado no es una imagen válida para descargar. (DataURL inválida)', 'error');
+                            console.error('DEBUG VIEWER: Invalid dataURL:', dataURL);
+                        }
+                    } catch (error) {
+                        console.error('DEBUG VIEWER: Error during toDataURL or download process:', error);
+                        displayMessage(`Error al descargar el QR: ${error.message}. Revisa la consola.`, 'error');
+                    }
                 } else {
                     displayMessage('No se pudo encontrar el canvas del QR para descargar.', 'error');
+                    console.error('DEBUG VIEWER: Canvas element not found for download. qrCodeContainerDiv:', qrCodeContainerDiv);
                 }
             });
             qrItemDiv.appendChild(downloadBtn);
