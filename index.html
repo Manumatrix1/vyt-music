@@ -137,6 +137,10 @@
             z-index: 10; /* Asegura que el logo esté encima del QR */
             width: 18%; /* Ajustado a un porcentaje más pequeño para evitar que se corte */
             height: auto;
+            /* Centrar el logo usando transform */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             border-radius: 50%; /* Hace el logo circular si se desea */
             background-color: white; /* Fondo para que el logo se destaque */
             padding: 5px; /* Relleno alrededor del logo */
@@ -276,8 +280,9 @@
         </div>
 
         <nav class="flex justify-center space-x-2 sm:space-x-4 mb-8 border-b border-gray-700">
-            <button data-section="qr-scanner-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
+            <!-- Orden de los botones de navegación modificado -->
             <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
+            <button data-section="qr-scanner-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
             <button data-section="all-tickets-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Lista de Entradas</button>
             <button data-section="scan-history-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Historial</button>
             <!-- El botón "Ver Lote Compartido" se mantiene oculto en la app principal, ya que el enlace compartido apunta a una página separada. -->
@@ -285,29 +290,7 @@
         </nav>
 
         <main>
-            <!-- Sección de Escáner QR -->
-            <section id="qr-scanner-section" class="section">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
-                    <h2 class="text-2xl font-bold mb-4 text-center">Escanear Código QR</h2>
-                    <div id="qr-code-reader"></div>
-                    <div class="text-center">
-                        <button id="restart-scan-btn" class="hidden mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700">Escanear de Nuevo</button>
-                    </div>
-                    <div id="scanned-ticket-info" class="hidden mt-6 bg-gray-900 p-4 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Información de la Entrada</h3>
-                        <p><strong>ID:</strong> <span id="current-scanned-ticket-id" class="break-all"></span></p>
-                        <p><strong>Prefijo:</strong> <span id="current-scanned-ticket-prefix"></span></p>
-                        <p><strong>Nombre:</strong> <span id="current-scanned-ticket-name"></span></p>
-                        <p><strong>Ubicación:</strong> <span id="current-scanned-ticket-seat-location"></span></p>
-                        <p><strong>Estado:</strong> <span id="current-scanned-ticket-status"></span></p>
-                        <div class="mt-4 text-center">
-                            <button id="mark-used-btn" class="hidden w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700">Marcar como Usado</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Sección de Generador de Entradas en Lote -->
+            <!-- Sección de Generador de Entradas en Lote (Ahora primera sección activa) -->
             <section id="batch-ticket-generator-section" class="section">
                 <form id="generator-form" class="bg-gray-800 p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-bold mb-4">Generar Entradas en Lote</h2>
@@ -332,6 +315,28 @@
                     <div id="generated-tickets-container" class="mt-6 space-y-4"></div>
                     <button id="share-batch-qrs-btn" class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 mt-4 hidden">Compartir Lote de QRs</button>
                 </form>
+            </section>
+
+            <!-- Sección de Escáner QR -->
+            <section id="qr-scanner-section" class="section">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold mb-4 text-center">Escanear Código QR</h2>
+                    <div id="qr-code-reader"></div>
+                    <div class="text-center">
+                        <button id="restart-scan-btn" class="hidden mt-4 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700">Escanear de Nuevo</button>
+                    </div>
+                    <div id="scanned-ticket-info" class="hidden mt-6 bg-gray-900 p-4 rounded-lg">
+                        <h3 class="text-xl font-bold mb-2">Información de la Entrada</h3>
+                        <p><strong>ID:</strong> <span id="current-scanned-ticket-id" class="break-all"></span></p>
+                        <p><strong>Prefijo:</strong> <span id="current-scanned-ticket-prefix"></span></p>
+                        <p><strong>Nombre:</strong> <span id="current-scanned-ticket-name"></span></p>
+                        <p><strong>Ubicación:</strong> <span id="current-scanned-ticket-seat-location"></span></p>
+                        <p><strong>Estado:</strong> <span id="current-scanned-ticket-status"></span></p>
+                        <div class="mt-4 text-center">
+                            <button id="mark-used-btn" class="hidden w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700">Marcar como Usado</button>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Sección de Lista de Todas las Entradas -->
@@ -1111,8 +1116,8 @@
                     
                     setupFirestoreListeners();
 
-                    // La lógica para cargar lotes compartidos desde la URL se ha movido a shared_qr_viewer.html
-                    showSection(ui.qrScannerSection); // Sección predeterminada
+                    // Establecer la sección "Generar Entradas" como la primera a mostrar
+                    showSection(ui.batchTicketGeneratorSection); 
                 } else {
                     try {
                         if (config.initialAuthToken) {
