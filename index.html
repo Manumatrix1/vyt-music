@@ -841,7 +841,7 @@
                 }
                 
                 ui.qrCodeReader.innerHTML = ""; // Clear container before starting
-                ui.scannerStatusMessage.textContent = 'Escaneando...'; // Mostrar mensaje de "leyendo"
+                ui.scannerStatusMessage.textContent = 'Leyendo QR...'; // Mostrar mensaje de "leyendo"
                 ui.scannedTicketInfo.classList.add('hidden'); // Ocultar información de escaneos anteriores
                 ui.markUsedBtn.classList.add('hidden'); // Ocultar botón de marcar usado
 
@@ -929,7 +929,7 @@
                         await Tone.start(); // Ensure audio context is started
                         state.synth.triggerAttackRelease("C3", "32n"); // Play a low, short note for invalid
                     }
-                    ui.scannerStatusMessage.textContent = 'QR Inválido.';
+                    ui.scannerStatusMessage.textContent = 'QR Inválido. No se encontró en la base de datos.';
                 } else {
                     const ticketData = ticketDoc.data();
                     ui.currentScannedTicketId.textContent = ticketData.id;
@@ -947,7 +947,7 @@
                             await Tone.start(); // Ensure audio context is started
                             state.synth.triggerAttackRelease("G3", "16n"); // Play a slightly lower, short note for used
                         }
-                        ui.scannerStatusMessage.textContent = 'QR Usado.';
+                        ui.scannerStatusMessage.textContent = `QR Usado. Ticket: ${ticketData.name} (${ticketData.id})`;
                     } else {
                         displayMessage(`Ticket ${ticketData.name} (ID: ${ticketData.id}) DISPONIBLE.`, 'success');
                         ui.currentScannedTicketStatus.textContent = 'DISPONIBLE';
@@ -960,7 +960,7 @@
                             await Tone.start(); // Ensure audio context is started
                             state.synth.triggerAttackRelease("C4", "8n"); // Play a middle C note for valid
                         }
-                        ui.scannerStatusMessage.textContent = 'QR Válido.';
+                        ui.scannerStatusMessage.textContent = `QR Válido. Ticket: ${ticketData.name} (${ticketData.id})`;
                     }
                 }
             } catch (error) {
@@ -973,7 +973,7 @@
                     await Tone.start(); // Ensure audio context is started
                     state.synth.triggerAttackRelease("C3", "32n"); // Play a low, short note for errors
                 }
-                ui.scannerStatusMessage.textContent = 'Error al escanear.';
+                ui.scannerStatusMessage.textContent = 'Error al escanear. Intenta de nuevo.';
             }
         }
 
@@ -987,6 +987,12 @@
             // if (errorMessage.includes("QR code not found")) {
             //     ui.scannerStatusMessage.textContent = 'Buscando QR...';
             // }
+            // If the error is persistent or indicates no QR is found, update the status message
+            if (errorMessage.includes("No QR code found in video frame")) {
+                ui.scannerStatusMessage.textContent = 'Leyendo QR... Asegúrate de que el QR esté visible.';
+            } else if (errorMessage.includes("No camera found")) {
+                ui.scannerStatusMessage.textContent = 'Error: No se detectó ninguna cámara.';
+            }
         }
 
         // --- TICKET GENERATOR FUNCTIONALITY ---
