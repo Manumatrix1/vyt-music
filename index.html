@@ -381,6 +381,8 @@
                         <p class="mt-4 text-lg font-semibold">Estado del Ticket: <span id="current-scanned-ticket-status" class="text-2xl font-bold p-2 rounded-md"></span></p>
                         <div class="mt-4 text-center">
                             <button id="mark-used-btn" class="hidden w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700">Marcar como Usado</button>
+                             <!-- BOTÓN PARA VOLVER A ESCANEAR -->
+                            <button id="scan-again-btn" class="hidden w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700 mt-2">Volver a Escanear</button>
                         </div>
                     </div>
                 </div>
@@ -435,7 +437,6 @@
             isFirebaseReady: false,
             scanner: null,
             isScannerActive: false, // Flag to control scanner state
-            scanRestartCountdownInterval: null, // Timer for auto-restarting scanner
             ticketListenerUnsubscribe: null,
             historyListenerUnsubscribe: null,
             allTicketsListenerUnsubscribe: null,
@@ -476,7 +477,7 @@
                 'qr-scanner-section', 'batch-ticket-generator-section', 'scan-history-section', 'all-tickets-section',
                 'qr-code-reader-container', 'qr-code-reader', 'scanned-ticket-info', 'current-scanned-ticket-id',
                 'current-scanned-ticket-prefix', 'current-scanned-ticket-name', 'current-scanned-ticket-status',
-                'mark-used-btn', 
+                'mark-used-btn', 'scan-again-btn',
                 'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input',
                 'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input',
                 'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message',
@@ -860,7 +861,24 @@
             ui.scannedTicketInfo.classList.add('hidden');
             ui.markUsedBtn.classList.add('hidden');
 
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            const qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
+                let minEdgePercentage = 0.7; // 70%
+                let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+                return {
+                    width: qrboxSize,
+                    height: qrboxSize
+                };
+            }
+
+            const config = { 
+                fps: 24, // Increased FPS for faster processing
+                qrbox: qrboxFunction,
+                experimentalFeatures: {
+                    useBarCodeDetectorIfSupported: true
+                },
+                rememberLastUsedCamera: true 
+            };
 
             state.scanner.start({ facingMode: "environment" }, config, onScanSuccess, onScanError)
                 .then(() => {
@@ -879,10 +897,6 @@
          * Stops the QR scanner cleanly.
          */
         async function stopQrScanner() {
-            if (state.scanRestartCountdownInterval) {
-                clearInterval(state.scanRestartCountdownInterval);
-                state.scanRestartCountdownInterval = null;
-            }
             if (!state.isScannerActive || !state.scanner) {
                 return;
             }
@@ -966,26 +980,9 @@
                 console.error('Error al procesar el escaneo:', error);
                 displayMessage('Error al procesar el ticket. Inténtalo de nuevo.', 'error');
             } finally {
-                // --- REINICIO AUTOMÁTICO CON CUENTA REGRESIVA ---
-                let countdown = 3;
-                ui.scannerStatusMessage.textContent = `Reiniciando en ${countdown}...`;
-
-                if (state.scanRestartCountdownInterval) {
-                    clearInterval(state.scanRestartCountdownInterval);
-                }
-
-                state.scanRestartCountdownInterval = setInterval(() => {
-                    countdown--;
-                    if (countdown > 0) {
-                        ui.scannerStatusMessage.textContent = `Reiniciando en ${countdown}...`;
-                    } else {
-                        clearInterval(state.scanRestartCountdownInterval);
-                        state.scanRestartCountdownInterval = null;
-                        if (document.getElementById('qr-scanner-section').classList.contains('active')) {
-                             startQrScanner();
-                        }
-                    }
-                }, 1000);
+                // Show the "Scan Again" button
+                document.getElementById('scan-again-btn').classList.remove('hidden');
+                ui.scannerStatusMessage.textContent = 'Resultado mostrado. Presiona para escanear de nuevo.';
             }
         }
 
@@ -1338,6 +1335,13 @@
                     const camelCaseId = sectionId.replace(/-(\w)/g, (_, c) => c.toUpperCase());
                     showSection(ui[camelCaseId]);
                 });
+            });
+            
+            // --- EVENT LISTENER PARA EL BOTÓN DE REINICIO MANUAL ---
+            document.getElementById('scan-again-btn').addEventListener('click', () => {
+                ui.scannedTicketInfo.classList.add('hidden');
+                document.getElementById('scan-again-btn').classList.add('hidden');
+                startQrScanner();
             });
 
             ui.markUsedBtn.addEventListener('click', () => {
