@@ -355,7 +355,7 @@
                         </div>
                         <div class="flex space-x-4">
                             <button type="submit" class="w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700">Generar</button>
-                            <button type="reset" class="w-full px-4 py-3 bg-gray-600 text-white font-bold rounded-lg hover:bg-gray-700">Limpiar</button>
+                            <button type="button" id="generator-form-clear-btn" class="w-full px-4 py-3 bg-gray-600 text-white font-bold rounded-lg hover:bg-gray-700">Limpiar</button>
                         </div>
                     </div>
                     <div id="generated-tickets-container" class="mt-6 space-y-4"></div>
@@ -478,7 +478,7 @@
                 'qr-scanner-section', 'batch-ticket-generator-section', 'scan-history-section', 'all-tickets-section',
                 'qr-code-reader-container', 'qr-code-reader', 'scanned-ticket-info', 'current-scanned-ticket-id',
                 'current-scanned-ticket-prefix', 'current-scanned-ticket-name', 'current-scanned-ticket-status',
-                'mark-used-btn', 'scan-again-btn',
+                'mark-used-btn', 'scan-again-btn', 'generator-form-clear-btn',
                 'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input',
                 'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input',
                 'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message',
@@ -1338,9 +1338,9 @@
             });
             
             // --- EVENT LISTENER PARA EL BOTÓN DE REINICIO MANUAL ---
-            document.getElementById('scan-again-btn').addEventListener('click', () => {
+            ui.scanAgainBtn.addEventListener('click', () => {
                 ui.scannedTicketInfo.classList.add('hidden');
-                document.getElementById('scan-again-btn').classList.add('hidden');
+                ui.scanAgainBtn.classList.add('hidden');
                 startQrScanner();
             });
 
@@ -1426,11 +1426,20 @@
                     ui.shareBatchQrsBtn.classList.remove('hidden');
                 } catch (error) {
                     console.error('Error al generar tickets en lote:', error);
-                    displayMessage('Error al generar tickets.', 'error');
+                    displayMessage('Error al generar tickets. Revisa la consola.', 'error');
                 } finally {
                     setLoading(false);
                     state.isSubmitting = false;
                 }
+            });
+
+            // --- CORRECCIÓN BOTÓN LIMPIAR ---
+            ui.generatorFormClearBtn.addEventListener('click', () => {
+                ui.generatorForm.reset();
+                ui.generatedTicketsContainer.innerHTML = '';
+                state.currentBatchGeneratedTickets = [];
+                ui.shareBatchQrsBtn.classList.add('hidden');
+                displayMessage('Formulario limpiado.', 'info');
             });
 
             ui.shareBatchQrsBtn.addEventListener('click', shareCurrentBatch);
