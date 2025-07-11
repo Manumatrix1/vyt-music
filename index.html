@@ -354,8 +354,8 @@
                             <textarea id="batch-ticket-names-input" rows="5" placeholder="Juan Perez, Maria Gonzalez, ..." required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
                         </div>
                         <div class="flex space-x-4">
-                            <button type="submit" class="w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700">Generar</button>
-                            <button type="button" id="generator-form-clear-btn" class="w-full px-4 py-3 bg-gray-600 text-white font-bold rounded-lg hover:bg-gray-700">Limpiar</button>
+                            <button type="submit" id="generator-form-submit-btn" class="w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700 disabled:opacity-50">Generar</button>
+                            <button type="button" id="generator-form-clear-btn" class="w-full px-4 py-3 bg-gray-600 text-white font-bold rounded-lg hover:bg-gray-700 disabled:opacity-50">Limpiar</button>
                         </div>
                     </div>
                     <div id="generated-tickets-container" class="mt-6 space-y-4"></div>
@@ -478,7 +478,7 @@
                 'qr-scanner-section', 'batch-ticket-generator-section', 'scan-history-section', 'all-tickets-section',
                 'qr-code-reader-container', 'qr-code-reader', 'scanned-ticket-info', 'current-scanned-ticket-id',
                 'current-scanned-ticket-prefix', 'current-scanned-ticket-name', 'current-scanned-ticket-status',
-                'mark-used-btn', 'scan-again-btn', 'generator-form-clear-btn',
+                'mark-used-btn', 'scan-again-btn', 'generator-form-clear-btn', 'generator-form-submit-btn',
                 'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input',
                 'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input',
                 'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message',
@@ -1376,6 +1376,8 @@
                 e.preventDefault();
                 if (state.isSubmitting) return; // Prevent double submission
                 state.isSubmitting = true;
+                ui.generatorFormSubmitBtn.disabled = true;
+                ui.generatorFormClearBtn.disabled = true;
                 setLoading(true);
                 
                 ui.generatedTicketsContainer.innerHTML = '';
@@ -1394,6 +1396,8 @@
                     displayMessage('Por favor, ingresa un nombre de show, ubicación, prefijo y al menos un nombre.', 'warning');
                     setLoading(false);
                     state.isSubmitting = false;
+                    ui.generatorFormSubmitBtn.disabled = false;
+                    ui.generatorFormClearBtn.disabled = false;
                     return;
                 }
 
@@ -1430,6 +1434,8 @@
                 } finally {
                     setLoading(false);
                     state.isSubmitting = false;
+                    ui.generatorFormSubmitBtn.disabled = false;
+                    ui.generatorFormClearBtn.disabled = false;
                 }
             });
 
