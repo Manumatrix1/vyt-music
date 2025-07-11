@@ -381,6 +381,8 @@
                         <p class="mt-4 text-lg font-semibold">Estado del Ticket: <span id="current-scanned-ticket-status" class="text-2xl font-bold p-2 rounded-md"></span></p>
                         <div class="mt-4 text-center">
                             <button id="mark-used-btn" class="hidden w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700">Marcar como Usado</button>
+                            <!-- BOTÓN NUEVO PARA VOLVER A ESCANEAR -->
+                            <button id="scan-again-btn" class="hidden w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700 mt-2">Volver a Escanear</button>
                         </div>
                     </div>
                 </div>
@@ -435,7 +437,6 @@
             isFirebaseReady: false,
             scanner: null,
             isScannerActive: false, // Flag to control scanner state
-            scanRestartTimer: null, // Timer for auto-restarting scanner
             ticketListenerUnsubscribe: null,
             historyListenerUnsubscribe: null,
             allTicketsListenerUnsubscribe: null,
@@ -476,7 +477,8 @@
                 'qr-scanner-section', 'batch-ticket-generator-section', 'scan-history-section', 'all-tickets-section',
                 'qr-code-reader-container', 'qr-code-reader', 'scanned-ticket-info', 'current-scanned-ticket-id',
                 'current-scanned-ticket-prefix', 'current-scanned-ticket-name', 'current-scanned-ticket-status',
-                'mark-used-btn', 'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input',
+                'mark-used-btn', 'scan-again-btn', // Added scan-again-btn
+                'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input',
                 'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input',
                 'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message',
                 'share-batch-qrs-btn', 
@@ -613,7 +615,7 @@
                     displayMessage('¡Enlace copiado al portapapeles!', 'success');
                 } catch (err) {
                     console.error('Error copying link:', err);
-                    displayMessage('Error al copiar el enlace. Intenta manually.', 'error');
+                    displayMessage('Error al copiar el enlace. Intenta manualmente.', 'error');
                 }
             };
 
@@ -859,6 +861,8 @@
             ui.scannerStatusMessage.textContent = 'Iniciando cámara...';
             ui.scannedTicketInfo.classList.add('hidden');
             ui.markUsedBtn.classList.add('hidden');
+            ui.scanAgainBtn.classList.add('hidden');
+
 
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
@@ -886,8 +890,7 @@
             state.isScannerActive = false;
             ui.qrCodeReaderContainer.classList.remove('scanning-active');
             ui.scannerStatusMessage.textContent = 'Escáner detenido.';
-            clearTimeout(state.scanRestartTimer); // Clear any pending restart
-
+            
             try {
                 // Check if the scanner is in a scanning state before stopping
                 if (state.scanner.isScanning) {
@@ -968,13 +971,8 @@
                 console.error('Error al procesar el escaneo:', error);
                 displayMessage('Error al procesar el ticket. Inténtalo de nuevo.', 'error');
             } finally {
-                // Automatically restart scanner after a delay
-                clearTimeout(state.scanRestartTimer);
-                state.scanRestartTimer = setTimeout(() => {
-                    if (document.getElementById('qr-scanner-section').classList.contains('active')) {
-                         startQrScanner();
-                    }
-                }, 3000); // 3-second delay before restarting
+                // Show the "Scan Again" button instead of auto-restarting
+                ui.scanAgainBtn.classList.remove('hidden');
             }
         }
 
@@ -1227,7 +1225,6 @@
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
                 state.synth = new Tone.Synth().toDestination(); 
-                // CORRECTED: Do NOT call await Tone.start() here. It will be called on first sound event.
                 console.log("Firebase y Tone.js inicializados.");
             } catch (error) {
                 console.error("Error al inicializar Firebase:", error);
@@ -1247,17 +1244,26 @@
                     setupFirestoreListeners();
                     showSection(ui.batchTicketGeneratorSection); 
                 } else {
+                    // --- LÓGICA DE AUTENTICACIÓN CORREGIDA ---
                     try {
                         if (config.initialAuthToken) {
+                            console.log("Intentando iniciar sesión con token personalizado.");
                             await signInWithCustomToken(state.auth, config.initialAuthToken);
                         } else {
+                            console.log("No hay token personalizado, intentando inicio de sesión anónimo.");
                             await signInAnonymously(state.auth);
                         }
                     } catch (error) {
-                        console.error("Error de autenticación:", error);
-                        displayMessage(`Error de autenticación: ${error.message}.`, 'error');
-                        state.userId = 'offline-' + crypto.randomUUID().substring(0,8);
-                        ui.currentUserIdDisplay.textContent = `Error de autenticación / ID Temporal`;
+                        console.error("Error de autenticación con token personalizado, intentando como anónimo:", error);
+                        displayMessage(`Error de autenticación: ${error.message}. Intentando como anónimo.`, 'warning');
+                        try {
+                            await signInAnonymously(state.auth);
+                        } catch (anonError) {
+                            console.error("Error de autenticación anónima también:", anonError);
+                            displayMessage(`Error crítico de autenticación: ${anonError.message}.`, 'error');
+                            state.userId = 'offline-' + crypto.randomUUID().substring(0, 8);
+                            ui.currentUserIdDisplay.textContent = `Error de autenticación / ID Temporal`;
+                        }
                     }
                 }
                 setLoading(false);
@@ -1321,6 +1327,13 @@
                     const camelCaseId = sectionId.replace(/-(\w)/g, (_, c) => c.toUpperCase());
                     showSection(ui[camelCaseId]);
                 });
+            });
+
+            // Listener for the new "Scan Again" button
+            ui.scanAgainBtn.addEventListener('click', () => {
+                ui.scannedTicketInfo.classList.add('hidden');
+                ui.scanAgainBtn.classList.add('hidden');
+                startQrScanner();
             });
 
             ui.markUsedBtn.addEventListener('click', () => {
