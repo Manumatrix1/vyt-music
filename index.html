@@ -1355,103 +1355,11 @@
                             });
                             if (success) {
                                 displayMessage(`Ticket ${ui.currentScannedTicketName.textContent} marcado como USADO.`, 'success');
-                                ui.markUsedBtn.classList.add('hidden');
-                                ui.currentScannedTicketStatus.textContent = 'USADO';
-                                ui.currentScannedTicketStatus.className = 'text-yellow-700 bg-yellow-100 px-3 py-1 rounded-md';
-                                flashScanResult('used');
+                                flashScanResult('used'); // Flash the result
                             }
                         } catch (error) {
                             console.error('Error al marcar el ticket como usado:', error);
                             displayMessage('Error al marcar el ticket como usado.', 'error');
                         } finally {
                             setLoading(false);
-                        }
-                    });
-                }
-            });
-
-            ui.generatorForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                ui.generatedTicketsContainer.innerHTML = '';
-                state.currentBatchGeneratedTickets = [];
-
-                const showName = ui.showNameInput.value.trim();
-                const showLocation = ui.showLocationInput.value.trim();
-                const showAddress = ui.showAddressInput.value.trim();
-                const ticketPrefix = ui.ticketPrefixInput.value.trim();
-                const batchNamesRaw = ui.batchTicketNamesInput.value.trim();
-                const seatLocation = ui.ticketSeatLocationInput.value.trim();
-
-                const names = batchNamesRaw.split(/[\n,]+/).map(name => name.trim()).filter(name => name);
-
-                if (names.length === 0 || !ticketPrefix || !showName || !showLocation) {
-                    displayMessage('Por favor, ingresa un nombre de show, ubicación, prefijo y al menos un nombre.', 'warning');
-                    setLoading(false);
-                    return;
-                }
-
-                try {
-                    const batch = writeBatch(state.db);
-                    const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
-
-                    for (const name of names) {
-                        const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
-                        const ticketRef = doc(ticketsCollectionRef, ticketId);
-                        const ticketData = {
-                            id: ticketId,
-                            prefix: ticketPrefix,
-                            name: name,
-                            seatLocation: seatLocation || null,
-                            showName: showName,
-                            showLocation: showLocation,
-                            showAddress: showAddress || null,
-                            used: false,
-                            generatedAt: new Date().toISOString(),
-                            usedAt: null,
-                            generatedBy: state.userId
-                        };
-                        batch.set(ticketRef, ticketData);
-                        state.currentBatchGeneratedTickets.push({ ...ticketData, qrDataUrl: ticketId });
-                        generateQrCodeForTicket(ticketId, name, ticketPrefix, seatLocation, ticketId, ui.generatedTicketsContainer, showName, showLocation, showAddress);
-                    }
-                    await batch.commit();
-                    displayMessage(`${names.length} tickets generados exitosamente.`, 'success');
-                    ui.shareBatchQrsBtn.classList.remove('hidden');
-                } catch (error) {
-                    console.error('Error al generar tickets en lote:', error);
-                    displayMessage('Error al generar tickets.', 'error');
-                } finally {
-                    setLoading(false);
-                }
-            });
-
-            ui.shareBatchQrsBtn.addEventListener('click', shareCurrentBatch);
-
-            ui.resetStatsBtn.addEventListener('click', () => {
-                showResetConfirmation(() => {
-                    Firebase.resetAllTicketsAndHistory();
-                    ui.generatedTicketsContainer.innerHTML = '';
-                    state.currentBatchGeneratedTickets = [];
-                    ui.shareBatchQrsBtn.classList.add('hidden');
-                });
-            });
-
-            ui.allTicketsSearchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredTickets = state.allTicketsData.filter(ticket =>
-                    ticket.name.toLowerCase().includes(searchTerm) ||
-                    ticket.id.toLowerCase().includes(searchTerm) ||
-                    (ticket.seatLocation && ticket.seatLocation.toLowerCase().includes(searchTerm)) ||
-                    (ticket.showName && ticket.showName.toLowerCase().includes(searchTerm)) ||
-                    (ticket.showLocation && ticket.showLocation.toLowerCase().includes(searchTerm)) ||
-                    (ticket.showAddress && ticket.showAddress.toLowerCase().includes(searchTerm))
-                );
-                renderAllTickets(filteredTickets);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', startApp);
-    </script>
-</body>
-</html>
+                            // Hide 
