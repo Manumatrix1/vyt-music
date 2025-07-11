@@ -437,6 +437,7 @@
             isFirebaseReady: false,
             scanner: null,
             isScannerActive: false, // Flag to control scanner state
+            isSubmitting: false, // Flag to prevent double form submission
             ticketListenerUnsubscribe: null,
             historyListenerUnsubscribe: null,
             allTicketsListenerUnsubscribe: null,
@@ -1080,7 +1081,7 @@
                 height: 1080,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.M // Changed from H to M for more data capacity
             });
 
             const downloadBtn = document.createElement('button');
@@ -1373,7 +1374,10 @@
 
             ui.generatorForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                if (state.isSubmitting) return; // Prevent double submission
+                state.isSubmitting = true;
                 setLoading(true);
+                
                 ui.generatedTicketsContainer.innerHTML = '';
                 state.currentBatchGeneratedTickets = [];
 
@@ -1389,6 +1393,7 @@
                 if (names.length === 0 || !ticketPrefix || !showName || !showLocation) {
                     displayMessage('Por favor, ingresa un nombre de show, ubicación, prefijo y al menos un nombre.', 'warning');
                     setLoading(false);
+                    state.isSubmitting = false;
                     return;
                 }
 
@@ -1424,6 +1429,7 @@
                     displayMessage('Error al generar tickets.', 'error');
                 } finally {
                     setLoading(false);
+                    state.isSubmitting = false;
                 }
             });
 
