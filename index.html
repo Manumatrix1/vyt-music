@@ -1,218 +1,1141 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // ... (tus variables globales y funciones de utilidad existentes) ...
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Entradas VYTMUSIC</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-    const qrCodeScannerSection = document.getElementById('qr-scanner-section');
-    const qrCodeReaderContainer = document.getElementById('qr-code-reader-container');
-    const scannerStatusMessage = document.getElementById('scanner-status-message');
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
 
-    let html5QrCode = null; // Para guardar la instancia de Html5Qrcode
-    // Rutas de ejemplo para sonidos de éxito y error. ¡Asegúrate de que sean accesibles!
-    const SCAN_SUCCESS_SOUND_PATH = 'https://tonejs.github.io/audio/sfx/success_1.mp3';
-    const SCAN_FAIL_SOUND_PATH = 'https://tonejs.github.io/audio/sfx/error_1.mp3';
-    let successPlayer, failPlayer;
-
-    async function initializeSoundPlayers() {
-        try {
-            await Tone.start(); // Inicia el contexto de audio
-            successPlayer = new Tone.Player(SCAN_SUCCESS_SOUND_PATH).toDestination();
-            failPlayer = new Tone.Player(SCAN_FAIL_SOUND_PATH).toDestination();
-            await Tone.loaded(); // Espera a que los sonidos se carguen
-            console.log("Sonidos cargados correctamente.");
-        } catch (error) {
-            console.error("Error al inicializar Tone.js o cargar sonidos:", error);
-            displayMessage('Error al cargar efectos de sonido.', 'error');
+    <style>
+        /* Estilos base personalizados */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+            color: #f9fafb; /* text-gray-50 */
         }
-    }
-
-    // Función para reproducir el sonido de escaneo
-    function playScanSound(isValid) {
-        if (Tone.context.state !== 'running') {
-            Tone.start(); // Asegura que el contexto de audio esté corriendo
+        .section { display: none; }
+        .section.active { display: block; }
+        .hidden { display: none !important; }
+        
+        /* Estilos de botones de navegación */
+        .nav-btn {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
         }
-        if (isValid && successPlayer && successPlayer.loaded) {
-            successPlayer.start();
-        } else if (!isValid && failPlayer && failPlayer.loaded) {
-            failPlayer.start();
-        }
-    }
-
-    async function startQrScanner() {
-        if (!html5QrCode) {
-            html5QrCode = new Html5Qrcode("qr-code-reader");
+        .nav-btn.active {
+            border-bottom-color: #38bdf8; /* sky-400 */
+            color: #38bdf8;
         }
 
-        const config = {
-            fps: 15, // **Clave:** Aumenta los frames por segundo para una detección más rápida (10 o 15).
-            qrbox: { width: 250, height: 250 }, // **Clave:** Define una región de escaneo para enfocar la detección.
-            rememberLastUsedCamera: true, // Recuerda la última cámara usada.
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // Solo usa la cámara para escanear.
-            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], // **Clave:** Explicitamente busca SOLO códigos QR.
-            disableFlip: false, // Puedes probar 'true' si tienes problemas con códigos "invertidos" (raro).
-            // Ejemplo de cómo pedir mayor resolución (no siempre soportado por todos los dispositivos):
-            // videoConstraints: {
-            //     facingMode: "environment", // Prioriza la cámara trasera
-            //     width: { ideal: 1280 },    // Pide un ancho ideal
-            //     height: { ideal: 720 }    // Pide un alto ideal
-            // }
-        };
+        /* Centrar los botones de navegación */
+        .nav-container {
+            display: flex;
+            justify-content: center; /* Centra los elementos horizontalmente */
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #374151; /* gray-700 */
+            padding-bottom: 0.5rem; /* Espaciado debajo de la línea */
+        }
 
-        try {
-            scannerStatusMessage.textContent = "Iniciando escáner...";
-            qrCodeReaderContainer.classList.add('scanning-active'); // Añade animación de borde
+        /* Overlay de carga */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.3s ease;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #38bdf8; /* light blue */
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-            const cameras = await Html5Qrcode.getCameras();
-            if (cameras && cameras.length) {
-                let cameraId = cameras[0].id; // Usa la primera cámara por defecto
+        /* --- ESTILOS MEJORADOS PARA EL ESCÁNER QR --- */
+        #qr-code-reader-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+            border-radius: 0.75rem; /* Bordes más redondeados */
+            overflow: hidden; /* Importante para que el borde interior se vea bien */
+            background-color: #000; /* Fondo negro para la cámara */
+        }
 
-                // **Clave:** Prefiere la cámara trasera si está disponible
-                const rearCamera = cameras.find(camera => camera.label.toLowerCase().includes('back') || camera.label.toLowerCase().includes('rear'));
-                if (rearCamera) {
-                    cameraId = rearCamera.id;
-                }
+        #qr-code-reader {
+            width: 100%;
+            border: 4px solid transparent; /* Borde base transparente */
+            border-radius: 0.5rem; 
+            box-sizing: border-box;
+        }
+        
+        /* Indicador visual de escaneo activo */
+        .scanning-active #qr-code-reader {
+            border-color: #34d399; /* Verde esmeralda */
+            animation: pulse-border 2s infinite;
+        }
 
-                await html5QrCode.start(
-                    cameraId,
-                    config,
-                    async (decodedText, decodedResult) => {
-                        console.log(`QR Code detectado: ${decodedText}`);
-                        scannerStatusMessage.textContent = "QR detectado. Procesando...";
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+        }
+        /* --- FIN DE ESTILOS MEJORADOS --- */
 
-                        // Detén el escáner temporalmente para procesar el resultado
-                        await html5QrCode.stop();
-                        qrCodeReaderContainer.classList.remove('scanning-active');
+        /* Efecto de flash de resultado de escaneo */
+        .scan-flash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1100; pointer-events: none; opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+        .scan-flash.valid { background-color: rgba(74, 222, 128, 0.5); } /* green-400 */
+        .scan-flash.invalid { background-color: rgba(248, 113, 113, 0.5); } /* red-400 */
+        .scan-flash.used { background-color: rgba(250, 204, 21, 0.5); } /* yellow-400 */
 
-                        await processScannedQR(decodedText);
-                        // Reinicia el escáner después de un breve retraso para evitar escaneos duplicados.
-                        setTimeout(() => {
-                            if (activeSection === 'qr-scanner-section') { // Solo reinicia si sigue en la sección del escáner
-                                startQrScanner();
-                            }
-                        }, 2000); // Espera 2 segundos antes de reiniciar para que el usuario pueda reaccionar
-                    },
-                    (errorMessage) => {
-                        // console.warn(`QR Code no scan error: ${errorMessage}`); // Descomenta para depurar errores de no escaneo
-                        scannerStatusMessage.textContent = "Apunte la cámara a un código QR.";
-                    }
-                );
-                scannerStatusMessage.textContent = "Escáner activo. Apunte a un código QR.";
-            } else {
-                displayMessage("No se encontraron cámaras compatibles.", 'error');
-                scannerStatusMessage.textContent = "Error: No se encontraron cámaras.";
+        /* Modal de confirmación */
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); z-index: 900;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background-color: #1f2937; /* gray-800 */
+            padding: 1.5rem; border-radius: 0.5rem;
+            max-width: 90%; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        /* Estilos para el contenedor del QR generado */
+        .generated-qr-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%; /* Ocupa todo el ancho disponible */
+            max-width: 1100px; /* Limita el ancho máximo para pantallas grandes */
+            margin-left: auto;
+            margin-right: auto;
+            background-color: white; /* Fondo blanco para el QR y el texto */
+            padding: 1rem; /* Espaciado alrededor del contenido */
+            border-radius: 0.5rem; /* Esquinas redondeadas */
+            color: #000; /* Texto negro para legibilidad en fondo blanco */
+            position: relative; /* Necesario para el posicionamiento absoluto del logo */
+            overflow: hidden; /* Oculta el desbordamiento del logo */
+        }
+
+        .qrcode-container-wrapper {
+            position: relative;
+            width: 100%; /* Hacerlo responsivo */
+            max-width: 1080px; /* Tamaño máximo es 1080px */
+            padding-bottom: 100%; /* Relación de aspecto 1:1 (altura = ancho) */
+            height: 0; /* Importante para el truco de padding-bottom */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white; /* Asegura fondo blanco para el QR */
+            border-radius: 0.25rem;
+            overflow: hidden; /* Oculta el desbordamiento del propio QR */
+        }
+
+        .qrcode-container {
+            position: absolute; /* Posiciona el código QR absolutamente dentro de su contenedor */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Asegura que el canvas generado por qrcode.js llene su padre responsivo */
+        .qrcode-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain; /* Asegura que el código QR no se estire */
+        }
+
+        .qrcode-logo {
+            position: absolute;
+            z-index: 10; /* Asegura que el logo esté encima del QR */
+            width: 18%; /* Ajustado a un porcentaje más pequeño para evitar que se corte */
+            height: auto;
+            /* Centrar el logo usando transform */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%; /* Hace el logo circular si se desea */
+            background-color: white; /* Fondo para que el logo se destaque */
+            padding: 5px; /* Relleno alrededor del logo */
+        }
+
+        .qr-info-text {
+            text-align: center;
+            margin-top: 1rem;
+            color: #f9fafb; /* Cambiado a blanco para mejor contraste en fondo oscuro */
+        }
+
+        .qr-info-text h3 {
+            font-size: 2.5rem; /* Título VYT-MUSIC */
+            font-weight: bold;
+            color: #38bdf8; /* Color azul cielo para VYT-MUSIC */
+            margin-bottom: 0.25rem;
+        }
+
+        .qr-info-text p {
+            font-size: 1.25rem; /* Texto más pequeño para "Certamen de Canto" */
+            margin-bottom: 0.5rem;
+            color: #f9fafb; /* Cambiado a blanco */
+        }
+
+        .qr-info-text .name-display {
+            font-size: 2rem; /* Visualización del nombre */
+            font-weight: 600;
+            margin-top: 1rem;
+            color: #f9fafb; /* Cambiado a blanco */
+        }
+
+        .qr-info-text .id-display,
+        .qr-info-text .prefix-display,
+        .qr-info-text .seat-location-display {
+            font-size: 1.5rem; /* Otras visualizaciones de información */
+            color: #f9fafb; /* Cambiado a blanco */
+        }
+
+        .qr-info-text .call-to-action {
+            font-size: 1.75rem; /* "¡INSCRÍBETE!" */
+            font-weight: bold;
+            color: #38bdf8; /* Cambiado a azul cielo como el logo */
+            margin-top: 1rem;
+        }
+
+        .qr-info-text .whatsapp-info {
+            font-size: 1.5rem; /* Número de WhatsApp */
+            color: #22c55e; /* Color verde */
+            margin-top: 0.5rem;
+        }
+        .download-qr-btn {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #38bdf8; /* Azul cielo */
+            color: white;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .download-qr-btn:hover {
+            background-color: #0ea5e9; /* Azul cielo más oscuro */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
+    <div id="scan-flash-overlay" class="scan-flash"></div>
+    
+    <div id="confirmation-modal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <h3 id="modal-title" class="text-xl font-bold mb-4">Confirmar Acción</h3>
+            <p id="modal-body" class="mb-6">¿Estás seguro de que deseas continuar?</p>
+            <div class="flex justify-end space-x-4">
+                <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">Cancelar</button>
+                <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reset-confirmation-modal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4">Reiniciar Estadísticas</h3>
+            <p class="mb-4">Esto borrará TODAS las entradas y el historial de escaneos. Esta acción no se puede deshacer.</p>
+            <p class="mb-4 font-bold text-red-400">Para confirmar, escribe "REINICIO" en el campo de abajo:</p>
+            <input type="text" id="reset-confirm-input" class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-red-500 mb-4" placeholder="Escribe REINICIO">
+            <div class="flex justify-end space-x-4">
+                <button id="reset-modal-cancel-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">Cancelar</button>
+                <button id="reset-modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700" disabled>Confirmar Reinicio</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="share-link-modal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4">Compartir Lote de QRs</h3>
+            <p class="mb-4">Copia el siguiente enlace para compartir este lote de QRs:</p>
+            <div class="flex items-center space-x-2 mb-4">
+                <input type="text" id="share-link-display" class="flex-grow p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500" readonly>
+                <button id="copy-share-link-btn" class="px-4 py-2 bg-sky-600 text-white font-semibold rounded-lg hover:bg-sky-700">Copiar</button>
+            </div>
+            <div class="flex justify-end">
+                <button id="close-share-modal-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto max-w-4xl p-4 sm:p-6">
+        
+        <header class="text-center mb-6">
+            <img src="https://i.imgur.com/rqkZi9P.png" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 150px;" 
+                 onerror="this.onerror=null;this.src='https://placehold.co/150x150/ffffff/000000?text=Logo'; document.getElementById('logo-error-message').classList.remove('hidden');">
+            <p id="logo-error-message" class="text-red-400 text-sm mt-1 hidden">Error al cargar el logo. Verifica la imagen.</p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-sky-400">VYTMUSIC</h1>
+            <p class="text-lg text-gray-300">Control de Entradas</p>
+            <p class="text-xs text-gray-500 mt-2">ID de Usuario: <span id="current-user-id-display">Cargando...</span></p>
+        </header>
+
+        <div id="message-container" class="mb-4"></div>
+
+        <div class="bg-gray-800 p-4 rounded-lg shadow-md mb-6 flex flex-col sm:flex-row justify-around items-center text-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <div>
+                <p class="text-sm text-gray-400">Entradas Generadas</p>
+                <p id="total-generated-tickets" class="text-2xl font-bold text-sky-400">0</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-400">Entradas Usadas (Ingresos)</p>
+                <p id="total-used-tickets" class="text-2xl font-bold text-green-400">0</p>
+            </div>
+        </div>
+
+        <nav class="nav-container"> <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
+            <button data-section="qr-scanner-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
+            <button data-section="all-tickets-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Lista de Entradas</button>
+            <button data-section="scan-history-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Historial</button>
+            <button data-section="shared-batch-viewer-section" class="nav-btn px-4 py-2 font-semibold transition-colors hidden">Ver Lote Compartido</button>
+        </nav>
+
+        <main>
+            <section id="batch-ticket-generator-section" class="section">
+                <form id="generator-form" class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold mb-4">Generar Entradas en Lote</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="show-name-input" class="block mb-1 font-semibold text-gray-300">Nombre del Show</label>
+                            <input type="text" id="show-name-input" placeholder="Concierto de Verano" required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label for="show-location-input" class="block mb-1 font-semibold text-gray-300">Lugar del Show</label>
+                            <input type="text" id="show-location-input" placeholder="Teatro Central" required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label for="show-address-input" class="block mb-1 font-semibold text-gray-300">Dirección (puede ser un link de Google Maps)</label>
+                            <input type="text" id="show-address-input" placeholder="Calle Falsa 123, Ciudad" class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label for="ticket-prefix-input" class="block mb-1 font-semibold text-gray-300">Prefijo (ej: VIP, GENERAL)</label>
+                            <input type="text" id="ticket-prefix-input" placeholder="VIP2025" required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label for="ticket-seat-location-input" class="block mb-1 font-semibold text-gray-300">Ubicación (ej: Mesa 5, Sector VIP)</label>
+                            <input type="text" id="ticket-seat-location-input" placeholder="Mesa 5" class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label for="batch-ticket-names-input" class="block mb-1 font-semibold text-gray-300">Nombres (uno por línea o separados por coma)</label>
+                            <textarea id="batch-ticket-names-input" rows="5" placeholder="Juan Perez, Maria Gonzalez, ..." required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button type="submit" id="generator-form-submit-btn" class="w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700 disabled:opacity-50">Generar</button>
+                            <button type="button" id="generator-form-clear-btn" class="w-full px-4 py-3 bg-gray-600 text-white font-bold rounded-lg hover:bg-gray-700 disabled:opacity-50">Limpiar</button>
+                        </div>
+                    </div>
+                    <div id="generated-tickets-container" class="mt-6 space-y-4"></div>
+                    <button id="share-batch-qrs-btn" class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 mt-4 hidden">Compartir Lote de QRs</button>
+                </form>
+            </section>
+
+            <section id="qr-scanner-section" class="section">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold mb-4 text-center">Escanear Código QR</h2>
+                    <div id="qr-code-reader-container">
+                        <div id="qr-code-reader"></div>
+                    </div>
+                    <p id="scanner-status-message" class="text-center text-gray-400 mt-4">Iniciando escáner...</p>
+                    <div id="scan-result-display" class="mt-4 p-3 bg-gray-700 rounded-md text-center hidden"></div>
+                </div>
+            </section>
+
+            <section id="all-tickets-section" class="section">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold mb-4">Lista de Entradas</h2>
+                    <div class="mb-4 flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="ticket-search-input" placeholder="Buscar por nombre o ID" class="flex-grow p-2 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <select id="ticket-filter-status" class="p-2 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="all">Todas</option>
+                            <option value="used">Usadas</option>
+                            <option value="unused">No Usadas</option>
+                        </select>
+                        <button id="clear-all-tickets-btn" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">Borrar Todas</button>
+                    </div>
+                    <div id="tickets-list" class="space-y-3">
+                        <p class="text-gray-400">No hay entradas generadas.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="scan-history-section" class="section">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold mb-4">Historial de Escaneos</h2>
+                    <div class="mb-4">
+                        <button id="clear-scan-history-btn" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">Limpiar Historial</button>
+                        <button id="reset-app-data-btn" class="px-4 py-2 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 ml-2">Reiniciar App (TODO)</button>
+                    </div>
+                    <div id="scan-history-list" class="space-y-3">
+                        <p class="text-gray-400">No hay historial de escaneos.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="shared-batch-viewer-section" class="section">
+                <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold mb-4">Ver Lote de QRs Compartido</h2>
+                    <p class="text-gray-300 mb-4">Esta sección mostraría los QRs de un lote compartido si esta fuera la página de destino del enlace.</p>
+                    <div id="shared-qrs-display" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // --- Variables Globales y Selectores de DOM ---
+        const userId = generateUniqueId(); // Genera un ID de usuario único al cargar la página
+        document.getElementById('current-user-id-display').textContent = userId;
+
+        const messageContainer = document.getElementById('message-container');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const scanFlashOverlay = document.getElementById('scan-flash-overlay');
+
+        // Contadores de estadísticas
+        const totalGeneratedTicketsDisplay = document.getElementById('total-generated-tickets');
+        const totalUsedTicketsDisplay = document.getElementById('total-used-tickets');
+
+        // Elementos del Generador de Entradas
+        const generatorForm = document.getElementById('generator-form');
+        const showNameInput = document.getElementById('show-name-input');
+        const showLocationInput = document.getElementById('show-location-input');
+        const showAddressInput = document.getElementById('show-address-input');
+        const ticketPrefixInput = document.getElementById('ticket-prefix-input');
+        const ticketSeatLocationInput = document.getElementById('ticket-seat-location-input');
+        const batchTicketNamesInput = document.getElementById('batch-ticket-names-input');
+        const generatedTicketsContainer = document.getElementById('generated-tickets-container');
+        const shareBatchQRsBtn = document.getElementById('share-batch-qrs-btn');
+        const generatorFormClearBtn = document.getElementById('generator-form-clear-btn');
+
+        // Elementos del Escáner QR
+        const qrCodeScannerSection = document.getElementById('qr-scanner-section');
+        const qrCodeReaderContainer = document.getElementById('qr-code-reader-container');
+        const scannerStatusMessage = document.getElementById('scanner-status-message');
+        const scanResultDisplay = document.getElementById('scan-result-display');
+        let html5QrCode = null; // Para la instancia del escáner
+
+        // Rutas de sonido (asegúrate de que estas URLs sean válidas o usa rutas locales)
+        const SCAN_SUCCESS_SOUND_PATH = 'https://tonejs.github.io/audio/sfx/success_1.mp3';
+        const SCAN_FAIL_SOUND_PATH = 'https://tonejs.github.io/audio/sfx/error_1.mp3';
+        let successPlayer, failPlayer;
+
+        // Elementos de la Lista de Entradas
+        const ticketsList = document.getElementById('tickets-list');
+        const ticketSearchInput = document.getElementById('ticket-search-input');
+        const ticketFilterStatus = document.getElementById('ticket-filter-status');
+        const clearAllTicketsBtn = document.getElementById('clear-all-tickets-btn');
+
+        // Elementos del Historial de Escaneos
+        const scanHistoryList = document.getElementById('scan-history-list');
+        const clearScanHistoryBtn = document.getElementById('clear-scan-history-btn');
+        const resetAppDataBtn = document.getElementById('reset-app-data-btn');
+
+        // Modales
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+
+        const resetConfirmationModal = document.getElementById('reset-confirmation-modal');
+        const resetConfirmInput = document.getElementById('reset-confirm-input');
+        const resetModalCancelBtn = document.getElementById('reset-modal-cancel-btn');
+        const resetModalConfirmBtn = document.getElementById('reset-modal-confirm-btn');
+
+        const shareLinkModal = document.getElementById('share-link-modal');
+        const shareLinkDisplay = document.getElementById('share-link-display');
+        const copyShareLinkBtn = document.getElementById('copy-share-link-btn');
+        const closeShareModalBtn = document.getElementById('close-share-modal-btn');
+
+
+        // --- Funciones de Utilidad ---
+
+        function generateUniqueId() {
+            return 'user-' + Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+
+        function generateTicketId() {
+            return 'ticket-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+        }
+
+        function displayMessage(message, type = 'info', duration = 3000) {
+            messageContainer.innerHTML = `
+                <div class="p-3 rounded-md text-sm ${type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600'} text-white">
+                    ${message}
+                </div>
+            `;
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, duration);
+        }
+
+        function showLoadingOverlay() {
+            loadingOverlay.classList.remove('hidden');
+        }
+
+        function hideLoadingOverlay() {
+            loadingOverlay.classList.add('hidden');
+        }
+
+        function showScanFlash(type) {
+            scanFlashOverlay.classList.remove('valid', 'invalid', 'used');
+            scanFlashOverlay.classList.add(type);
+            scanFlashOverlay.style.opacity = '1';
+            setTimeout(() => {
+                scanFlashOverlay.style.opacity = '0';
+            }, 500); // Duración del flash
+        }
+
+        // --- Funciones de Almacenamiento Local (Local Storage) ---
+
+        function getTicketsFromLocalStorage() {
+            const tickets = localStorage.getItem(`vytmusic_tickets_${userId}`);
+            return tickets ? JSON.parse(tickets) : [];
+        }
+
+        function saveTicketsToLocalStorage(tickets) {
+            localStorage.setItem(`vytmusic_tickets_${userId}`, JSON.stringify(tickets));
+        }
+
+        function getScanHistoryFromLocalStorage() {
+            const history = localStorage.getItem(`vytmusic_scan_history_${userId}`);
+            return history ? JSON.parse(history) : [];
+        }
+
+        function saveScanHistoryToLocalStorage(history) {
+            localStorage.setItem(`vytmusic_scan_history_${userId}`, JSON.stringify(history));
+        }
+
+        // --- Funciones de Gestión de Entradas ---
+
+        function addTicket(ticketData) {
+            const tickets = getTicketsFromLocalStorage();
+            tickets.push(ticketData);
+            saveTicketsToLocalStorage(tickets);
+            updateStats();
+            renderTicketsList(); // Actualiza la lista en tiempo real
+        }
+
+        function getTicketById(id) {
+            const tickets = getTicketsFromLocalStorage();
+            return tickets.find(ticket => ticket.id === id);
+        }
+
+        function updateTicketStatus(id, used) {
+            const tickets = getTicketsFromLocalStorage();
+            const ticketIndex = tickets.findIndex(ticket => ticket.id === id);
+            if (ticketIndex !== -1) {
+                tickets[ticketIndex].used = used;
+                tickets[ticketIndex].scanTimestamp = used ? new Date().toISOString() : null;
+                saveTicketsToLocalStorage(tickets);
+                updateStats();
+                renderTicketsList();
+                return true;
             }
-        } catch (err) {
-            console.error("Error al iniciar el escáner QR:", err);
-            displayMessage(`Error al iniciar el escáner: ${err.message}. Asegúrate de permitir el acceso a la cámara.`, 'error');
-            scannerStatusMessage.textContent = `Error al iniciar escáner: ${err.message}`;
-            qrCodeReaderContainer.classList.remove('scanning-active');
+            return false;
         }
-    }
 
-    async function stopQrScanner() {
-        if (html5QrCode && html5QrCode.isScanning) {
-            try {
-                await html5QrCode.stop();
-                console.log("Escáner QR detenido.");
-                qrCodeReaderContainer.classList.remove('scanning-active');
-                scannerStatusMessage.textContent = "Escáner detenido.";
-            } catch (err) {
-                console.warn("Error al detener el escáner QR:", err);
-                // Puede ocurrir si el escáner no se inició completamente o ya estaba detenido.
-            }
+        function deleteTicket(id) {
+            let tickets = getTicketsFromLocalStorage();
+            tickets = tickets.filter(ticket => ticket.id !== id);
+            saveTicketsToLocalStorage(tickets);
+            updateStats();
+            renderTicketsList();
         }
-    }
 
-    async function processScannedQR(qrData) {
-        showLoadingOverlay();
-        // Simula un retardo para la llamada a la API/procesamiento
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simula un retardo de red
-
-        let isValid = false;
-        let flashClass = 'invalid';
-        let message = 'Código QR inválido o desconocido.';
-
-        try {
-            const ticket = JSON.parse(qrData); // Asume que los datos del QR son un JSON del ticket
-            const existingTicket = getTicketById(ticket.id);
-
-            if (existingTicket) {
-                if (existingTicket.used) {
-                    message = `Entrada de ${existingTicket.name} ya ha sido USADA.`;
-                    flashClass = 'used';
-                    isValid = false;
-                    playScanSound(false); // Sonido de error/usada
-                } else {
-                    existingTicket.used = true;
-                    existingTicket.scanTimestamp = new Date().toISOString();
-                    saveTicketsToLocalStorage(); // Actualiza el estado del ticket
-                    addScanHistoryEntry(existingTicket.id, existingTicket.name, true);
+        function clearAllTickets() {
+            showConfirmationModal(
+                'Borrar Todas las Entradas',
+                '¿Estás seguro de que quieres borrar TODAS las entradas generadas? Esta acción no se puede deshacer.',
+                () => {
+                    saveTicketsToLocalStorage([]);
                     updateStats();
-                    message = `¡Entrada VÁLIDA para ${existingTicket.name}! Acceso concedido.`;
-                    flashClass = 'valid';
-                    isValid = true;
-                    playScanSound(true); // Sonido de éxito
+                    renderTicketsList();
+                    displayMessage('Todas las entradas han sido borradas.', 'success');
+                    hideConfirmationModal();
                 }
+            );
+        }
+
+        // --- Funciones de Historial de Escaneos ---
+
+        function addScanHistoryEntry(ticketId, qrData, isValid, status = '') {
+            const history = getScanHistoryFromLocalStorage();
+            history.unshift({ // Add to the beginning for most recent first
+                id: Date.now().toString(),
+                ticketId: ticketId,
+                qrData: qrData,
+                isValid: isValid,
+                status: status || (isValid ? 'VÁLIDO' : 'INVÁLIDO'),
+                timestamp: new Date().toLocaleString()
+            });
+            saveScanHistoryToLocalStorage(history);
+            renderScanHistory();
+        }
+
+        function clearScanHistory() {
+            showConfirmationModal(
+                'Limpiar Historial',
+                '¿Estás seguro de que quieres limpiar todo el historial de escaneos? Esta acción no se puede deshacer.',
+                () => {
+                    saveScanHistoryToLocalStorage([]);
+                    renderScanHistory();
+                    displayMessage('Historial de escaneos limpiado.', 'success');
+                    hideConfirmationModal();
+                }
+            );
+        }
+
+        function resetAllAppData() {
+            resetConfirmationModal.classList.remove('hidden');
+            resetConfirmInput.value = '';
+            resetModalConfirmBtn.disabled = true;
+        }
+
+        // --- Funciones de Renderizado y Actualización de UI ---
+
+        function updateStats() {
+            const tickets = getTicketsFromLocalStorage();
+            const totalGenerated = tickets.length;
+            const totalUsed = tickets.filter(ticket => ticket.used).length;
+
+            totalGeneratedTicketsDisplay.textContent = totalGenerated;
+            totalUsedTicketsDisplay.textContent = totalUsed;
+        }
+
+        function renderTicketsList() {
+            const tickets = getTicketsFromLocalStorage();
+            const searchTerm = ticketSearchInput.value.toLowerCase();
+            const filterStatus = ticketFilterStatus.value;
+
+            const filteredTickets = tickets.filter(ticket => {
+                const matchesSearch = ticket.name.toLowerCase().includes(searchTerm) ||
+                                      ticket.id.toLowerCase().includes(searchTerm) ||
+                                      ticket.prefix.toLowerCase().includes(searchTerm);
+                const matchesStatus = (filterStatus === 'all') ||
+                                      (filterStatus === 'used' && ticket.used) ||
+                                      (filterStatus === 'unused' && !ticket.used);
+                return matchesSearch && matchesStatus;
+            });
+
+            ticketsList.innerHTML = '';
+            if (filteredTickets.length === 0) {
+                ticketsList.innerHTML = '<p class="text-gray-400">No se encontraron entradas.</p>';
+                return;
+            }
+
+            filteredTickets.forEach(ticket => {
+                const ticketElement = document.createElement('div');
+                ticketElement.classList.add('bg-gray-700', 'p-3', 'rounded-md', 'flex', 'flex-col', 'sm:flex-row', 'justify-between', 'items-start', 'sm:items-center', 'space-y-2', 'sm:space-y-0', 'sm:space-x-4');
+                
+                const statusClass = ticket.used ? 'bg-green-500' : 'bg-blue-500';
+                const statusText = ticket.used ? `USADA (${new Date(ticket.scanTimestamp).toLocaleString()})` : 'NO USADA';
+
+                ticketElement.innerHTML = `
+                    <div class="flex-grow">
+                        <p class="font-bold text-lg text-white">${ticket.name}</p>
+                        <p class="text-sm text-gray-300">ID: ${ticket.id}</p>
+                        <p class="text-sm text-gray-300">Prefijo: ${ticket.prefix} | Asiento: ${ticket.seatLocation || 'N/A'}</p>
+                        <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full ${statusClass} text-white mt-1">${statusText}</span>
+                    </div>
+                    <div class="flex space-x-2 mt-2 sm:mt-0">
+                        <button data-id="${ticket.id}" class="toggle-ticket-status-btn px-3 py-1 bg-yellow-500 text-white rounded-md text-sm hover:bg-yellow-600">
+                            ${ticket.used ? 'Marcar No Usada' : 'Marcar Usada'}
+                        </button>
+                        <button data-id="${ticket.id}" class="delete-ticket-btn px-3 py-1 bg-red-500 text-white rounded-md text-sm hover:bg-red-600">Eliminar</button>
+                    </div>
+                `;
+                ticketsList.appendChild(ticketElement);
+            });
+
+            document.querySelectorAll('.toggle-ticket-status-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    const ticket = getTicketById(id);
+                    if (ticket) {
+                        showConfirmationModal(
+                            ticket.used ? 'Marcar como No Usada' : 'Marcar como Usada',
+                            `¿Estás seguro de que quieres cambiar el estado de la entrada de "${ticket.name}" a ${ticket.used ? 'NO USADA' : 'USADA'}?`,
+                            () => {
+                                updateTicketStatus(id, !ticket.used);
+                                displayMessage(`Estado de la entrada de ${ticket.name} actualizado.`, 'success');
+                                hideConfirmationModal();
+                            }
+                        );
+                    }
+                });
+            });
+
+            document.querySelectorAll('.delete-ticket-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.dataset.id;
+                    const ticket = getTicketById(id);
+                    if (ticket) {
+                        showConfirmationModal(
+                            'Eliminar Entrada',
+                            `¿Estás seguro de que quieres eliminar la entrada de "${ticket.name}"? Esta acción no se puede deshacer.`,
+                            () => {
+                                deleteTicket(id);
+                                displayMessage(`Entrada de ${ticket.name} eliminada.`, 'success');
+                                hideConfirmationModal();
+                            }
+                        );
+                    }
+                });
+            });
+        }
+
+        function renderScanHistory() {
+            const history = getScanHistoryFromLocalStorage();
+            scanHistoryList.innerHTML = '';
+
+            if (history.length === 0) {
+                scanHistoryList.innerHTML = '<p class="text-gray-400">No hay historial de escaneos.</p>';
+                return;
+            }
+
+            history.forEach(entry => {
+                const historyElement = document.createElement('div');
+                const statusClass = entry.isValid ? 'bg-green-500' : 'bg-red-500';
+                historyElement.classList.add('bg-gray-700', 'p-3', 'rounded-md');
+                historyElement.innerHTML = `
+                    <p class="font-bold text-white">QR Escaneado: ${entry.qrData.length > 50 ? entry.qrData.substring(0, 47) + '...' : entry.qrData}</p>
+                    <p class="text-sm text-gray-300">Ticket ID: ${entry.ticketId || 'N/A'}</p>
+                    <p class="text-sm text-gray-300">Fecha/Hora: ${entry.timestamp}</p>
+                    <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full ${statusClass} text-white mt-1">${entry.status}</span>
+                `;
+                scanHistoryList.appendChild(historyElement);
+            });
+        }
+
+        // --- Lógica del Generador de Entradas ---
+
+        generatorForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            showLoadingOverlay();
+
+            const showName = showNameInput.value.trim();
+            const showLocation = showLocationInput.value.trim();
+            const showAddress = showAddressInput.value.trim();
+            const ticketPrefix = ticketPrefixInput.value.trim().toUpperCase();
+            const ticketSeatLocation = ticketSeatLocationInput.value.trim();
+            const namesInput = batchTicketNamesInput.value.trim();
+
+            const names = namesInput.split(/[\n,]+/).map(name => name.trim()).filter(name => name !== '');
+
+            if (names.length === 0) {
+                displayMessage('Por favor, introduce al menos un nombre para generar las entradas.', 'error');
+                hideLoadingOverlay();
+                return;
+            }
+
+            generatedTicketsContainer.innerHTML = ''; // Limpiar QRs anteriores
+            shareBatchQRsBtn.classList.add('hidden'); // Ocultar el botón de compartir inicialmente
+
+            const generatedTicketData = [];
+
+            names.forEach(name => {
+                const ticketId = generateTicketId();
+                const ticketData = {
+                    id: ticketId,
+                    name: name,
+                    prefix: ticketPrefix,
+                    seatLocation: ticketSeatLocation,
+                    show: showName,
+                    location: showLocation,
+                    address: showAddress,
+                    used: false,
+                    scanTimestamp: null,
+                    generatedBy: userId,
+                    generatedAt: new Date().toISOString()
+                };
+                addTicket(ticketData); // Guarda el ticket en el Local Storage
+                generatedTicketData.push(ticketData);
+
+                const qrItem = document.createElement('div');
+                qrItem.classList.add('generated-qr-item', 'border', 'border-gray-600', 'p-4', 'rounded-lg', 'relative', 'bg-white', 'text-black', 'mb-4');
+                
+                qrItem.innerHTML = `
+                    <div class="qrcode-container-wrapper">
+                        <div id="qrcode-${ticketId}" class="qrcode-container"></div>
+                        <img src="https://i.imgur.com/rqkZi9P.png" alt="Logo" class="qrcode-logo">
+                    </div>
+                    <div class="qr-info-text text-center text-gray-50">
+                        <h3 class="text-sky-400 font-bold text-2xl mt-4">VYTMUSIC</h3>
+                        <p class="text-lg text-gray-800">Certamen de Canto</p>
+                        <p class="name-display text-3xl font-semibold text-black mt-2">${name}</p>
+                        <p class="id-display text-xl text-gray-700">ID: ${ticketId}</p>
+                        <p class="prefix-display text-xl text-gray-700">Tipo: ${ticketPrefix}</p>
+                        <p class="seat-location-display text-xl text-gray-700">Ubicación: ${ticketSeatLocation || 'Sin Asignar'}</p>
+                        <p class="text-xl font-bold text-sky-600 mt-4">¡INSCRÍBETE!</p>
+                        <p class="whatsapp-info text-2xl font-semibold text-green-600 mt-2">WhatsApp: +54 9 341 6813470</p>
+                        <p class="text-sm text-gray-700 mt-2">${showName} en ${showLocation}</p>
+                        <p class="text-sm text-gray-700">${showAddress}</p>
+                    </div>
+                    <button class="download-qr-btn mt-4 px-4 py-2 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700" data-id="${ticketId}" data-name="${name}">Descargar QR</button>
+                `;
+                generatedTicketsContainer.appendChild(qrItem);
+
+                // Generar el código QR
+                try {
+                    new QRCode(document.getElementById(`qrcode-${ticketId}`), {
+                        text: JSON.stringify(ticketData),
+                        width: 1080,
+                        height: 1080,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H // Alto nivel de corrección de errores
+                    });
+                } catch (qrError) {
+                    console.error("Error generando QR para", name, qrError);
+                    displayMessage(`Error al generar QR para ${name}.`, 'error');
+                }
+            });
+
+            document.querySelectorAll('.download-qr-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const ticketId = e.target.dataset.id;
+                    const ticketName = e.target.dataset.name;
+                    const canvas = document.getElementById(`qrcode-${ticketId}`).querySelector('canvas');
+                    if (canvas) {
+                        const link = document.createElement('a');
+                        link.download = `QR_${ticketName.replace(/\s/g, '_')}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } else {
+                        displayMessage('Error: No se encontró el QR para descargar.', 'error');
+                    }
+                });
+            });
+
+            // Mostrar el botón de compartir si se generaron tickets
+            if (generatedTicketData.length > 0) {
+                shareBatchQRsBtn.classList.remove('hidden');
+                displayMessage(`Se generaron ${generatedTicketData.length} entradas.`, 'success');
             } else {
-                addScanHistoryEntry(null, qrData, false, 'No registrada');
-                message = `Entrada no REGISTRADA en el sistema.`;
+                displayMessage('No se pudieron generar entradas.', 'error');
+            }
+            hideLoadingOverlay();
+        });
+
+        generatorFormClearBtn.addEventListener('click', () => {
+            generatorForm.reset();
+            generatedTicketsContainer.innerHTML = '';
+            shareBatchQRsBtn.classList.add('hidden');
+        });
+
+        shareBatchQRsBtn.addEventListener('click', () => {
+            const tickets = getTicketsFromLocalStorage().filter(ticket => ticket.generatedBy === userId);
+            if (tickets.length === 0) {
+                displayMessage('No hay entradas para compartir en este lote.', 'error');
+                return;
+            }
+
+            // Codifica los datos de los tickets para la URL
+            const batchData = encodeURIComponent(btoa(JSON.stringify(tickets)));
+            // Construye la URL para la página de visualización (tendrías que crear una página 'view_batch.html')
+            // Por ahora, solo genera un enlace que, si existiera esa página, funcionaría.
+            const shareUrl = `${window.location.origin}/view_batch.html?data=${batchData}`; // Asumiendo view_batch.html existe en la raíz
+
+            shareLinkDisplay.value = shareUrl;
+            shareLinkModal.classList.remove('hidden');
+        });
+
+        copyShareLinkBtn.addEventListener('click', () => {
+            shareLinkDisplay.select();
+            document.execCommand('copy');
+            displayMessage('Enlace copiado al portapapeles.', 'success');
+        });
+
+        closeShareModalBtn.addEventListener('click', () => {
+            shareLinkModal.classList.add('hidden');
+        });
+
+        // --- Lógica del Escáner QR ---
+
+        async function initializeSoundPlayers() {
+            try {
+                await Tone.start();
+                successPlayer = new Tone.Player(SCAN_SUCCESS_SOUND_PATH).toDestination();
+                failPlayer = new Tone.Player(SCAN_FAIL_SOUND_PATH).toDestination();
+                await Tone.loaded(); // Espera a que los sonidos se carguen
+                console.log("Sound players loaded successfully.");
+            } catch (error) {
+                console.error("Error initializing Tone.js or loading sounds:", error);
+                displayMessage('Error al cargar efectos de sonido.', 'error');
+            }
+        }
+
+        function playScanSound(isValid) {
+            if (Tone.context.state !== 'running') {
+                Tone.start(); // Asegura que el contexto de audio esté corriendo
+            }
+            if (isValid && successPlayer && successPlayer.loaded) {
+                successPlayer.start();
+            } else if (!isValid && failPlayer && failPlayer.loaded) {
+                failPlayer.start();
+            }
+        }
+
+        async function startQrScanner() {
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("qr-code-reader");
+            }
+
+            const config = {
+                fps: 15, // Aumenta los frames por segundo para una detección más rápida
+                qrbox: { width: 250, height: 250 }, // Define una región de escaneo para enfocar la detección
+                rememberLastUsedCamera: true, // Recuerda la última cámara usada
+                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // Solo usa la cámara para escanear
+                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], // Explicitamente busca SOLO códigos QR
+                disableFlip: false, // Puedes probar 'true' si tienes problemas con códigos "invertidos" (raro).
+                // videoConstraints: { // Descomenta y ajusta si necesitas forzar resolución o cámara específica
+                //     facingMode: "environment", // Prioriza la cámara trasera
+                //     width: { ideal: 1280 },
+                //     height: { ideal: 720 }
+                // }
+            };
+
+            try {
+                scannerStatusMessage.textContent = "Iniciando escáner...";
+                qrCodeReaderContainer.classList.add('scanning-active'); // Añade animación de borde
+
+                const cameras = await Html5Qrcode.getCameras();
+                if (cameras && cameras.length) {
+                    let cameraId = cameras[0].id; // Usa la primera cámara por defecto
+
+                    // Prefiere la cámara trasera si está disponible
+                    const rearCamera = cameras.find(camera => camera.label.toLowerCase().includes('back') || camera.label.toLowerCase().includes('rear'));
+                    if (rearCamera) {
+                        cameraId = rearCamera.id;
+                    }
+
+                    await html5QrCode.start(
+                        cameraId,
+                        config,
+                        async (decodedText, decodedResult) => {
+                            console.log(`QR Code detectado: ${decodedText}`);
+                            scannerStatusMessage.textContent = "QR detectado. Procesando...";
+
+                            // Detén el escáner temporalmente para procesar el resultado
+                            await html5QrCode.stop();
+                            qrCodeReaderContainer.classList.remove('scanning-active');
+
+                            await processScannedQR(decodedText);
+                            // Reinicia el escáner después de un breve retraso
+                            setTimeout(() => {
+                                if (activeSection === 'qr-scanner-section') { // Solo reinicia si sigue en la sección del escáner
+                                    startQrScanner();
+                                }
+                            }, 2000); // Espera 2 segundos antes de reiniciar
+                        },
+                        (errorMessage) => {
+                            // console.warn(`QR Code no scan error: ${errorMessage}`);
+                            scannerStatusMessage.textContent = "Apunte la cámara a un código QR.";
+                        }
+                    );
+                    scannerStatusMessage.textContent = "Escáner activo. Apunte a un código QR.";
+                } else {
+                    displayMessage("No se encontraron cámaras compatibles.", 'error');
+                    scannerStatusMessage.textContent = "Error: No se encontraron cámaras.";
+                }
+            } catch (err) {
+                console.error("Error starting QR scanner:", err);
+                displayMessage(`Error al iniciar el escáner: ${err.message}. Asegúrate de permitir el acceso a la cámara.`, 'error');
+                scannerStatusMessage.textContent = `Error al iniciar escáner: ${err.message}`;
+                qrCodeReaderContainer.classList.remove('scanning-active');
+            }
+        }
+
+        async function stopQrScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                try {
+                    await html5QrCode.stop();
+                    console.log("QR scanner stopped.");
+                    qrCodeReaderContainer.classList.remove('scanning-active');
+                    scannerStatusMessage.textContent = "Escáner detenido.";
+                } catch (err) {
+                    console.warn("Error stopping QR scanner:", err);
+                }
+            }
+        }
+
+        async function processScannedQR(qrData) {
+            showLoadingOverlay();
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simula un retardo de red
+
+            let isValid = false;
+            let flashClass = 'invalid';
+            let message = 'Código QR inválido o desconocido.';
+            scanResultDisplay.classList.remove('hidden', 'bg-green-700', 'bg-red-700', 'bg-yellow-700'); // Limpiar clases anteriores
+
+            try {
+                const ticket = JSON.parse(qrData); // Asume que los datos del QR son un JSON del ticket
+                const existingTicket = getTicketById(ticket.id);
+
+                if (existingTicket) {
+                    if (existingTicket.used) {
+                        message = `Entrada de <span class="font-bold">${existingTicket.name}</span> ya ha sido <span class="font-bold text-yellow-300">USADA</span>.`;
+                        flashClass = 'used';
+                        isValid = false;
+                        playScanSound(false);
+                        scanResultDisplay.classList.add('bg-yellow-700');
+                    } else {
+                        existingTicket.used = true;
+                        existingTicket.scanTimestamp = new Date().toISOString();
+                        saveTicketsToLocalStorage(getTicketsFromLocalStorage()); // Actualiza ticket en la lista
+                        addScanHistoryEntry(existingTicket.id, existingTicket.name, true);
+                        updateStats();
+                        message = `¡Entrada <span class="font-bold text-green-300">VÁLIDA</span> para <span class="font-bold">${existingTicket.name}</span>! Acceso concedido.`;
+                        flashClass = 'valid';
+                        isValid = true;
+                        playScanSound(true);
+                        scanResultDisplay.classList.add('bg-green-700');
+                    }
+                } else {
+                    addScanHistoryEntry(null, qrData, false, 'No registrada');
+                    message = `Entrada <span class="font-bold text-red-300">no REGISTRADA</span> en el sistema.`;
+                    flashClass = 'invalid';
+                    isValid = false;
+                    playScanSound(false);
+                    scanResultDisplay.classList.add('bg-red-700');
+                }
+            } catch (e) {
+                console.error("Error parsing QR data:", e);
+                addScanHistoryEntry(null, qrData, false, 'Formato inválido');
+                message = `Error en el formato del QR: <span class="font-bold text-red-300">"${qrData.substring(0, 30)}..."</span>.`;
                 flashClass = 'invalid';
                 isValid = false;
-                playScanSound(false); // Sonido de error
+                playScanSound(false);
+                scanResultDisplay.classList.add('bg-red-700');
+            } finally {
+                hideLoadingOverlay();
+                showScanFlash(flashClass);
+                scanResultDisplay.innerHTML = message;
+                scanResultDisplay.classList.remove('hidden'); // Asegura que el display sea visible
+                displayMessage(message, isValid ? 'success' : 'error'); // Esto mostrará un mensaje temporal arriba
+
+                // Ocultar el mensaje del resultado del escaneo después de un tiempo
+                setTimeout(() => {
+                    scanResultDisplay.classList.add('hidden');
+                    scanResultDisplay.innerHTML = '';
+                }, 2000); // Oculta el resultado después de 2 segundos
             }
-        } catch (e) {
-            console.error("Error al parsear los datos del QR:", e);
-            addScanHistoryEntry(null, qrData, false, 'Formato inválido');
-            message = `Error en el formato del QR: ${qrData}.`;
-            flashClass = 'invalid';
-            isValid = false;
-            playScanSound(false); // Sonido de error
-        } finally {
-            hideLoadingOverlay();
-            showScanFlash(flashClass);
-            displayMessage(message, isValid ? 'success' : 'error');
         }
-    }
 
+        // --- Lógica de Modales ---
+        function showConfirmationModal(title, body, onConfirm) {
+            modalTitle.textContent = title;
+            modalBody.textContent = body;
+            modalConfirmBtn.onclick = onConfirm; // Asigna la función de confirmación
+            confirmationModal.classList.remove('hidden');
+        }
 
-    // --- Lógica de cambio de sección (Existente) ---
-    const navButtons = document.querySelectorAll('.nav-btn');
-    let activeSection = 'batch-ticket-generator-section'; // Sección activa por defecto
+        function hideConfirmationModal() {
+            confirmationModal.classList.add('hidden');
+        }
 
-    function showSection(sectionId) {
-        document.querySelectorAll('.section').forEach(section => {
-            section.classList.remove('active');
+        modalCancelBtn.addEventListener('click', hideConfirmationModal);
+
+        resetModalCancelBtn.addEventListener('click', () => {
+            resetConfirmationModal.classList.add('hidden');
         });
-        document.getElementById(sectionId).classList.add('active');
+
+        resetConfirmInput.addEventListener('input', () => {
+            resetModalConfirmBtn.disabled = resetConfirmInput.value.trim() !== 'REINICIO';
+        });
+
+        resetModalConfirmBtn.addEventListener('click', () => {
+            if (resetConfirmInput.value.trim() === 'REINICIO') {
+                localStorage.clear(); // Borra TODO del localStorage
+                updateStats();
+                renderTicketsList();
+                renderScanHistory();
+                displayMessage('¡Todos los datos de la aplicación han sido reiniciados!', 'success');
+                resetConfirmationModal.classList.add('hidden');
+                // Opcional: recargar la página para limpiar completamente el estado
+                // window.location.reload();
+            } else {
+                displayMessage('Texto de confirmación incorrecto.', 'error');
+            }
+        });
+
+        // --- Sección de Navegación ---
+        const navButtons = document.querySelectorAll('.nav-btn');
+        let activeSection = 'batch-ticket-generator-section'; // La sección de generación será la primera activa
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            navButtons.forEach(button => {
+                if (button.dataset.section === sectionId) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+
+            activeSection = sectionId; // Actualiza la sección activa
+
+            // Lógica de iniciar/detener escáner
+            if (sectionId === 'qr-scanner-section') {
+                startQrScanner();
+            } else {
+                stopQrScanner();
+            }
+
+            // Renderizar listas al cambiar a sus secciones
+            if (sectionId === 'all-tickets-section') {
+                renderTicketsList();
+            } else if (sectionId === 'scan-history-section') {
+                renderScanHistory();
+            }
+        }
 
         navButtons.forEach(button => {
-            if (button.dataset.section === sectionId) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
-            }
+            button.addEventListener('click', () => {
+                showSection(button.dataset.section);
+            });
         });
 
-        activeSection = sectionId; // Actualiza la sección activa
+        // --- Inicialización al Cargar la Página ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSoundPlayers(); // Inicializa los reproductores de sonido
+            updateStats(); // Carga las estadísticas iniciales
+            showSection(activeSection); // Muestra la sección activa por defecto
 
-        // Detener escáner al salir de su sección
-        if (sectionId !== 'qr-scanner-section') {
-            stopQrScanner();
-        } else {
-            // Iniciar escáner al entrar a su sección
-            startQrScanner();
-        }
-    }
-
-    navButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            showSection(button.dataset.section);
+            // Event Listeners para filtros y borrado
+            ticketSearchInput.addEventListener('input', renderTicketsList);
+            ticketFilterStatus.addEventListener('change', renderTicketsList);
+            clearAllTicketsBtn.addEventListener('click', clearAllTickets);
+            clearScanHistoryBtn.addEventListener('click', clearScanHistory);
+            resetAppDataBtn.addEventListener('click', resetAllAppData);
         });
-    });
-
-    // Inicializar los reproductores de sonido cuando el DOM esté listo
-    initializeSoundPlayers();
-
-    // Mostrar la sección inicial
-    showSection(activeSection); // Muestra la sección activa por defecto al cargar
-
-    // ... (el resto de tu JavaScript existente para generación de tickets, almacenamiento, etc.) ...
-});
+    </script>
+</body>
+</html>
