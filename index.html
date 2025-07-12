@@ -586,14 +586,7 @@
 
         const config = {
             appId: typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod',
-            firebase: typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
-                authDomain: "vyt-music.firebaseapp.com",
-                projectId: "vyt-music",
-                storageBucket: "vyt-music.appspot.com",
-                messagingSenderId: "574981837817",
-                appId: "1:574981837817:web:a29933a22bbfd51a086328"
-            },
+            firebase: typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null,
             logoUrl: 'https://i.imgur.com/rqkZi9P.png',
         };
 
@@ -1436,7 +1429,12 @@
         async function startApp() {
             cacheUIElements();
             setLoading(true);
-            console.log("Iniciando aplicación y caché de UI.");
+            
+            if (!config.firebase) {
+                displayMessage("Error: La configuración de Firebase no se ha cargado. La aplicación no puede funcionar.", "error");
+                setLoading(false);
+                return;
+            }
 
             try {
                 const app = initializeApp(config.firebase);
@@ -1588,6 +1586,13 @@
             ui.generatorForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (state.isSubmitting) return; 
+                
+                const ticketPrefix = ui.ticketPrefixInput.value.trim();
+                if(ticketPrefix.length > 20) {
+                    displayMessage('El prefijo no puede tener más de 20 caracteres.', 'error');
+                    return;
+                }
+
                 state.isSubmitting = true;
                 ui.generatorFormSubmitBtn.disabled = true;
                 ui.generatorFormClearBtn.disabled = true;
@@ -1599,7 +1604,6 @@
                 const showName = ui.showNameInput.value.trim();
                 const showLocation = ui.showLocationInput.value.trim();
                 const showAddress = ui.showAddressInput.value.trim();
-                const ticketPrefix = ui.ticketPrefixInput.value.trim();
                 const batchNamesRaw = ui.batchTicketNamesInput.value.trim();
                 const seatLocation = ui.ticketSeatLocationInput.value.trim();
 
