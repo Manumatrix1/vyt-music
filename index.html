@@ -34,19 +34,22 @@
         .nav-btn {
             transition: all 0.3s ease;
             border-bottom: 2px solid transparent;
+            white-space: nowrap; /* Evita que el texto del botón se parta */
         }
         .nav-btn.active {
             border-bottom-color: #38bdf8; /* sky-400 */
             color: #38bdf8;
         }
 
-        /* Centrar los botones de navegación */
+        /* Centrar los botones de navegación y permitir que se envuelvan */
         .nav-container {
             display: flex;
-            justify-content: center; /* Centra los elementos horizontalmente */
+            justify-content: center;
+            flex-wrap: wrap; /* Permite que los botones pasen a la siguiente línea */
+            gap: 0.5rem; /* Espacio entre botones */
             margin-bottom: 2rem;
             border-bottom: 1px solid #374151; /* gray-700 */
-            padding-bottom: 0.5rem; /* Espaciado debajo de la línea */
+            padding-bottom: 1rem; /* Espaciado debajo de la línea */
         }
 
         /* Overlay de carga */
@@ -1761,19 +1764,3 @@
     </script>
 </body>
 </html>
-" in the Canvas.
-I have a problem with the following code.
-I'm getting the following errors when I run the code:
-
-[19:40:48] [CONSOLE_ERROR] Error al generar tickets en lote: Error: code length overflow. (324>288)
-Stack: Error: code length overflow. (324>288)
-    at b.createData (https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js:1:5199)
-    at b.makeImpl (https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js:1:2602)
-    at b.getBestMaskPattern (https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js:1:3024)
-    at b.make (https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js:1:2028)
-    at QRCode.makeCode (https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js:1:19621)
-    at new QRCode (https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js:1:19431)
-    at generateQrCodeForTicket (blob:https://146y49h44497t95jex64n61f6l2k2s5493w664f6974914c6-h780559089.scf.usercontent.goog/9a957b43-b956-4c4f-9556-3b6d21f8b1c4:1564:13)
-    at HTMLFormElement.<anonymous> (blob:https://146y49h44497t95jex64n61f6l2k2s5493w664f6974914c6-h780559089.scf.usercontent.goog/9a957b43-b956-4c4f-9556-3b6d21f8b1c4:1908:25)
-
-Can you fix th
