@@ -1104,6 +1104,53 @@
         }
         
         async function processScan(decodedText, context = 'fullscreen') {
+             // --- START OF FIX ---
+             if (!state.isFirebaseReady) {
+                // Modo de prueba: Simular un resultado sin llamar a Firebase
+                console.log("Procesando escaneo en modo de prueba.");
+                flashScanResult('valid');
+                if (state.synth) { await Tone.start(); state.synth.triggerAttackRelease("C4", "8n"); }
+                
+                let idEl, prefixEl, nameEl, locationEl, statusEl, markBtn, infoContainer, scanAgainBtn;
+                
+                if (context === 'fullscreen') {
+                    idEl = ui.currentScannedTicketIdFullscreen;
+                    prefixEl = ui.currentScannedTicketPrefixFullscreen;
+                    nameEl = ui.currentScannedTicketNameFullscreen;
+                    locationEl = ui.currentScannedTicketSeatLocationFullscreen;
+                    statusEl = ui.currentScannedTicketStatusFullscreen;
+                    markBtn = ui.markUsedBtnFullscreen;
+                    infoContainer = ui.scannedTicketInfoFullscreen;
+                    scanAgainBtn = ui.scanAgainBtnFullscreen;
+                } else { // simulator
+                    idEl = ui.simScannedTicketId;
+                    prefixEl = ui.simScannedTicketPrefix;
+                    nameEl = ui.simScannedTicketName;
+                    locationEl = ui.simScannedTicketSeatLocation;
+                    statusEl = ui.simScannedTicketStatus;
+                    markBtn = { classList: { add: () => {} }}; // Dummy object
+                    infoContainer = ui.simulatorResultContainer;
+                    scanAgainBtn = { classList: { add: () => {} }}; // Dummy object
+                }
+                
+                infoContainer.classList.remove('hidden');
+                markBtn.classList.add('hidden');
+
+                idEl.textContent = decodedText;
+                prefixEl.textContent = 'DEMO';
+                nameEl.textContent = 'Asistente de Prueba';
+                locationEl.textContent = 'Sector Demo';
+                statusEl.textContent = 'VÁLIDO (PRUEBA)';
+                statusEl.className = 'text-green-700 bg-green-100 px-3 py-1 rounded-md';
+
+                if (context === 'fullscreen') {
+                    ui.scanAgainBtnFullscreen.classList.remove('hidden');
+                    ui.scannerStatusMessageFullscreen.textContent = 'Resultado mostrado. Presiona para escanear de nuevo.';
+                }
+                return; // Salir de la función para no ejecutar el código de Firebase
+            }
+            // --- END OF FIX ---
+
              try {
                 const ticketId = decodedText;
                 const ticketDocRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, ticketId);
