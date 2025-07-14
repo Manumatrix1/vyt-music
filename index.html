@@ -30,27 +30,48 @@
         .section.active { display: block; }
         .hidden { display: none !important; }
         
-        /* Estilos de botones de navegación */
-        .nav-btn {
-            transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
-            white-space: nowrap; /* Evita que el texto del botón se parta */
+        /* --- NUEVOS ESTILOS PARA EL MENÚ DE NAVEGACIÓN --- */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columnas fijas */
+            gap: 1rem;
+            margin-bottom: 2rem;
+            max-width: 600px; /* Limita el ancho máximo para que no se estire demasiado en pantallas grandes */
+            margin-left: auto;
+            margin-right: auto;
         }
-        .nav-btn.active {
-            border-bottom-color: #38bdf8; /* sky-400 */
-            color: #38bdf8;
+        .nav-card {
+            background-color: #1f2937; /* bg-gray-800 */
+            border-radius: 0.75rem;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid #374151; /* border-gray-700 */
+        }
+        .nav-card:hover {
+            transform: translateY(-5px);
+            background-color: #374151; /* bg-gray-700 */
+            border-color: #38bdf8;
+        }
+        .nav-card.active {
+            background-color: #38bdf8;
+            color: #111827;
+            border-color: #38bdf8;
+        }
+        .nav-card svg {
+            margin: 0 auto 0.75rem auto;
+            width: 2.5rem;
+            height: 2.5rem;
+            color: #9ca3af; /* text-gray-400 */
+        }
+        .nav-card.active svg {
+            color: #111827;
+        }
+        .nav-card span {
+            font-weight: 600;
         }
 
-        /* Centrar los botones de navegación y permitir que se envuelvan */
-        .nav-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap; /* Permite que los botones pasen a la siguiente línea */
-            gap: 0.5rem; /* Espacio entre botones */
-            margin-bottom: 2rem;
-            border-bottom: 1px solid #374151; /* gray-700 */
-            padding-bottom: 1rem; /* Espaciado debajo de la línea */
-        }
 
         /* Overlay de carga */
         .loading-overlay {
@@ -381,13 +402,31 @@
                 </div>
             </div>
 
-            <nav class="nav-container"> <!-- Contenedor para centrar los botones de navegación -->
-                <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
-                <button id="open-scanner-btn" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
-                <button data-section="all-tickets-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Lista de Entradas</button>
-                <button data-section="scan-history-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Historial</button>
-                <button data-section="dashboard-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Dashboard</button>
-                <button data-section="simulator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Simulador</button>
+            <nav class="nav-grid">
+                <div data-section="batch-ticket-generator-section" class="nav-card active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-12v.75m0 3v.75m0 3v.75m0 3V18m-9-12h18M3 12h18m-18 6h18" /></svg>
+                    <span>Generar Entradas</span>
+                </div>
+                <div id="open-scanner-btn" class="nav-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z" /></svg>
+                    <span>Escanear QR</span>
+                </div>
+                <div data-section="all-tickets-section" class="nav-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h7.5M8.25 12h7.5m-7.5 5.25h7.5M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                    <span>Lista</span>
+                </div>
+                <div data-section="scan-history-section" class="nav-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Historial</span>
+                </div>
+                <div data-section="dashboard-section" class="nav-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1.5-1.5m1.5 1.5l1.5-1.5m0 0l1.5 1.5m-1.5-1.5l-1.5 1.5" /></svg>
+                    <span>Dashboard</span>
+                </div>
+                <div data-section="simulator-section" class="nav-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
+                    <span>Simulador</span>
+                </div>
             </nav>
 
             <main class="mt-8">
@@ -513,11 +552,25 @@
                     </div>
                     <div>
                         <label for="password-input" class="block mb-1 font-semibold text-gray-300">Contraseña</label>
-                        <input type="password" id="password-input" required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <div class="relative">
+                            <input type="password" id="password-input" required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 pr-10">
+                            <button type="button" id="toggle-password-btn" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white">
+                                <svg id="eye-icon-open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <svg id="eye-icon-closed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="flex space-x-4">
                         <button type="button" id="login-btn" class="w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700">Iniciar Sesión</button>
                         <button type="button" id="register-btn" class="w-full px-4 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700">Registrarse</button>
+                    </div>
+                     <div class="mt-4 text-center">
+                        <button type="button" id="demo-mode-btn" class="w-full px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">Modo de Prueba (Sin Conexión)</button>
                     </div>
                 </form>
             </div>
@@ -590,12 +643,12 @@
         const config = {
             appId: typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod',
             firebase: typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
-                authDomain: "vyt-music.firebaseapp.com",
-                projectId: "vyt-music",
-                storageBucket: "vyt-music.appspot.com",
-                messagingSenderId: "574981837817",
-                appId: "1:574981837817:web:a29933a22bbfd51a086328"
+                apiKey: "TU_API_KEY_AQUI",
+                authDomain: "TU_AUTH_DOMAIN_AQUI",
+                projectId: "TU_PROJECT_ID_AQUI",
+                storageBucket: "TU_STORAGE_BUCKET_AQUI",
+                messagingSenderId: "TU_MESSAGING_SENDER_ID_AQUI",
+                appId: "TU_APP_ID_AQUI"
             },
             logoUrl: 'https://i.imgur.com/rqkZi9P.png',
         };
@@ -617,7 +670,7 @@
                 'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input', 'open-scanner-btn', 'close-scanner-btn', 'toggle-torch-btn',
                 'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input',
                 'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message', 'export-csv-btn',
-                'share-batch-qrs-btn', 
+                'share-batch-qrs-btn', 'show-name-input', 'show-location-input', 'show-address-input',
                 'ticket-seat-location-input', 'current-scanned-ticket-seat-location-fullscreen',
                 'reset-confirmation-modal', 'reset-confirm-input', 'reset-modal-cancel-btn', 'reset-modal-confirm-btn',
                 'share-link-modal', 'share-link-display', 'copy-share-link-btn', 'close-share-modal-btn',
@@ -625,13 +678,14 @@
                 'simulator-input', 'simulate-scan-btn', 'simulator-result-container',
                 'scanner-status-message-fullscreen',
                 'app-content', 'auth-screen', 'auth-form', 'email-input', 'password-input', 'login-btn', 'register-btn',
-                'sim-scanned-ticket-id', 'sim-scanned-ticket-prefix', 'sim-scanned-ticket-name', 'sim-scanned-ticket-seat-location', 'sim-scanned-ticket-status'
+                'sim-scanned-ticket-id', 'sim-scanned-ticket-prefix', 'sim-scanned-ticket-name', 'sim-scanned-ticket-seat-location', 'sim-scanned-ticket-status',
+                'toggle-password-btn', 'eye-icon-open', 'eye-icon-closed', 'demo-mode-btn' // Added demo mode button
             ];
             ids.forEach(id => {
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
                 ui[camelCaseId] = document.getElementById(id);
             });
-            ui.navButtons = document.querySelectorAll('.nav-btn');
+            ui.navButtons = document.querySelectorAll('.nav-card'); // Updated to select new nav cards
         }
 
         // --- UTILITY AND UI FUNCTIONS ---
@@ -1541,7 +1595,7 @@
         function setupEventListeners() {
             ui.navButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
-                    const sectionId = button.dataset.section;
+                    const sectionId = e.currentTarget.dataset.section;
                     if (!sectionId) return;
                     showSection(document.getElementById(sectionId));
                 });
@@ -1628,42 +1682,55 @@
                     return;
                 }
 
-                try {
-                    const batch = writeBatch(state.db);
-                    const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
-
-                    for (const name of names) {
+                // FIX: Check if Firebase is ready before attempting to use it
+                if (!state.isFirebaseReady) {
+                    // Demo mode logic
+                    names.forEach(name => {
                         const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
-                        const ticketRef = doc(ticketsCollectionRef, ticketId);
-                        const ticketData = {
-                            id: ticketId,
-                            prefix: ticketPrefix,
-                            name: name,
-                            seatLocation: seatLocation || null,
-                            showName: showName,
-                            showLocation: showLocation,
-                            showAddress: showAddress || null,
-                            used: false,
-                            generatedAt: new Date().toISOString(),
-                            usedAt: null,
-                            generatedBy: state.userId
-                        };
-                        batch.set(ticketRef, ticketData);
-                        state.currentBatchGeneratedTickets.push({ ...ticketData, qrDataUrl: ticketId });
+                        state.currentBatchGeneratedTickets.push({ id: ticketId, prefix: ticketPrefix, name, seatLocation, showName, showLocation, showAddress, qrDataUrl: ticketId });
                         generateQrCodeForTicket(ticketId, name, ticketPrefix, seatLocation, ticketId, ui.generatedTicketsContainer, showName, showLocation, showAddress);
-                    }
-                    await batch.commit();
-                    displayMessage(`${names.length} tickets generados exitosamente.`, 'success');
+                    });
+                    displayMessage(`${names.length} tickets generados en modo de prueba.`, 'success');
                     ui.shareBatchQrsBtn.classList.remove('hidden');
-                } catch (error) {
-                    console.error('Error al generar tickets en lote:', error);
-                    displayMessage('Error al generar tickets. Revisa la consola.', 'error');
-                } finally {
-                    setLoading(false);
-                    state.isSubmitting = false;
-                    ui.generatorFormSubmitBtn.disabled = false;
-                    ui.generatorFormClearBtn.disabled = false;
+                } else {
+                    // Firebase logic
+                    try {
+                        const batch = writeBatch(state.db);
+                        const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
+
+                        for (const name of names) {
+                            const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
+                            const ticketRef = doc(ticketsCollectionRef, ticketId);
+                            const ticketData = {
+                                id: ticketId,
+                                prefix: ticketPrefix,
+                                name: name,
+                                seatLocation: seatLocation || null,
+                                showName: showName,
+                                showLocation: showLocation,
+                                showAddress: showAddress || null,
+                                used: false,
+                                generatedAt: new Date().toISOString(),
+                                usedAt: null,
+                                generatedBy: state.userId
+                            };
+                            batch.set(ticketRef, ticketData);
+                            state.currentBatchGeneratedTickets.push({ ...ticketData, qrDataUrl: ticketId });
+                            generateQrCodeForTicket(ticketId, name, ticketPrefix, seatLocation, ticketId, ui.generatedTicketsContainer, showName, showLocation, showAddress);
+                        }
+                        await batch.commit();
+                        displayMessage(`${names.length} tickets generados exitosamente.`, 'success');
+                        ui.shareBatchQrsBtn.classList.remove('hidden');
+                    } catch (error) {
+                        console.error('Error al generar tickets en lote:', error);
+                        displayMessage('Error al generar tickets. Revisa la consola.', 'error');
+                    }
                 }
+                
+                setLoading(false);
+                state.isSubmitting = false;
+                ui.generatorFormSubmitBtn.disabled = false;
+                ui.generatorFormClearBtn.disabled = false;
             });
 
             ui.generatorFormClearBtn.addEventListener('click', () => {
@@ -1735,6 +1802,23 @@
                 await signOut(state.auth);
                 displayMessage('Sesión cerrada.', 'info');
             });
+            
+            ui.togglePasswordBtn.addEventListener('click', () => {
+                const isPassword = ui.passwordInput.type === 'password';
+                ui.passwordInput.type = isPassword ? 'text' : 'password';
+                ui.eyeIconOpen.classList.toggle('hidden', isPassword);
+                ui.eyeIconClosed.classList.toggle('hidden', !isPassword);
+            });
+
+            ui.demoModeBtn.addEventListener('click', () => {
+                ui.authScreen.classList.add('hidden');
+                ui.appContent.classList.remove('hidden');
+                ui.userEmailDisplay.textContent = 'Modo de Prueba';
+                ui.logoutBtn.classList.remove('hidden'); // Show logout to be able to go back
+                state.isFirebaseReady = false; // Ensure Firebase is marked as not ready
+                showSection(document.getElementById('batch-ticket-generator-section'));
+                displayMessage('Entrando en modo de prueba. Las funciones de base de datos están desactivadas.', 'info');
+            });
         }
         
         async function toggleTorch() {
@@ -1764,3 +1848,4 @@
     </script>
 </body>
 </html>
+
