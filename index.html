@@ -43,11 +43,14 @@
         .nav-card {
             background-color: #1f2937; /* bg-gray-800 */
             border-radius: 0.75rem;
-            padding: 1.5rem 1rem;
+            padding: 1.25rem 1rem; /* Padding ajustado para texto */
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease-in-out;
             border: 1px solid #374151; /* border-gray-700 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .nav-card:hover {
             transform: translateY(-5px);
@@ -58,15 +61,6 @@
             background-color: #38bdf8;
             color: #111827;
             border-color: #38bdf8;
-        }
-        .nav-card svg {
-            margin: 0 auto 0.75rem auto;
-            width: 2.5rem;
-            height: 2.5rem;
-            color: #9ca3af; /* text-gray-400 */
-        }
-        .nav-card.active svg {
-            color: #111827;
         }
         .nav-card span {
             font-weight: 600;
@@ -404,27 +398,21 @@
 
             <nav class="nav-grid">
                 <div data-section="batch-ticket-generator-section" class="nav-card active">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-12v.75m0 3v.75m0 3v.75m0 3V18m-9-12h18M3 12h18m-18 6h18" /></svg>
                     <span>Generar Entradas</span>
                 </div>
                 <div id="open-scanner-btn" class="nav-card">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z" /></svg>
                     <span>Escanear QR</span>
                 </div>
                 <div data-section="all-tickets-section" class="nav-card">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h7.5M8.25 12h7.5m-7.5 5.25h7.5M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
                     <span>Lista</span>
                 </div>
                 <div data-section="scan-history-section" class="nav-card">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span>Historial</span>
                 </div>
                 <div data-section="dashboard-section" class="nav-card">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1.5-1.5m1.5 1.5l1.5-1.5m0 0l1.5 1.5m-1.5-1.5l-1.5 1.5" /></svg>
                     <span>Dashboard</span>
                 </div>
                 <div data-section="simulator-section" class="nav-card">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
                     <span>Simulador</span>
                 </div>
             </nav>
@@ -1848,4 +1836,3 @@
     </script>
 </body>
 </html>
-
