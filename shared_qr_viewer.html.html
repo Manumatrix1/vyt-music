@@ -280,7 +280,7 @@
         <div id="message-container" class="mb-4"></div>
 
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
-            <div id="shared-batch-qrs-container" class="mt-6 space-y-4">
+            <div id="shared-batch-qrs-container" class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Los QRs compartidos se cargarán aquí -->
             </div>
         </div>
@@ -290,7 +290,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, documentId } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
         // --- ESTADO GLOBAL Y CONFIGURACIÓN ---
         const state = {
@@ -372,7 +372,6 @@
             const qrItemDiv = document.createElement('div');
             qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-900 text-center mx-auto'; 
             
-            // Wrapper para el QR y el logo para manejar el posicionamiento
             const qrCodeContainerWrapper = document.createElement('div');
             qrCodeContainerWrapper.className = 'qrcode-container-wrapper';
 
@@ -385,7 +384,7 @@
             logoImg.alt = "Logo VYTMUSIC";
             logoImg.className = 'qrcode-logo';
 
-            qrCodeContainerDiv.appendChild(logoImg); // Añadir logo dentro del contenedor del QR para centrarlo con flexbox
+            qrCodeContainerDiv.appendChild(logoImg); 
             qrCodeContainerWrapper.appendChild(qrCodeContainerDiv); 
 
             const infoTextDiv = document.createElement('div');
@@ -393,7 +392,6 @@
 
             let showAddressHtml = '';
             if (showAddress) {
-                // Verificar si es un enlace de Google Maps
                 if (showAddress.startsWith('http') && (showAddress.includes('google.com/maps') || showAddress.includes('maps.app.goo.gl'))) {
                     showAddressHtml = `<p class="show-details-display">Dirección: <a href="${showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a></p>`;
                 } else {
@@ -405,13 +403,13 @@
                 <h3>VYT-MUSIC</h3>
                 <p>CERTAMEN DE CANTO</p>
                 <p class="small-text">¡Tu entrada para el evento!</p>
-                <p class="name-display">${name}</p> <!-- Nombre del invitado en recuadro celeste -->
+                <p class="name-display">${name}</p>
                 <p class="show-details-display">Show: ${showName || 'N/A'}</p>
                 <p class="show-details-display">Lugar: ${showLocation || 'N/A'}</p>
                 ${showAddressHtml}
-                <p class="prefix-display">Artista: ${prefix}</p> <!-- Cambiado de "Prefijo:" a "Artista:" -->
+                <p class="prefix-display">Artista: ${prefix}</p>
                 <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
-                <p class="id-display">ID: ${ticketId}</p>
+                <p class="id-display text-xs">ID: ${ticketId}</p>
                 <a href="https://wa.me/3417422062" target="_blank" class="whatsapp-link-box">
                     <span class="main-text">INSCRÍBETE</span>
                     <span class="vyt-music-text">VYT-MUSIC</span>
@@ -422,18 +420,17 @@
 
             qrItemDiv.appendChild(qrCodeContainerWrapper);
             qrItemDiv.appendChild(infoTextDiv);
-            container.appendChild(qrItemDiv); // Usar el contenedor proporcionado
+            container.appendChild(qrItemDiv); 
 
-            new QRCode(qrCodeContainerDiv.id, {
+            new QRCode(qrCodeContainerDiv, {
                 text: qrData,
-                width: 1080, // Tamaño aumentado
-                height: 1080, // Tamaño aumentado
+                width: 1080,
+                height: 1080,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
 
-            // Crear botón de descarga para cada QR
             const downloadBtn = document.createElement('button');
             downloadBtn.textContent = 'Descargar QR';
             downloadBtn.className = 'download-qr-btn';
@@ -453,7 +450,6 @@
             });
             qrItemDiv.appendChild(downloadBtn);
 
-            // Sección de Redes Sociales
             const socialMediaContainer = document.createElement('div');
             socialMediaContainer.className = 'social-icons-container';
             socialMediaContainer.innerHTML = `
@@ -494,7 +490,7 @@
                 return null;
             },
             /**
-             * Obtiene múltiples entradas por sus IDs.
+             * Obtiene múltiples entradas por sus IDs de forma eficiente.
              * @param {Array<string>} ticketIds Array de IDs de entradas a obtener.
              * @returns {Array<object>} Array de datos de entradas.
              */
@@ -503,14 +499,18 @@
                     return [];
                 }
                 const tickets = [];
-                // Firestore no soporta consultas 'in' con más de 10 elementos directamente.
-                // Para lotes grandes, se necesitaría dividir en sub-consultas o un enfoque diferente.
-                // Para este caso, iteramos individualmente.
-                for (const id of ticketIds) {
-                    const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, id);
-                    const docSnap = await getDoc(ticketRef);
-                    if (docSnap.exists()) {
-                        tickets.push(docSnap.data());
+                const ticketsRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
+                
+                // Firestore 'in' query supports up to 30 elements. We process in chunks.
+                const CHUNK_SIZE = 30; 
+                for (let i = 0; i < ticketIds.length; i += CHUNK_SIZE) {
+                    const chunk = ticketIds.slice(i, i + CHUNK_SIZE);
+                    if (chunk.length > 0) {
+                        const q = query(ticketsRef, where(documentId(), 'in', chunk));
+                        const querySnapshot = await getDocs(q);
+                        querySnapshot.forEach((doc) => {
+                            tickets.push(doc.data());
+                        });
                     }
                 }
                 return tickets;
