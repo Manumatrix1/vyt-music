@@ -30,42 +30,27 @@
         .section.active { display: block; }
         .hidden { display: none !important; }
         
-        /* --- NUEVOS ESTILOS PARA EL MENÚ DE NAVEGACIÓN --- */
-        .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 3 columnas fijas */
-            gap: 1rem;
-            margin-bottom: 2rem;
-            max-width: 600px; /* Limita el ancho máximo para que no se estire demasiado en pantallas grandes */
-            margin-left: auto;
-            margin-right: auto;
+        /* Estilos de botones de navegación */
+        .nav-btn {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap; /* Evita que el texto del botón se parta */
         }
-        .nav-card {
-            background-color: #1f2937; /* bg-gray-800 */
-            border-radius: 0.75rem;
-            padding: 1.25rem 1rem; /* Padding ajustado para texto */
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            border: 1px solid #374151; /* border-gray-700 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .nav-card:hover {
-            transform: translateY(-5px);
-            background-color: #374151; /* bg-gray-700 */
-            border-color: #38bdf8;
-        }
-        .nav-card.active {
-            background-color: #38bdf8;
-            color: #111827;
-            border-color: #38bdf8;
-        }
-        .nav-card span {
-            font-weight: 600;
+        .nav-btn.active {
+            border-bottom-color: #38bdf8; /* sky-400 */
+            color: #38bdf8;
         }
 
+        /* Centrar los botones de navegación y permitir que se envuelvan */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Permite que los botones pasen a la siguiente línea */
+            gap: 0.5rem; /* Espacio entre botones */
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #374151; /* gray-700 */
+            padding-bottom: 1rem; /* Espaciado debajo de la línea */
+        }
 
         /* Overlay de carga */
         .loading-overlay {
@@ -396,25 +381,13 @@
                 </div>
             </div>
 
-            <nav class="nav-grid">
-                <div data-section="batch-ticket-generator-section" class="nav-card active">
-                    <span>Generar Entradas</span>
-                </div>
-                <div id="open-scanner-btn" class="nav-card">
-                    <span>Escanear QR</span>
-                </div>
-                <div data-section="all-tickets-section" class="nav-card">
-                    <span>Lista</span>
-                </div>
-                <div data-section="scan-history-section" class="nav-card">
-                    <span>Historial</span>
-                </div>
-                <div data-section="dashboard-section" class="nav-card">
-                    <span>Dashboard</span>
-                </div>
-                <div data-section="simulator-section" class="nav-card">
-                    <span>Simulador</span>
-                </div>
+            <nav class="nav-container"> <!-- Contenedor para centrar los botones de navegación -->
+                <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
+                <button id="open-scanner-btn" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
+                <button data-section="all-tickets-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Lista de Entradas</button>
+                <button data-section="scan-history-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Historial</button>
+                <button data-section="dashboard-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Dashboard</button>
+                <button data-section="simulator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Simulador</button>
             </nav>
 
             <main class="mt-8">
@@ -452,7 +425,12 @@
                                 <button type="button" id="generator-form-clear-btn" class="w-full px-4 py-3 bg-gray-600 text-white font-bold rounded-lg hover:bg-gray-700 disabled:opacity-50">Limpiar</button>
                             </div>
                         </form>
-                        <div id="generated-tickets-container" class="mt-6 space-y-4"></div>
+                        <div id="generated-tickets-container" class="mt-6"></div>
+                        <div id="qr-carousel-controls" class="hidden mt-4 flex items-center justify-center gap-4">
+                            <button id="prev-qr-btn" class="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-700">&lt; Anterior</button>
+                            <span id="qr-counter" class="font-semibold"></span>
+                            <button id="next-qr-btn" class="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-700">Siguiente &gt;</button>
+                        </div>
                         <button id="share-batch-qrs-btn" class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 mt-4 hidden">Compartir Lote de QRs</button>
                     </div>
                 </section>
@@ -540,18 +518,7 @@
                     </div>
                     <div>
                         <label for="password-input" class="block mb-1 font-semibold text-gray-300">Contraseña</label>
-                        <div class="relative">
-                            <input type="password" id="password-input" required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 pr-10">
-                            <button type="button" id="toggle-password-btn" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white">
-                                <svg id="eye-icon-open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                <svg id="eye-icon-closed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                                </svg>
-                            </button>
-                        </div>
+                        <input type="password" id="password-input" required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
                     </div>
                     <div class="flex space-x-4">
                         <button type="button" id="login-btn" class="w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700">Iniciar Sesión</button>
@@ -625,18 +592,19 @@
             totalGeneratedTickets: 0,
             totalUsedTickets: 0,
             currentBatchGeneratedTickets: [], // Stores { ticketId, prefix, name, seatLocation, qrDataUrl } for the current batch
-            synth: null // Add synth to state
+            synth: null, // Add synth to state
+            currentQrIndex: 0
         };
 
         const config = {
             appId: typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod',
             firebase: typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                apiKey: "TU_API_KEY_AQUI",
-                authDomain: "TU_AUTH_DOMAIN_AQUI",
-                projectId: "TU_PROJECT_ID_AQUI",
-                storageBucket: "TU_STORAGE_BUCKET_AQUI",
-                messagingSenderId: "TU_MESSAGING_SENDER_ID_AQUI",
-                appId: "TU_APP_ID_AQUI"
+                apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
+                authDomain: "vyt-music.firebaseapp.com",
+                projectId: "vyt-music",
+                storageBucket: "vyt-music.appspot.com",
+                messagingSenderId: "574981837817",
+                appId: "1:574981837817:web:a29933a22bbfd51a086328"
             },
             logoUrl: 'https://i.imgur.com/rqkZi9P.png',
         };
@@ -658,22 +626,22 @@
                 'generator-form', 'ticket-prefix-input', 'batch-ticket-names-input', 'open-scanner-btn', 'close-scanner-btn', 'toggle-torch-btn',
                 'generated-tickets-container', 'scan-history-list', 'all-tickets-list', 'all-tickets-search-input',
                 'total-generated-tickets', 'total-used-tickets', 'reset-stats-btn', 'logo-error-message', 'export-csv-btn',
-                'share-batch-qrs-btn', 'show-name-input', 'show-location-input', 'show-address-input',
+                'share-batch-qrs-btn', 
                 'ticket-seat-location-input', 'current-scanned-ticket-seat-location-fullscreen',
                 'reset-confirmation-modal', 'reset-confirm-input', 'reset-modal-cancel-btn', 'reset-modal-confirm-btn',
                 'share-link-modal', 'share-link-display', 'copy-share-link-btn', 'close-share-modal-btn',
                 'occupancy-rate', 'scans-per-hour', 'scans-by-prefix',
                 'simulator-input', 'simulate-scan-btn', 'simulator-result-container',
                 'scanner-status-message-fullscreen',
-                'app-content', 'auth-screen', 'auth-form', 'email-input', 'password-input', 'login-btn', 'register-btn',
+                'app-content', 'auth-screen', 'auth-form', 'email-input', 'password-input', 'login-btn', 'register-btn', 'demo-mode-btn',
                 'sim-scanned-ticket-id', 'sim-scanned-ticket-prefix', 'sim-scanned-ticket-name', 'sim-scanned-ticket-seat-location', 'sim-scanned-ticket-status',
-                'toggle-password-btn', 'eye-icon-open', 'eye-icon-closed', 'demo-mode-btn' // Added demo mode button
+                'qr-carousel-controls', 'prev-qr-btn', 'next-qr-btn', 'qr-counter'
             ];
             ids.forEach(id => {
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
                 ui[camelCaseId] = document.getElementById(id);
             });
-            ui.navButtons = document.querySelectorAll('.nav-card'); // Updated to select new nav cards
+            ui.navButtons = document.querySelectorAll('.nav-btn');
         }
 
         // --- UTILITY AND UI FUNCTIONS ---
@@ -1104,53 +1072,6 @@
         }
         
         async function processScan(decodedText, context = 'fullscreen') {
-             // --- START OF FIX ---
-             if (!state.isFirebaseReady) {
-                // Modo de prueba: Simular un resultado sin llamar a Firebase
-                console.log("Procesando escaneo en modo de prueba.");
-                flashScanResult('valid');
-                if (state.synth) { await Tone.start(); state.synth.triggerAttackRelease("C4", "8n"); }
-                
-                let idEl, prefixEl, nameEl, locationEl, statusEl, markBtn, infoContainer, scanAgainBtn;
-                
-                if (context === 'fullscreen') {
-                    idEl = ui.currentScannedTicketIdFullscreen;
-                    prefixEl = ui.currentScannedTicketPrefixFullscreen;
-                    nameEl = ui.currentScannedTicketNameFullscreen;
-                    locationEl = ui.currentScannedTicketSeatLocationFullscreen;
-                    statusEl = ui.currentScannedTicketStatusFullscreen;
-                    markBtn = ui.markUsedBtnFullscreen;
-                    infoContainer = ui.scannedTicketInfoFullscreen;
-                    scanAgainBtn = ui.scanAgainBtnFullscreen;
-                } else { // simulator
-                    idEl = ui.simScannedTicketId;
-                    prefixEl = ui.simScannedTicketPrefix;
-                    nameEl = ui.simScannedTicketName;
-                    locationEl = ui.simScannedTicketSeatLocation;
-                    statusEl = ui.simScannedTicketStatus;
-                    markBtn = { classList: { add: () => {} }}; // Dummy object
-                    infoContainer = ui.simulatorResultContainer;
-                    scanAgainBtn = { classList: { add: () => {} }}; // Dummy object
-                }
-                
-                infoContainer.classList.remove('hidden');
-                markBtn.classList.add('hidden');
-
-                idEl.textContent = decodedText;
-                prefixEl.textContent = 'DEMO';
-                nameEl.textContent = 'Asistente de Prueba';
-                locationEl.textContent = 'Sector Demo';
-                statusEl.textContent = 'VÁLIDO (PRUEBA)';
-                statusEl.className = 'text-green-700 bg-green-100 px-3 py-1 rounded-md';
-
-                if (context === 'fullscreen') {
-                    ui.scanAgainBtnFullscreen.classList.remove('hidden');
-                    ui.scannerStatusMessageFullscreen.textContent = 'Resultado mostrado. Presiona para escanear de nuevo.';
-                }
-                return; // Salir de la función para no ejecutar el código de Firebase
-            }
-            // --- END OF FIX ---
-
              try {
                 const ticketId = decodedText;
                 const ticketDocRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, ticketId);
@@ -1717,55 +1638,47 @@
                     return;
                 }
 
-                // FIX: Check if Firebase is ready before attempting to use it
-                if (!state.isFirebaseReady) {
-                    // Demo mode logic
-                    names.forEach(name => {
-                        const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
-                        state.currentBatchGeneratedTickets.push({ id: ticketId, prefix: ticketPrefix, name, seatLocation, showName, showLocation, showAddress, qrDataUrl: ticketId });
-                        generateQrCodeForTicket(ticketId, name, ticketPrefix, seatLocation, ticketId, ui.generatedTicketsContainer, showName, showLocation, showAddress);
-                    });
-                    displayMessage(`${names.length} tickets generados en modo de prueba.`, 'success');
-                    ui.shareBatchQrsBtn.classList.remove('hidden');
-                } else {
-                    // Firebase logic
-                    try {
-                        const batch = writeBatch(state.db);
-                        const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
+                try {
+                    const batch = writeBatch(state.db);
+                    const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
 
-                        for (const name of names) {
-                            const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
-                            const ticketRef = doc(ticketsCollectionRef, ticketId);
-                            const ticketData = {
-                                id: ticketId,
-                                prefix: ticketPrefix,
-                                name: name,
-                                seatLocation: seatLocation || null,
-                                showName: showName,
-                                showLocation: showLocation,
-                                showAddress: showAddress || null,
-                                used: false,
-                                generatedAt: new Date().toISOString(),
-                                usedAt: null,
-                                generatedBy: state.userId
-                            };
-                            batch.set(ticketRef, ticketData);
-                            state.currentBatchGeneratedTickets.push({ ...ticketData, qrDataUrl: ticketId });
-                            generateQrCodeForTicket(ticketId, name, ticketPrefix, seatLocation, ticketId, ui.generatedTicketsContainer, showName, showLocation, showAddress);
-                        }
-                        await batch.commit();
-                        displayMessage(`${names.length} tickets generados exitosamente.`, 'success');
-                        ui.shareBatchQrsBtn.classList.remove('hidden');
-                    } catch (error) {
-                        console.error('Error al generar tickets en lote:', error);
-                        displayMessage('Error al generar tickets. Revisa la consola.', 'error');
+                    for (const name of names) {
+                        const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
+                        const ticketRef = doc(ticketsCollectionRef, ticketId);
+                        const ticketData = {
+                            id: ticketId,
+                            prefix: ticketPrefix,
+                            name: name,
+                            seatLocation: seatLocation || null,
+                            showName: showName,
+                            showLocation: showLocation,
+                            showAddress: showAddress || null,
+                            used: false,
+                            generatedAt: new Date().toISOString(),
+                            usedAt: null,
+                            generatedBy: state.userId
+                        };
+                        batch.set(ticketRef, ticketData);
+                        state.currentBatchGeneratedTickets.push({ ...ticketData, qrDataUrl: ticketId });
                     }
+                    await batch.commit();
+                    
+                    ui.generatedTicketsContainer.innerHTML = '';
+                    state.currentQrIndex = 0;
+                    displayCurrentQr();
+                    ui.qrCarouselControls.classList.remove('hidden');
+
+                    displayMessage(`${names.length} tickets generados exitosamente.`, 'success');
+                    ui.shareBatchQrsBtn.classList.remove('hidden');
+                } catch (error) {
+                    console.error('Error al generar tickets en lote:', error);
+                    displayMessage('Error al generar tickets. Revisa la consola.', 'error');
+                } finally {
+                    setLoading(false);
+                    state.isSubmitting = false;
+                    ui.generatorFormSubmitBtn.disabled = false;
+                    ui.generatorFormClearBtn.disabled = false;
                 }
-                
-                setLoading(false);
-                state.isSubmitting = false;
-                ui.generatorFormSubmitBtn.disabled = false;
-                ui.generatorFormClearBtn.disabled = false;
             });
 
             ui.generatorFormClearBtn.addEventListener('click', () => {
@@ -1773,6 +1686,7 @@
                 ui.generatedTicketsContainer.innerHTML = '';
                 state.currentBatchGeneratedTickets = [];
                 ui.shareBatchQrsBtn.classList.add('hidden');
+                ui.qrCarouselControls.classList.add('hidden');
                 displayMessage('Formulario limpiado.', 'info');
             });
 
@@ -1837,23 +1751,30 @@
                 await signOut(state.auth);
                 displayMessage('Sesión cerrada.', 'info');
             });
-            
-            ui.togglePasswordBtn.addEventListener('click', () => {
-                const isPassword = ui.passwordInput.type === 'password';
-                ui.passwordInput.type = isPassword ? 'text' : 'password';
-                ui.eyeIconOpen.classList.toggle('hidden', isPassword);
-                ui.eyeIconClosed.classList.toggle('hidden', !isPassword);
+
+            // Carousel listeners
+            ui.prevQrBtn.addEventListener('click', () => {
+                if (state.currentQrIndex > 0) {
+                    state.currentQrIndex--;
+                    displayCurrentQr();
+                }
             });
 
-            ui.demoModeBtn.addEventListener('click', () => {
-                ui.authScreen.classList.add('hidden');
-                ui.appContent.classList.remove('hidden');
-                ui.userEmailDisplay.textContent = 'Modo de Prueba';
-                ui.logoutBtn.classList.remove('hidden'); // Show logout to be able to go back
-                state.isFirebaseReady = false; // Ensure Firebase is marked as not ready
-                showSection(document.getElementById('batch-ticket-generator-section'));
-                displayMessage('Entrando en modo de prueba. Las funciones de base de datos están desactivadas.', 'info');
+            ui.nextQrBtn.addEventListener('click', () => {
+                if (state.currentQrIndex < state.currentBatchGeneratedTickets.length - 1) {
+                    state.currentQrIndex++;
+                    displayCurrentQr();
+                }
             });
+        }
+        
+        function displayCurrentQr() {
+            ui.generatedTicketsContainer.innerHTML = '';
+            const ticket = state.currentBatchGeneratedTickets[state.currentQrIndex];
+            if (ticket) {
+                generateQrCodeForTicket(ticket.id, ticket.name, ticket.prefix, ticket.seatLocation, ticket.qrDataUrl, ui.generatedTicketsContainer, ticket.showName, ticket.showLocation, ticket.showAddress);
+                ui.qrCounter.textContent = `Entrada ${state.currentQrIndex + 1} de ${state.currentBatchGeneratedTickets.length}`;
+            }
         }
         
         async function toggleTorch() {
