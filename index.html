@@ -31,25 +31,33 @@
         .hidden { display: none !important; }
         
         /* Estilos de botones de navegación */
-        .nav-btn {
-            transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
-            white-space: nowrap; /* Evita que el texto del botón se parta */
-        }
-        .nav-btn.active {
-            border-bottom-color: #38bdf8; /* sky-400 */
-            color: #38bdf8;
-        }
-
-        /* Centrar los botones de navegación y permitir que se envuelvan */
-        .nav-container {
+        .nav-card {
+            background-color: #1f2937; /* bg-gray-800 */
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid #374151; /* border-gray-700 */
             display: flex;
+            align-items: center;
             justify-content: center;
-            flex-wrap: wrap; /* Permite que los botones pasen a la siguiente línea */
-            gap: 0.5rem; /* Espacio entre botones */
+        }
+        .nav-card:hover {
+            transform: translateY(-2px);
+            background-color: #374151; /* bg-gray-700 */
+        }
+        .nav-card.active {
+            background-color: #38bdf8;
+            color: #111827;
+            border-color: #38bdf8;
+            font-weight: bold;
+        }
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
             margin-bottom: 2rem;
-            border-bottom: 1px solid #374151; /* gray-700 */
-            padding-bottom: 1rem; /* Espaciado debajo de la línea */
         }
 
         /* Overlay de carga */
@@ -96,13 +104,14 @@
             z-index: 60;
             background-color: rgba(0,0,0,0.5);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             border: 1px solid rgba(255,255,255,0.3);
+            cursor: pointer;
         }
         #close-scanner-btn { top: 1.5rem; right: 1.5rem; }
         #toggle-torch-btn { top: 1.5rem; left: 1.5rem; }
@@ -170,34 +179,38 @@
 
         /* Estilos para el contenedor del QR generado */
         .generated-qr-item {
-            display: flex;
+            display: none; /* Oculto por defecto, se muestra con el carrusel */
             flex-direction: column;
             align-items: center;
             justify-content: center;
             width: 100%; /* Ocupa todo el ancho disponible */
-            max-width: 1100px; /* Limita el ancho máximo para pantallas grandes */
+            max-width: 400px; /* Limita el ancho máximo para pantallas grandes */
             margin-left: auto;
             margin-right: auto;
-            background-color: white; /* Fondo blanco para el QR y el texto */
-            padding: 1rem; /* Espaciado alrededor del contenido */
-            border-radius: 0.5rem; /* Esquinas redondeadas */
-            color: #000; /* Texto negro para legibilidad en fondo blanco */
+            background-color: #374151; /* gray-700 */
+            padding: 1.5rem; /* Espaciado alrededor del contenido */
+            border-radius: 0.75rem; /* Esquinas redondeadas */
+            color: #f9fafb; /* Texto blanco */
             position: relative; /* Necesario para el posicionamiento absoluto del logo */
             overflow: hidden; /* Oculta el desbordamiento del logo */
+        }
+        .generated-qr-item.active {
+            display: flex;
         }
 
         .qrcode-container-wrapper {
             position: relative;
             width: 100%; /* Hacerlo responsivo */
-            max-width: 1080px; /* Tamaño máximo es 1080px */
+            max-width: 300px; /* Tamaño máximo */
             padding-bottom: 100%; /* Relación de aspecto 1:1 (altura = ancho) */
             height: 0; /* Importante para el truco de padding-bottom */
             display: flex;
             justify-content: center;
             align-items: center;
             background-color: white; /* Asegura fondo blanco para el QR */
-            border-radius: 0.25rem;
+            border-radius: 0.5rem;
             overflow: hidden; /* Oculta el desbordamiento del propio QR */
+            margin: 0 auto;
         }
 
         .qrcode-container {
@@ -220,65 +233,50 @@
         .qrcode-logo {
             position: absolute;
             z-index: 10; /* Asegura que el logo esté encima del QR */
-            width: 18%; /* Ajustado a un porcentaje más pequeño para evitar que se corte */
+            width: 20%; /* Ajustado a un porcentaje */
             height: auto;
-            /* Centrar el logo usando transform */
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             border-radius: 50%; /* Hace el logo circular si se desea */
             background-color: white; /* Fondo para que el logo se destaque */
-            padding: 5px; /* Relleno alrededor del logo */
+            padding: 4px; /* Relleno alrededor del logo */
         }
 
         .qr-info-text {
             text-align: center;
             margin-top: 1rem;
-            color: #f9fafb; /* Cambiado a blanco para mejor contraste en fondo oscuro */
+            color: #f9fafb; 
         }
 
         .qr-info-text h3 {
-            font-size: 2.5rem; /* Título VYT-MUSIC */
+            font-size: 1.5rem; 
             font-weight: bold;
-            color: #38bdf8; /* Color azul cielo para VYT-MUSIC */
+            color: #38bdf8; 
             margin-bottom: 0.25rem;
         }
 
         .qr-info-text p {
-            font-size: 1.25rem; /* Texto más pequeño para "Certamen de Canto" */
+            font-size: 1rem; 
             margin-bottom: 0.5rem;
-            color: #f9fafb; /* Cambiado a blanco */
         }
 
         .qr-info-text .name-display {
-            font-size: 2rem; /* Visualización del nombre */
+            font-size: 1.25rem; 
             font-weight: 600;
             margin-top: 1rem;
-            color: #f9fafb; /* Cambiado a blanco */
         }
 
         .qr-info-text .id-display,
         .qr-info-text .prefix-display,
         .qr-info-text .seat-location-display {
-            font-size: 1.5rem; /* Otras visualizaciones de información */
-            color: #f9fafb; /* Cambiado a blanco */
+            font-size: 0.875rem; 
+            color: #9ca3af;
         }
 
-        .qr-info-text .call-to-action {
-            font-size: 1.75rem; /* "¡INSCRÍBETE!" */
-            font-weight: bold;
-            color: #38bdf8; /* Cambiado a azul cielo como el logo */
-            margin-top: 1rem;
-        }
-
-        .qr-info-text .whatsapp-info {
-            font-size: 1.5rem; /* Número de WhatsApp */
-            color: #22c55e; /* Color verde */
-            margin-top: 0.5rem;
-        }
         .download-qr-btn {
             margin-top: 1rem;
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             background-color: #38bdf8; /* Azul cielo */
             color: white;
             font-weight: bold;
@@ -305,19 +303,6 @@
             <div class="flex justify-end space-x-4">
                 <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">Cancelar</button>
                 <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">Confirmar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de PIN de Administrador -->
-    <div id="pin-modal" class="modal-backdrop hidden">
-        <div class="modal-content">
-            <h3 class="text-xl font-bold mb-4">Acceso de Administrador</h3>
-            <p class="mb-4">Ingresa el PIN para acceder a esta sección.</p>
-            <input type="password" id="pin-input" class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 mb-4" placeholder="****">
-            <div class="flex justify-end space-x-4">
-                <button id="pin-modal-cancel-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">Cancelar</button>
-                <button id="pin-modal-confirm-btn" class="px-4 py-2 bg-sky-600 text-white font-semibold rounded-lg hover:bg-sky-700">Ingresar</button>
             </div>
         </div>
     </div>
@@ -381,13 +366,25 @@
                 </div>
             </div>
 
-            <nav class="nav-container"> <!-- Contenedor para centrar los botones de navegación -->
-                <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
-                <button id="open-scanner-btn" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
-                <button data-section="all-tickets-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Lista de Entradas</button>
-                <button data-section="scan-history-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Historial</button>
-                <button data-section="dashboard-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Dashboard</button>
-                <button data-section="simulator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Simulador</button>
+            <nav class="nav-grid">
+                <div data-section="batch-ticket-generator-section" class="nav-card active">
+                    <span>Generar Entradas</span>
+                </div>
+                <div id="open-scanner-btn" class="nav-card">
+                    <span>Escanear QR</span>
+                </div>
+                <div data-section="all-tickets-section" class="nav-card">
+                    <span>Lista</span>
+                </div>
+                <div data-section="scan-history-section" class="nav-card">
+                    <span>Historial</span>
+                </div>
+                <div data-section="dashboard-section" class="nav-card">
+                    <span>Dashboard</span>
+                </div>
+                <div data-section="simulator-section" class="nav-card">
+                    <span>Simulador</span>
+                </div>
             </nav>
 
             <main class="mt-8">
@@ -641,7 +638,7 @@
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
                 ui[camelCaseId] = document.getElementById(id);
             });
-            ui.navButtons = document.querySelectorAll('.nav-btn');
+            ui.navButtons = document.querySelectorAll('.nav-card'); // Updated to select new nav cards
         }
 
         // --- UTILITY AND UI FUNCTIONS ---
@@ -1751,6 +1748,17 @@
                 await signOut(state.auth);
                 displayMessage('Sesión cerrada.', 'info');
             });
+            
+            ui.demoModeBtn.addEventListener('click', () => {
+                ui.authScreen.classList.add('hidden');
+                ui.appContent.classList.remove('hidden');
+                ui.userEmailDisplay.textContent = 'Modo de Prueba';
+                ui.logoutBtn.classList.remove('hidden'); // Show logout to be able to go back
+                state.isFirebaseReady = false; // Ensure Firebase is marked as not ready
+                showSection(document.getElementById('batch-ticket-generator-section'));
+                displayMessage('Entrando en modo de prueba. Las funciones de base de datos están desactivadas.', 'info');
+            });
+
 
             // Carousel listeners
             ui.prevQrBtn.addEventListener('click', () => {
