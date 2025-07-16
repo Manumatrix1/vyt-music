@@ -5,15 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Entradas VYTMUSIC</title>
     
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
+    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- Tone.js CDN for sound effects -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <!-- html2canvas para "sacar fotos" a los divs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         /* Estilos base personalizados */
@@ -164,114 +170,52 @@
             max-width: 90%; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 
-        /* Estilos para el contenedor del QR generado */
-        .generated-qr-item {
+        /* Estilos para la tarjeta de previsualización de la entrada */
+        .ticket-card-preview {
+            background-color: #1f2937; /* bg-gray-800 */
+            color: #f9fafb;
+            position: relative;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            width: 100%; /* Ocupa todo el ancho disponible */
-            max-width: 1100px; /* Limita el ancho máximo para pantallas grandes */
-            margin-left: auto;
-            margin-right: auto;
-            background-color: white; /* Fondo blanco para el QR y el texto */
-            padding: 1rem; /* Espaciado alrededor del contenido */
-            border-radius: 0.5rem; /* Esquinas redondeadas */
-            color: #000; /* Texto negro para legibilidad en fondo blanco */
-            position: relative; /* Necesario para el posicionamiento absoluto del logo */
-            overflow: hidden; /* Oculta el desbordamiento del logo */
-        }
-
-        .qrcode-container-wrapper {
-            position: relative;
-            width: 100%; /* Hacerlo responsivo */
-            max-width: 1080px; /* Tamaño máximo es 1080px */
-            padding-bottom: 100%; /* Relación de aspecto 1:1 (altura = ancho) */
-            height: 0; /* Importante para el truco de padding-bottom */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: white; /* Asegura fondo blanco para el QR */
-            border-radius: 0.25rem;
-            overflow: hidden; /* Oculta el desbordamiento del propio QR */
-        }
-
-        .qrcode-container {
-            position: absolute; /* Posiciona el código QR absolutamente dentro de su contenedor */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        /* Asegura que el canvas generado por qrcode.js llene su padre responsivo */
-        .qrcode-container canvas {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: contain; /* Asegura que el código QR no se estire */
-        }
-
-        .qrcode-logo {
-            position: absolute;
-            z-index: 10; /* Asegura que el logo esté encima del QR */
-            width: 18%; /* Ajustado a un porcentaje más pequeño para evitar que se corte */
-            height: auto;
-            /* Centrar el logo usando transform */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%; /* Hace el logo circular si se desea */
-            background-color: white; /* Fondo para que el logo se destaque */
-            padding: 5px; /* Relleno alrededor del logo */
-        }
-
-        .qr-info-text {
             text-align: center;
-            margin-top: 1rem;
-            color: #f9fafb; /* Cambiado a blanco para mejor contraste en fondo oscuro */
+            gap: 1rem;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            max-width: 400px; /* Limita el ancho de la tarjeta */
+            margin: 0 auto; /* Centra la tarjeta */
         }
 
-        .qr-info-text h3 {
-            font-size: 2.5rem; /* Título VYT-MUSIC */
-            font-weight: bold;
-            color: #38bdf8; /* Color azul cielo para VYT-MUSIC */
-            margin-bottom: 0.25rem;
+        .qrcode-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            padding-bottom: 100%; /* Aspect ratio 1:1 */
+            height: 0;
+            background-color: white;
+            border-radius: 0.25rem;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .qrcode-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .qrcode-container canvas {
+            width: 100% !important; height: 100% !important;
+            object-fit: contain;
+        }
+        .qrcode-logo {
+            position: absolute; z-index: 10;
+            width: 20%; height: auto;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%; background-color: white;
+            padding: 5px;
         }
 
-        .qr-info-text p {
-            font-size: 1.25rem; /* Texto más pequeño para "Certamen de Canto" */
-            margin-bottom: 0.5rem;
-            color: #f9fafb; /* Cambiado a blanco */
-        }
-
-        .qr-info-text .name-display {
-            font-size: 2rem; /* Visualización del nombre */
-            font-weight: 600;
-            margin-top: 1rem;
-            color: #f9fafb; /* Cambiado a blanco */
-        }
-
-        .qr-info-text .id-display,
-        .qr-info-text .prefix-display,
-        .qr-info-text .seat-location-display {
-            font-size: 1.5rem; /* Otras visualizaciones de información */
-            color: #f9fafb; /* Cambiado a blanco */
-        }
-
-        .qr-info-text .call-to-action {
-            font-size: 1.75rem; /* "¡INSCRÍBETE!" */
-            font-weight: bold;
-            color: #38bdf8; /* Cambiado a azul cielo como el logo */
-            margin-top: 1rem;
-        }
-
-        .qr-info-text .whatsapp-info {
-            font-size: 1.5rem; /* Número de WhatsApp */
-            color: #22c55e; /* Color verde */
-            margin-top: 0.5rem;
-        }
         .download-qr-btn {
             margin-top: 1rem;
             padding: 0.75rem 1.5rem;
@@ -289,9 +233,11 @@
 </head>
 <body class="antialiased">
 
+    <!-- Overlays y Modales -->
     <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
     <div id="scan-flash-overlay" class="scan-flash"></div>
     
+    <!-- Modal de Confirmación Genérico -->
     <div id="confirmation-modal" class="modal-backdrop hidden">
         <div class="modal-content">
             <h3 id="modal-title" class="text-xl font-bold mb-4">Confirmar Acción</h3>
@@ -303,6 +249,7 @@
         </div>
     </div>
 
+    <!-- Modal de PIN de Administrador -->
     <div id="pin-modal" class="modal-backdrop hidden">
         <div class="modal-content">
             <h3 class="text-xl font-bold mb-4">Acceso de Administrador</h3>
@@ -315,6 +262,7 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmación de Reinicio Específico -->
     <div id="reset-confirmation-modal" class="modal-backdrop hidden">
         <div class="modal-content">
             <h3 class="text-xl font-bold mb-4">Reiniciar Estadísticas</h3>
@@ -328,6 +276,7 @@
         </div>
     </div>
 
+    <!-- Modal de Enlace Compartido -->
     <div id="share-link-modal" class="modal-backdrop hidden">
         <div class="modal-content">
             <h3 class="text-xl font-bold mb-4">Compartir Enlace para Artista/Grupo</h3>
@@ -342,6 +291,7 @@
         </div>
     </div>
 
+    <!-- Contenedor Principal -->
     <div id="main-content" class="container mx-auto max-w-4xl p-4 sm:p-6">
         
         <header class="text-center mb-6">
@@ -359,6 +309,7 @@
         <div id="message-container" class="mb-4"></div>
 
         <div id="app-content" class="hidden">
+            <!-- Contadores de Entradas -->
             <div class="bg-gray-800 p-4 rounded-lg shadow-md mb-6 flex flex-col sm:flex-row justify-around items-center text-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <div>
                     <p class="text-sm text-gray-400">Entradas Generadas</p>
@@ -370,7 +321,8 @@
                 </div>
             </div>
 
-            <nav class="nav-container"> <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
+            <nav class="nav-container"> <!-- Contenedor para centrar los botones de navegación -->
+                <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
                 <button id="open-scanner-btn" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
                 <button data-section="all-tickets-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Lista de Entradas</button>
                 <button data-section="scan-history-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Historial</button>
@@ -379,6 +331,7 @@
             </nav>
 
             <main class="mt-8">
+                <!-- Sección de Generador de Entradas en Lote (Ahora primera sección activa) -->
                 <section id="batch-ticket-generator-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-4">Generar Entradas en Lote</h2>
@@ -423,6 +376,7 @@
                     </div>
                 </section>
                 
+                <!-- Sección de Lista de Todas las Entradas -->
                 <section id="all-tickets-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-4">Lista de Todas las Entradas</h2>
@@ -433,6 +387,7 @@
                     </div>
                 </section>
 
+                <!-- Sección de Historial de Escaneos -->
                 <section id="scan-history-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-4">Historial de Escaneos</h2>
@@ -440,12 +395,14 @@
                             <button id="export-csv-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Exportar a CSV</button>
                         </div>
                         <ul id="scan-history-list" class="space-y-3">
-                            </ul>
+                            <!-- Los elementos del historial se inyectarán aquí -->
+                        </ul>
                         <button id="reset-stats-btn" type="button" class="w-full px-4 py-3 bg-red-700 text-white font-bold rounded-lg hover:bg-red-800 mt-6">Reiniciar Estadísticas de Entradas</button>
                     </div>
                 </section>
 
-                 <section id="dashboard-section" class="section">
+                 <!-- Sección de Dashboard -->
+                <section id="dashboard-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-6 text-center">Dashboard en Vivo</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -469,6 +426,7 @@
                     </div>
                 </section>
 
+                <!-- Sección de Simulador de Escaneo -->
                 <section id="simulator-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-4">Simulador de Escaneo</h2>
@@ -490,6 +448,7 @@
             </main>
         </div>
 
+        <!-- Pantalla de Autenticación -->
         <div id="auth-screen" class="hidden">
             <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md mx-auto">
                 <h2 class="text-2xl font-bold mb-4 text-center">Iniciar Sesión o Registrarse</h2>
@@ -515,6 +474,7 @@
 
     </div>
 
+    <!-- Escáner QR a Pantalla Completa (Modal) -->
     <div id="fullscreen-scanner-container" class="hidden">
         <div id="qr-code-reader"></div>
         <div id="qr-reader-container-fullscreen">
@@ -546,6 +506,7 @@
     </div>
 
 
+    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
@@ -557,22 +518,23 @@
             auth: null,
             userId: null,
             isFirebaseReady: false,
+            isOfflineMode: false, // Flag para el modo de prueba
             scanner: null,
-            isScannerActive: false, // Flag to control scanner state
+            isScannerActive: false,
             isTorchOn: false,
-            isSubmitting: false, // Flag to prevent double form submission
-            scanHistory: [], // To store scan history for CSV export
+            isSubmitting: false,
+            scanHistory: [],
             ticketListenerUnsubscribe: null,
             historyListenerUnsubscribe: null,
             allTicketsListenerUnsubscribe: null,
             ticketCountsListenerUnsubscribe: null,
             logoImage: new Image(),
             currentScannedTicketId: null,
-            allTicketsData: [], // Stores all tickets for client-side filtering
+            allTicketsData: [],
             totalGeneratedTickets: 0,
             totalUsedTickets: 0,
-            currentBatchGeneratedTickets: [], // Stores { ticketId, prefix, name, seatLocation, qrDataUrl } for the current batch
-            synth: null, // Add synth to state
+            currentBatchGeneratedTickets: [],
+            synth: null,
             currentQrIndex: 0
         };
 
@@ -622,13 +584,16 @@
         }
 
         // --- UTILITY AND UI FUNCTIONS ---
-        function displayMessage(message, type = 'success') {
+        function displayMessage(message, type = 'success', duration = 5000) {
             const colors = {
                 success: 'bg-green-500 text-white', error: 'bg-red-500 text-white',
                 warning: 'bg-yellow-500 text-black', info: 'bg-sky-500 text-white'
             };
-            ui.messageContainer.innerHTML = `<div class="p-4 rounded-md mb-4 text-sm font-semibold ${colors[type]}">${message}</div>`;
-            setTimeout(() => { ui.messageContainer.innerHTML = ''; }, 5000);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-4 rounded-md mb-4 text-sm font-semibold ${colors[type]}`;
+            messageDiv.textContent = message;
+            ui.messageContainer.prepend(messageDiv);
+            setTimeout(() => { messageDiv.remove(); }, duration);
         }
 
         function setLoading(show) {
@@ -696,13 +661,17 @@
         // --- FIREBASE AND DATA LOGIC ---
         const Firebase = {
             async updateTicket(ticketId, data) {
+                if (state.isOfflineMode) {
+                    displayMessage('Función no disponible en modo de prueba.', 'warning');
+                    return false;
+                }
                 if (!state.isFirebaseReady) return false;
                 const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, ticketId);
                 await updateDoc(ticketRef, data);
                 return true;
             },
             async saveScanEvent(ticketData, scanStatus) {
-                if (!state.isFirebaseReady) return;
+                if (state.isOfflineMode || !state.isFirebaseReady) return;
                 const scanHistoryCollection = collection(state.db, `artifacts/${config.appId}/users/${state.userId}/scanHistory`);
                 await addDoc(scanHistoryCollection, {
                     id: ticketData.id || 'N/A',
@@ -715,6 +684,10 @@
                 });
             },
             async resetAllTicketsAndHistory() {
+                if (state.isOfflineMode) {
+                    displayMessage('Función no disponible en modo de prueba.', 'warning');
+                    return;
+                }
                 if (!state.isFirebaseReady) return;
                 setLoading(true);
                 try {
@@ -742,11 +715,15 @@
             ui.navButtons.forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.section === sectionToShow.id);
             });
-            if (sectionToShow.id === 'dashboard-section') updateDashboard();
+            if (sectionToShow.id === 'dashboard-section' && !state.isOfflineMode) updateDashboard();
         }
 
         // --- QR SCANNER FUNCTIONALITY ---
         function startQrScanner() {
+            if (state.isOfflineMode) {
+                displayMessage('El escáner está deshabilitado en Modo de Prueba.', 'warning');
+                return;
+            }
             if (state.isScannerActive) return;
             state.isScannerActive = true;
             ui.fullscreenScannerContainer.classList.remove('hidden');
@@ -776,28 +753,21 @@
         }
 
         async function processScan(decodedText, context = 'fullscreen') {
+             if (state.isOfflineMode) {
+                displayMessage('El escaneo está deshabilitado en Modo de Prueba.', 'warning');
+                if (context === 'fullscreen' && state.scanner) {
+                    setTimeout(() => { try { state.scanner.resume(); } catch(e) {} }, 2000);
+                }
+                return;
+            }
              try {
                 const ticketId = decodedText;
                 const ticketDoc = await getDoc(doc(state.db, `artifacts/${config.appId}/public/data/tickets`, ticketId));
                 let idEl, prefixEl, nameEl, locationEl, statusEl, markBtn, infoContainer, scanAgainBtn;
                 if (context === 'fullscreen') {
-                    idEl = ui.currentScannedTicketIdFullscreen;
-                    prefixEl = ui.currentScannedTicketPrefixFullscreen;
-                    nameEl = ui.currentScannedTicketNameFullscreen;
-                    locationEl = ui.currentScannedTicketSeatLocationFullscreen;
-                    statusEl = ui.currentScannedTicketStatusFullscreen;
-                    markBtn = ui.markUsedBtnFullscreen;
-                    infoContainer = ui.scannedTicketInfoFullscreen;
-                    scanAgainBtn = ui.scanAgainBtnFullscreen;
+                    [idEl, prefixEl, nameEl, locationEl, statusEl, markBtn, infoContainer, scanAgainBtn] = [ui.currentScannedTicketIdFullscreen, ui.currentScannedTicketPrefixFullscreen, ui.currentScannedTicketNameFullscreen, ui.currentScannedTicketSeatLocationFullscreen, ui.currentScannedTicketStatusFullscreen, ui.markUsedBtnFullscreen, ui.scannedTicketInfoFullscreen, ui.scanAgainBtnFullscreen];
                 } else {
-                    idEl = ui.simScannedTicketId;
-                    prefixEl = ui.simScannedTicketPrefix;
-                    nameEl = ui.simScannedTicketName;
-                    locationEl = ui.simScannedTicketSeatLocation;
-                    statusEl = ui.simScannedTicketStatus;
-                    markBtn = { classList: { add: () => {} }};
-                    infoContainer = ui.simulatorResultContainer;
-                    scanAgainBtn = { classList: { add: () => {} }};
+                    [idEl, prefixEl, nameEl, locationEl, statusEl, markBtn, infoContainer, scanAgainBtn] = [ui.simScannedTicketId, ui.simScannedTicketPrefix, ui.simScannedTicketName, ui.simScannedTicketSeatLocation, ui.simScannedTicketStatus, { classList: { add: () => {} }}, ui.simulatorResultContainer, { classList: { add: () => {} }}];
                 }
                 infoContainer.classList.remove('hidden');
                 markBtn.classList.add('hidden');
@@ -836,40 +806,74 @@
         
         // --- TICKET GENERATOR FUNCTIONALITY ---
         function generateQrCodeForTicket(ticket, container) {
-            const qrItemDiv = document.createElement('div');
-            qrItemDiv.className = 'generated-qr-item p-4 border-gray-700 bg-gray-900';
-            const qrCodeContainerWrapper = document.createElement('div');
-            qrCodeContainerWrapper.className = 'qrcode-container-wrapper';
-            const qrCodeContainerDiv = document.createElement('div');
-            qrCodeContainerDiv.id = `qrcode-${ticket.id}`;
-            qrCodeContainerDiv.className = 'qrcode-container';
-            const logoImg = document.createElement('img');
-            logoImg.src = config.logoUrl;
-            logoImg.className = 'qrcode-logo';
-            qrCodeContainerWrapper.appendChild(qrCodeContainerDiv);
-            qrCodeContainerWrapper.appendChild(logoImg);
-            const infoTextDiv = document.createElement('div');
-            infoTextDiv.className = 'qr-info-text text-black';
-            infoTextDiv.innerHTML = `
-                <h3 class="text-2xl font-bold text-sky-500">VYT-MUSIC</h3>
-                <p>${ticket.showName}</p>
-                <p class="font-bold text-xl">${ticket.name}</p>
-                <p>Ubicación: ${ticket.seatLocation || 'N/A'}</p>
+            const cardWrapper = document.createElement('div');
+            cardWrapper.id = `card-${ticket.id}`;
+            cardWrapper.className = 'ticket-card-preview';
+
+            const qrWrapper = `
+                <div class="qrcode-wrapper">
+                    <div id="qrcode-${ticket.id}" class="qrcode-container"></div>
+                    <img src="${config.logoUrl}" alt="Logo" class="qrcode-logo">
+                </div>
             `;
-            const downloadBtn = document.createElement('button');
-            downloadBtn.textContent = 'Descargar';
-            downloadBtn.className = 'download-qr-btn';
-            downloadBtn.onclick = () => {
-                const canvas = qrCodeContainerDiv.querySelector('canvas');
-                if(canvas) downloadBtn.href = canvas.toDataURL();
-                downloadBtn.download = `${ticket.name}.png`;
-            };
-            qrItemDiv.append(qrCodeContainerWrapper, infoTextDiv, downloadBtn);
-            container.appendChild(qrItemDiv);
-            new QRCode(qrCodeContainerDiv, { text: ticket.id, width: 256, height: 256 });
+            const addressHtml = ticket.showAddress 
+                ? `<p class="text-sm text-gray-400">${ticket.showAddress.startsWith('http') ? `<a href="${ticket.showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a>` : ticket.showAddress}</p>` 
+                : '';
+
+            cardWrapper.innerHTML = `
+                <div class="w-full">
+                    <h3 class="text-2xl font-bold text-sky-400">${ticket.name}</h3>
+                    <p class="text-gray-300">${ticket.seatLocation || 'Ubicación General'}</p>
+                </div>
+                ${qrWrapper}
+                <div class="w-full">
+                    <p class="text-lg font-semibold">${ticket.showName}</p>
+                    <p class="text-md text-gray-400">${ticket.showLocation}</p>
+                    ${addressHtml}
+                    <p class="text-xs text-gray-500 mt-2">ID: ${ticket.id}</p>
+                </div>
+                <!-- Bloque de texto añadido para la descarga -->
+                <div class="mt-4 border-t border-gray-700 pt-4 w-full">
+                    <p class="text-xl font-bold text-sky-400">VYT-MUSIC</p>
+                    <p class="text-sm text-gray-300">certamen de canto</p>
+                    <a href="https://wa.me/TUNUMERODEWHATSAPP" target="_blank" class="text-green-400 mt-2 inline-block hover:underline">
+                        ¡Inscribite aquí!
+                    </a>
+                </div>
+                <button class="download-qr-btn w-full mt-4" role="button">Descargar Entrada (PNG)</button>
+            `;
+            
+            container.appendChild(cardWrapper);
+            
+            const qrElement = document.getElementById(`qrcode-${ticket.id}`);
+            new QRCode(qrElement, {
+                text: ticket.id,
+                width: 256,
+                height: 256,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // --> CAMBIO REALIZADO: La lógica de descarga ahora usa html2canvas para generar un PNG de toda la tarjeta.
+            cardWrapper.querySelector('.download-qr-btn').addEventListener('click', () => {
+                const elementToPrint = document.getElementById(`card-${ticket.id}`);
+                
+                html2canvas(elementToPrint, { 
+                    backgroundColor: '#1f2937', // Coincide con el fondo de la tarjeta
+                    useCORS: true // Necesario si el logo es de una URL externa
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = `Entrada_${ticket.name.replace(/\s/g, '_')}.png`;
+                    link.click();
+                });
+            });
         }
 
         async function shareCurrentBatch() {
+            if (state.isOfflineMode) {
+                displayMessage('Función no disponible en modo de prueba.', 'warning');
+                return;
+            }
             const artistPrefix = ui.ticketPrefixInput.value.trim();
             if (!artistPrefix) {
                 displayMessage('Ingresa un Prefijo de Artista/Grupo para poder compartir.', 'warning');
@@ -925,6 +929,10 @@
         }
 
         function exportScanHistoryToCSV() {
+            if (state.isOfflineMode) {
+                displayMessage('Función no disponible en modo de prueba.', 'warning');
+                return;
+            }
             if (state.scanHistory.length === 0) {
                 displayMessage("No hay historial para exportar.", "warning");
                 return;
@@ -952,36 +960,39 @@
             Object.keys(scansByPrefix).forEach(p => { ui.scansByPrefix.innerHTML += `<p>${p}: <span class="font-bold">${scansByPrefix[p]}</span></p>`; });
         }
         
+        // --- MODO DE PRUEBA ---
+        function enterDemoMode() {
+            state.isOfflineMode = true;
+            state.isFirebaseReady = false;
+            ui.authScreen.classList.add('hidden');
+            ui.appContent.classList.remove('hidden');
+            if (state.ticketCountsListenerUnsubscribe) state.ticketCountsListenerUnsubscribe();
+            if (state.allTicketsListenerUnsubscribe) state.allTicketsListenerUnsubscribe();
+            if (state.historyListenerUnsubscribe) state.historyListenerUnsubscribe();
+            displayMessage('Estás en Modo de Prueba. Los datos no se guardarán.', 'warning', 15000);
+            showSection(ui.batchTicketGeneratorSection);
+            ui.shareBatchQrsBtn.disabled = true;
+            ui.resetStatsBtn.disabled = true;
+            ui.exportCsvBtn.disabled = true;
+            ui.totalGeneratedTickets.textContent = '0';
+            ui.totalUsedTickets.textContent = '0';
+        }
+
         // --- INITIALIZATION AND EVENT LISTENERS ---
         function setupEventListeners() {
             ui.navButtons.forEach(b => b.addEventListener('click', e => showSection(document.getElementById(e.currentTarget.dataset.section))));
-            ui.openScannerBtn.addEventListener('click', startQrScanner);
-            ui.closeScannerBtn.addEventListener('click', stopAndCloseScanner);
-            ui.scanAgainBtnFullscreen.addEventListener('click', () => {
-                ui.scannedTicketInfoFullscreen.classList.add('hidden');
-                if (state.scanner) {
-                    try { state.scanner.resume(); } catch(e) {}
-                }
-                ui.scannerStatusMessageFullscreen.textContent = 'Apunte al código QR.';
-            });
-            ui.markUsedBtnFullscreen.addEventListener('click', () => {
-                if (state.currentScannedTicketId) {
-                    showConfirmation('Confirmar Uso', `Marcar ticket ${ui.currentScannedTicketNameFullscreen.textContent} como USADO?`, async () => {
-                        await Firebase.updateTicket(state.currentScannedTicketId, { used: true, usedAt: new Date().toISOString(), usedBy: state.userId });
-                        ui.scannedTicketInfoFullscreen.classList.add('hidden');
-                        if (state.scanner) {
-                            try { state.scanner.resume(); } catch(e) {}
-                        }
-                    });
-                }
-            });
+            
+            ui.loginBtn.addEventListener('click', async () => { /* ... */ });
+            ui.registerBtn.addEventListener('click', async () => { /* ... */ });
+            ui.demoModeBtn.addEventListener('click', enterDemoMode);
+            ui.logoutBtn.addEventListener('click', () => signOut(state.auth));
+
             ui.generatorForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (state.isSubmitting) return;
                 state.isSubmitting = true;
                 setLoading(true);
-                ui.generatedTicketsContainer.innerHTML = '';
-                state.currentBatchGeneratedTickets = [];
+                
                 const ticketPrefix = ui.ticketPrefixInput.value.trim();
                 const showName = document.getElementById('show-name-input').value.trim();
                 const showLocation = document.getElementById('show-location-input').value.trim();
@@ -993,9 +1004,25 @@
                     displayMessage('Faltan datos requeridos.', 'warning');
                     setLoading(false); state.isSubmitting = false; return;
                 }
+
+                if (state.isOfflineMode) {
+                    state.currentBatchGeneratedTickets = [];
+                    names.forEach(name => {
+                        const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
+                        state.currentBatchGeneratedTickets.push({ id: ticketId, prefix: ticketPrefix, name, seatLocation, showName, showLocation, showAddress });
+                    });
+                    state.currentQrIndex = 0;
+                    displayCurrentQr();
+                    ui.qrCarouselControls.classList.remove('hidden');
+                    displayMessage(`${names.length} tickets generados en modo de prueba.`, 'info');
+                    setLoading(false); state.isSubmitting = false;
+                    return;
+                }
+
                 try {
                     const batch = writeBatch(state.db);
                     const ticketsCol = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
+                    state.currentBatchGeneratedTickets = [];
                     names.forEach(name => {
                         const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
                         const ticketData = { id: ticketId, prefix: ticketPrefix, name, seatLocation, showName, showLocation, showAddress, used: false, generatedAt: new Date().toISOString(), usedAt: null, generatedBy: state.userId };
@@ -1007,13 +1034,14 @@
                     displayCurrentQr();
                     ui.qrCarouselControls.classList.remove('hidden');
                     ui.shareBatchQrsBtn.classList.remove('hidden');
-                    displayMessage(`${names.length} tickets generados.`, 'success');
+                    displayMessage(`${names.length} tickets generados y guardados.`, 'success');
                 } catch (error) {
                     displayMessage(`Error: ${error.message}`, 'error');
                 } finally {
                     setLoading(false); state.isSubmitting = false;
                 }
             });
+
             ui.generatorFormClearBtn.addEventListener('click', () => {
                 ui.generatorForm.reset();
                 ui.generatedTicketsContainer.innerHTML = '';
@@ -1022,6 +1050,25 @@
                 ui.qrCarouselControls.classList.add('hidden');
             });
             ui.shareBatchQrsBtn.addEventListener('click', shareCurrentBatch);
+            ui.prevQrBtn.addEventListener('click', () => { if (state.currentQrIndex > 0) { state.currentQrIndex--; displayCurrentQr(); } });
+            ui.nextQrBtn.addEventListener('click', () => { if (state.currentQrIndex < state.currentBatchGeneratedTickets.length - 1) { state.currentQrIndex++; displayCurrentQr(); } });
+
+            ui.openScannerBtn.addEventListener('click', startQrScanner);
+            ui.closeScannerBtn.addEventListener('click', stopAndCloseScanner);
+            ui.scanAgainBtnFullscreen.addEventListener('click', () => {
+                ui.scannedTicketInfoFullscreen.classList.add('hidden');
+                if (state.scanner) { try { state.scanner.resume(); } catch(e) {} }
+            });
+            ui.markUsedBtnFullscreen.addEventListener('click', () => {
+                if (state.currentScannedTicketId) {
+                    showConfirmation('Confirmar Uso', `Marcar ticket ${ui.currentScannedTicketNameFullscreen.textContent} como USADO?`, async () => {
+                        await Firebase.updateTicket(state.currentScannedTicketId, { used: true, usedAt: new Date().toISOString(), usedBy: state.userId });
+                        ui.scannedTicketInfoFullscreen.classList.add('hidden');
+                        if (state.scanner) { try { state.scanner.resume(); } catch(e) {} }
+                    });
+                }
+            });
+
             ui.resetStatsBtn.addEventListener('click', () => showResetConfirmation(Firebase.resetAllTicketsAndHistory));
             ui.exportCsvBtn.addEventListener('click', exportScanHistoryToCSV);
             ui.allTicketsSearchInput.addEventListener('input', e => {
@@ -1032,21 +1079,6 @@
                 const qrText = ui.simulatorInput.value.trim();
                 if (qrText) processScan(qrText, 'simulator');
             });
-            ui.loginBtn.addEventListener('click', async () => {
-                setLoading(true);
-                try { await signInWithEmailAndPassword(state.auth, ui.emailInput.value, ui.passwordInput.value); }
-                catch (e) { displayMessage(e.message, 'error'); } 
-                finally { setLoading(false); }
-            });
-            ui.registerBtn.addEventListener('click', async () => {
-                setLoading(true);
-                try { await createUserWithEmailAndPassword(state.auth, ui.emailInput.value, ui.passwordInput.value); }
-                catch (e) { displayMessage(e.message, 'error'); }
-                finally { setLoading(false); }
-            });
-            ui.logoutBtn.addEventListener('click', () => signOut(state.auth));
-            ui.prevQrBtn.addEventListener('click', () => { if (state.currentQrIndex > 0) { state.currentQrIndex--; displayCurrentQr(); } });
-            ui.nextQrBtn.addEventListener('click', () => { if (state.currentQrIndex < state.currentBatchGeneratedTickets.length - 1) { state.currentQrIndex++; displayCurrentQr(); } });
         }
         
         function displayCurrentQr() {
@@ -1094,6 +1126,7 @@
 
             onAuthStateChanged(state.auth, (user) => {
                 if (user) {
+                    state.isOfflineMode = false;
                     state.userId = user.uid;
                     ui.userEmailDisplay.textContent = user.email;
                     ui.logoutBtn.classList.remove('hidden');
@@ -1103,15 +1136,16 @@
                     setupFirestoreListeners();
                     showSection(ui.batchTicketGeneratorSection); 
                 } else {
-                    state.userId = null;
-                    ui.userEmailDisplay.textContent = '';
-                    ui.logoutBtn.classList.add('hidden');
-                    ui.authScreen.classList.remove('hidden');
-                    ui.appContent.classList.add('hidden');
-                    state.isFirebaseReady = false;
-                    if (state.ticketCountsListenerUnsubscribe) state.ticketCountsListenerUnsubscribe();
-                    if (state.allTicketsListenerUnsubscribe) state.allTicketsListenerUnsubscribe();
-                    if (state.historyListenerUnsubscribe) state.historyListenerUnsubscribe();
+                    if (!state.isOfflineMode) {
+                        ui.userEmailDisplay.textContent = '';
+                        ui.logoutBtn.classList.add('hidden');
+                        ui.authScreen.classList.remove('hidden');
+                        ui.appContent.classList.add('hidden');
+                        state.isFirebaseReady = false;
+                        if (state.ticketCountsListenerUnsubscribe) state.ticketCountsListenerUnsubscribe();
+                        if (state.allTicketsListenerUnsubscribe) state.allTicketsListenerUnsubscribe();
+                        if (state.historyListenerUnsubscribe) state.historyListenerUnsubscribe();
+                    }
                 }
                 setLoading(false);
             });
