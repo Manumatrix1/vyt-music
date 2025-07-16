@@ -97,7 +97,7 @@
 
     <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
     
-    <!-- Modal de Enlace Compartido (Nuevo en shared_qr_viewer.html.html) -->
+    <!-- Modal de Enlace Compartido -->
     <div id="share-link-modal" class="modal-backdrop hidden">
         <div class="modal-content bg-gray-800 p-6 rounded-lg shadow-xl">
             <h3 class="text-xl font-bold mb-4">Compartir Enlace de Entradas</h3>
@@ -123,11 +123,16 @@
 
         <div id="message-container" class="mb-4 max-w-4xl mx-auto"></div>
 
-        <!-- Botón para compartir todas las entradas (NUEVO) -->
+        <!-- Botón para compartir todas las entradas -->
         <div class="flex justify-center mb-6">
-            <button id="share-all-tickets-btn" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
+            <button id="share-all-tickets-btn" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 hidden">
                 Compartir Enlace de Todas las Entradas
             </button>
+        </div>
+
+        <!-- Buscador de Entradas (NUEVO) -->
+        <div class="mb-6 max-w-xl mx-auto">
+            <input type="text" id="ticket-search-input" placeholder="Buscar tu entrada por nombre o ID..." class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
         </div>
 
         <div id="shared-qrs-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -141,7 +146,12 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-        const state = { db: null, auth: null, currentArtistPrefix: null }; // Añadido currentArtistPrefix
+        const state = { 
+            db: null, 
+            auth: null, 
+            currentArtistPrefix: null,
+            allTicketsData: [] // Almacenar todas las entradas cargadas para el filtro
+        }; 
         const config = {
             appId: typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod',
             firebase: {
@@ -162,12 +172,12 @@
             qrsContainer: document.getElementById('shared-qrs-container'),
             showNameDisplay: document.getElementById('batch-show-name-display'),
             artistNameDisplay: document.getElementById('batch-artist-name-display'),
-            // Nuevos elementos UI para el modal de compartir
             shareLinkModal: document.getElementById('share-link-modal'),
             shareLinkDisplay: document.getElementById('share-link-display'),
             copyShareLinkBtn: document.getElementById('copy-share-link-btn'),
             closeShareModalBtn: document.getElementById('close-share-modal-btn'),
-            shareAllTicketsBtn: document.getElementById('share-all-tickets-btn') // Nuevo botón
+            shareAllTicketsBtn: document.getElementById('share-all-tickets-btn'),
+            ticketSearchInput: document.getElementById('ticket-search-input') // Nuevo elemento UI
         };
 
         function displayMessage(message, type = 'info') {
@@ -180,7 +190,6 @@
             ui.loadingOverlay.classList.toggle('hidden', !show);
         }
 
-        // Función para mostrar el modal de compartir enlace (similar a index.html)
         function showShareLinkModal(link) {
             ui.shareLinkDisplay.value = link;
             ui.shareLinkModal.classList.remove('hidden');
@@ -205,7 +214,6 @@
             ui.copyShareLinkBtn.addEventListener('click', copyHandler);
             ui.closeShareModalBtn.addEventListener('click', closeHandler);
         }
-
 
         function createTicketCard(ticket) {
             const cardWrapper = document.createElement('div');
@@ -256,7 +264,6 @@
                 correctLevel: QRCode.CorrectLevel.H
             });
 
-            // La lógica de descarga ahora usa html2pdf para generar un PDF.
             cardWrapper.querySelector('.download-btn').addEventListener('click', () => {
                 const elementToPrint = document.getElementById(`card-${ticket.id}`);
                 const options = {
@@ -270,6 +277,15 @@
             });
         }
 
+        function renderTickets(ticketsToRender) {
+            ui.qrsContainer.innerHTML = ''; // Limpiar contenedor actual
+            if (ticketsToRender.length === 0) {
+                ui.qrsContainer.innerHTML = '<p class="text-center text-gray-400 col-span-full">No se encontraron entradas con ese criterio de búsqueda.</p>';
+                return;
+            }
+            ticketsToRender.forEach(ticket => createTicketCard(ticket));
+        }
+
         async function loadArtistTickets(artistPrefix) {
             setLoading(true);
             ui.qrsContainer.innerHTML = ''; 
@@ -281,22 +297,25 @@
                 const q = query(ticketsCollectionRef, where("prefix", "==", artistPrefix));
 
                 const querySnapshot = await getDocs(q);
-                const tickets = querySnapshot.docs.map(doc => doc.data());
+                state.allTicketsData = querySnapshot.docs.map(doc => doc.data()); // Guardar todas las entradas
 
-                if (tickets.length > 0) {
-                    ui.showNameDisplay.textContent = `Show: ${tickets[0].showName || 'N/A'}`;
-                    tickets.forEach(ticket => createTicketCard(ticket));
-                    displayMessage(`${tickets.length} entradas cargadas.`, 'success');
+                if (state.allTicketsData.length > 0) {
+                    ui.showNameDisplay.textContent = `Show: ${state.allTicketsData[0].showName || 'N/A'}`;
+                    renderTickets(state.allTicketsData); // Renderizar todas al principio
+                    displayMessage(`${state.allTicketsData.length} entradas cargadas.`, 'success');
                     ui.shareAllTicketsBtn.classList.remove('hidden'); // Mostrar el botón de compartir
+                    ui.ticketSearchInput.classList.remove('hidden'); // Mostrar el buscador
                 } else {
                     displayMessage('No se encontraron tickets para este grupo o el prefijo es incorrecto.', 'warning');
                     ui.showNameDisplay.textContent = 'Show: No disponible';
                     ui.shareAllTicketsBtn.classList.add('hidden'); // Ocultar si no hay tickets
+                    ui.ticketSearchInput.classList.add('hidden'); // Ocultar el buscador
                 }
             } catch (error) {
                 console.error('Error al cargar las entradas del artista:', error);
                 displayMessage('Error al cargar las entradas. Revisa la consola.', 'error');
                 ui.shareAllTicketsBtn.classList.add('hidden'); // Ocultar en caso de error
+                ui.ticketSearchInput.classList.add('hidden'); // Ocultar el buscador
             } finally {
                 setLoading(false);
             }
@@ -310,6 +329,21 @@
             }
             const shareableLink = `${window.location.origin}/shared_qr_viewer.html.html?artist=${encodeURIComponent(state.currentArtistPrefix)}`;
             showShareLinkModal(shareableLink);
+        }
+
+        // Función de filtrado para el buscador
+        function filterTickets() {
+            const searchTerm = ui.ticketSearchInput.value.toLowerCase().trim();
+            if (!searchTerm) {
+                renderTickets(state.allTicketsData); // Si el buscador está vacío, muestra todas
+                return;
+            }
+            const filtered = state.allTicketsData.filter(ticket => 
+                ticket.name.toLowerCase().includes(searchTerm) || 
+                ticket.id.toLowerCase().includes(searchTerm) ||
+                (ticket.seatLocation && ticket.seatLocation.toLowerCase().includes(searchTerm))
+            );
+            renderTickets(filtered);
         }
 
         async function startApp() {
@@ -336,8 +370,9 @@
                 setLoading(false);
             }
 
-            // Añadir event listener para el nuevo botón de compartir
+            // Añadir event listeners
             ui.shareAllTicketsBtn.addEventListener('click', generateAndShareAllTicketsLink);
+            ui.ticketSearchInput.addEventListener('input', filterTickets); // Event listener para el buscador
         }
 
         document.addEventListener('DOMContentLoaded', startApp);
