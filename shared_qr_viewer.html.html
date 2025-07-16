@@ -97,6 +97,21 @@
 
     <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
     
+    <!-- Modal de Enlace Compartido (Nuevo en shared_qr_viewer.html.html) -->
+    <div id="share-link-modal" class="modal-backdrop hidden">
+        <div class="modal-content bg-gray-800 p-6 rounded-lg shadow-xl">
+            <h3 class="text-xl font-bold mb-4">Compartir Enlace de Entradas</h3>
+            <p class="mb-4">Copia el siguiente enlace para que el artista lo comparta:</p>
+            <div class="flex items-center space-x-2 mb-4">
+                <input type="text" id="share-link-display" class="flex-grow p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500" readonly>
+                <button id="copy-share-link-btn" class="px-4 py-2 bg-sky-600 text-white font-semibold rounded-lg hover:bg-sky-700">Copiar</button>
+            </div>
+            <div class="flex justify-end">
+                <button id="close-share-modal-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto max-w-7xl p-4 sm:p-6">
         <header class="text-center mb-8">
             <img src="https://i.imgur.com/rqkZi9P.png" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 120px;">
@@ -107,6 +122,13 @@
         </header>
 
         <div id="message-container" class="mb-4 max-w-4xl mx-auto"></div>
+
+        <!-- Botón para compartir todas las entradas (NUEVO) -->
+        <div class="flex justify-center mb-6">
+            <button id="share-all-tickets-btn" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
+                Compartir Enlace de Todas las Entradas
+            </button>
+        </div>
 
         <div id="shared-qrs-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Las tarjetas de las entradas se cargarán aquí -->
@@ -119,7 +141,7 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-        const state = { db: null, auth: null };
+        const state = { db: null, auth: null, currentArtistPrefix: null }; // Añadido currentArtistPrefix
         const config = {
             appId: typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod',
             firebase: {
@@ -139,7 +161,13 @@
             messageContainer: document.getElementById('message-container'),
             qrsContainer: document.getElementById('shared-qrs-container'),
             showNameDisplay: document.getElementById('batch-show-name-display'),
-            artistNameDisplay: document.getElementById('batch-artist-name-display')
+            artistNameDisplay: document.getElementById('batch-artist-name-display'),
+            // Nuevos elementos UI para el modal de compartir
+            shareLinkModal: document.getElementById('share-link-modal'),
+            shareLinkDisplay: document.getElementById('share-link-display'),
+            copyShareLinkBtn: document.getElementById('copy-share-link-btn'),
+            closeShareModalBtn: document.getElementById('close-share-modal-btn'),
+            shareAllTicketsBtn: document.getElementById('share-all-tickets-btn') // Nuevo botón
         };
 
         function displayMessage(message, type = 'info') {
@@ -151,6 +179,33 @@
         function setLoading(show) {
             ui.loadingOverlay.classList.toggle('hidden', !show);
         }
+
+        // Función para mostrar el modal de compartir enlace (similar a index.html)
+        function showShareLinkModal(link) {
+            ui.shareLinkDisplay.value = link;
+            ui.shareLinkModal.classList.remove('hidden');
+            const copyHandler = () => {
+                const tempInput = document.createElement('input');
+                tempInput.value = link;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand('copy');
+                    displayMessage('¡Enlace copiado!', 'success');
+                } catch (err) {
+                    displayMessage('Error al copiar el enlace. Por favor, cópialo manualmente.', 'error');
+                }
+                document.body.removeChild(tempInput);
+            };
+            const closeHandler = () => {
+                ui.copyShareLinkBtn.removeEventListener('click', copyHandler);
+                ui.closeShareModalBtn.removeEventListener('click', closeHandler);
+                ui.shareLinkModal.classList.add('hidden');
+            };
+            ui.copyShareLinkBtn.addEventListener('click', copyHandler);
+            ui.closeShareModalBtn.addEventListener('click', closeHandler);
+        }
+
 
         function createTicketCard(ticket) {
             const cardWrapper = document.createElement('div');
@@ -208,7 +263,6 @@
                     margin:       0.2,
                     filename:     `Entrada_VYTMUSIC_${ticket.name.replace(/\s/g, '_')}.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    // AÑADIDO: allowTaint para intentar renderizar imágenes de origen cruzado
                     html2canvas:  { scale: 2, useCORS: true, allowTaint: true }, 
                     jsPDF:        { unit: 'in', format: 'a6', orientation: 'portrait' }
                 };
@@ -220,6 +274,7 @@
             setLoading(true);
             ui.qrsContainer.innerHTML = ''; 
             ui.artistNameDisplay.textContent = `Entradas para: ${decodeURIComponent(artistPrefix)}`;
+            state.currentArtistPrefix = artistPrefix; // Guardar el prefijo actual
 
             try {
                 const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
@@ -232,16 +287,29 @@
                     ui.showNameDisplay.textContent = `Show: ${tickets[0].showName || 'N/A'}`;
                     tickets.forEach(ticket => createTicketCard(ticket));
                     displayMessage(`${tickets.length} entradas cargadas.`, 'success');
+                    ui.shareAllTicketsBtn.classList.remove('hidden'); // Mostrar el botón de compartir
                 } else {
                     displayMessage('No se encontraron tickets para este grupo o el prefijo es incorrecto.', 'warning');
                     ui.showNameDisplay.textContent = 'Show: No disponible';
+                    ui.shareAllTicketsBtn.classList.add('hidden'); // Ocultar si no hay tickets
                 }
             } catch (error) {
                 console.error('Error al cargar las entradas del artista:', error);
                 displayMessage('Error al cargar las entradas. Revisa la consola.', 'error');
+                ui.shareAllTicketsBtn.classList.add('hidden'); // Ocultar en caso de error
             } finally {
                 setLoading(false);
             }
+        }
+
+        // Función para generar y mostrar el enlace de compartir todas las entradas
+        function generateAndShareAllTicketsLink() {
+            if (!state.currentArtistPrefix) {
+                displayMessage('No hay un grupo de entradas cargado para compartir.', 'warning');
+                return;
+            }
+            const shareableLink = `${window.location.origin}/shared_qr_viewer.html.html?artist=${encodeURIComponent(state.currentArtistPrefix)}`;
+            showShareLinkModal(shareableLink);
         }
 
         async function startApp() {
@@ -267,6 +335,9 @@
                 ui.artistNameDisplay.textContent = 'Artista no especificado';
                 setLoading(false);
             }
+
+            // Añadir event listener para el nuevo botón de compartir
+            ui.shareAllTicketsBtn.addEventListener('click', generateAndShareAllTicketsLink);
         }
 
         document.addEventListener('DOMContentLoaded', startApp);
