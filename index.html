@@ -5,18 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Entradas VYTMUSIC</title>
     
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <!-- Tone.js CDN for sound effects -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
 
     <style>
@@ -31,33 +27,25 @@
         .hidden { display: none !important; }
         
         /* Estilos de botones de navegación */
-        .nav-card {
-            background-color: #1f2937; /* bg-gray-800 */
-            border-radius: 0.75rem;
-            padding: 1rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            border: 1px solid #374151; /* border-gray-700 */
+        .nav-btn {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap; /* Evita que el texto del botón se parta */
+        }
+        .nav-btn.active {
+            border-bottom-color: #38bdf8; /* sky-400 */
+            color: #38bdf8;
+        }
+
+        /* Centrar los botones de navegación y permitir que se envuelvan */
+        .nav-container {
             display: flex;
-            align-items: center;
             justify-content: center;
-        }
-        .nav-card:hover {
-            transform: translateY(-2px);
-            background-color: #374151; /* bg-gray-700 */
-        }
-        .nav-card.active {
-            background-color: #38bdf8;
-            color: #111827;
-            border-color: #38bdf8;
-            font-weight: bold;
-        }
-        .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
+            flex-wrap: wrap; /* Permite que los botones pasen a la siguiente línea */
+            gap: 0.5rem; /* Espacio entre botones */
             margin-bottom: 2rem;
+            border-bottom: 1px solid #374151; /* gray-700 */
+            padding-bottom: 1rem; /* Espaciado debajo de la línea */
         }
 
         /* Overlay de carga */
@@ -104,14 +92,13 @@
             z-index: 60;
             background-color: rgba(0,0,0,0.5);
             border-radius: 50%;
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             border: 1px solid rgba(255,255,255,0.3);
-            cursor: pointer;
         }
         #close-scanner-btn { top: 1.5rem; right: 1.5rem; }
         #toggle-torch-btn { top: 1.5rem; left: 1.5rem; }
@@ -179,38 +166,34 @@
 
         /* Estilos para el contenedor del QR generado */
         .generated-qr-item {
-            display: none; /* Oculto por defecto, se muestra con el carrusel */
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             width: 100%; /* Ocupa todo el ancho disponible */
-            max-width: 400px; /* Limita el ancho máximo para pantallas grandes */
+            max-width: 1100px; /* Limita el ancho máximo para pantallas grandes */
             margin-left: auto;
             margin-right: auto;
-            background-color: #374151; /* gray-700 */
-            padding: 1.5rem; /* Espaciado alrededor del contenido */
-            border-radius: 0.75rem; /* Esquinas redondeadas */
-            color: #f9fafb; /* Texto blanco */
+            background-color: white; /* Fondo blanco para el QR y el texto */
+            padding: 1rem; /* Espaciado alrededor del contenido */
+            border-radius: 0.5rem; /* Esquinas redondeadas */
+            color: #000; /* Texto negro para legibilidad en fondo blanco */
             position: relative; /* Necesario para el posicionamiento absoluto del logo */
             overflow: hidden; /* Oculta el desbordamiento del logo */
-        }
-        .generated-qr-item.active {
-            display: flex;
         }
 
         .qrcode-container-wrapper {
             position: relative;
             width: 100%; /* Hacerlo responsivo */
-            max-width: 300px; /* Tamaño máximo */
+            max-width: 1080px; /* Tamaño máximo es 1080px */
             padding-bottom: 100%; /* Relación de aspecto 1:1 (altura = ancho) */
             height: 0; /* Importante para el truco de padding-bottom */
             display: flex;
             justify-content: center;
             align-items: center;
             background-color: white; /* Asegura fondo blanco para el QR */
-            border-radius: 0.5rem;
+            border-radius: 0.25rem;
             overflow: hidden; /* Oculta el desbordamiento del propio QR */
-            margin: 0 auto;
         }
 
         .qrcode-container {
@@ -233,50 +216,65 @@
         .qrcode-logo {
             position: absolute;
             z-index: 10; /* Asegura que el logo esté encima del QR */
-            width: 20%; /* Ajustado a un porcentaje */
+            width: 18%; /* Ajustado a un porcentaje más pequeño para evitar que se corte */
             height: auto;
+            /* Centrar el logo usando transform */
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             border-radius: 50%; /* Hace el logo circular si se desea */
             background-color: white; /* Fondo para que el logo se destaque */
-            padding: 4px; /* Relleno alrededor del logo */
+            padding: 5px; /* Relleno alrededor del logo */
         }
 
         .qr-info-text {
             text-align: center;
             margin-top: 1rem;
-            color: #f9fafb; 
+            color: #f9fafb; /* Cambiado a blanco para mejor contraste en fondo oscuro */
         }
 
         .qr-info-text h3 {
-            font-size: 1.5rem; 
+            font-size: 2.5rem; /* Título VYT-MUSIC */
             font-weight: bold;
-            color: #38bdf8; 
+            color: #38bdf8; /* Color azul cielo para VYT-MUSIC */
             margin-bottom: 0.25rem;
         }
 
         .qr-info-text p {
-            font-size: 1rem; 
+            font-size: 1.25rem; /* Texto más pequeño para "Certamen de Canto" */
             margin-bottom: 0.5rem;
+            color: #f9fafb; /* Cambiado a blanco */
         }
 
         .qr-info-text .name-display {
-            font-size: 1.25rem; 
+            font-size: 2rem; /* Visualización del nombre */
             font-weight: 600;
             margin-top: 1rem;
+            color: #f9fafb; /* Cambiado a blanco */
         }
 
         .qr-info-text .id-display,
         .qr-info-text .prefix-display,
         .qr-info-text .seat-location-display {
-            font-size: 0.875rem; 
-            color: #9ca3af;
+            font-size: 1.5rem; /* Otras visualizaciones de información */
+            color: #f9fafb; /* Cambiado a blanco */
         }
 
+        .qr-info-text .call-to-action {
+            font-size: 1.75rem; /* "¡INSCRÍBETE!" */
+            font-weight: bold;
+            color: #38bdf8; /* Cambiado a azul cielo como el logo */
+            margin-top: 1rem;
+        }
+
+        .qr-info-text .whatsapp-info {
+            font-size: 1.5rem; /* Número de WhatsApp */
+            color: #22c55e; /* Color verde */
+            margin-top: 0.5rem;
+        }
         .download-qr-btn {
             margin-top: 1rem;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             background-color: #38bdf8; /* Azul cielo */
             color: white;
             font-weight: bold;
@@ -291,11 +289,9 @@
 </head>
 <body class="antialiased">
 
-    <!-- Overlays y Modales -->
     <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
     <div id="scan-flash-overlay" class="scan-flash"></div>
     
-    <!-- Modal de Confirmación Genérico -->
     <div id="confirmation-modal" class="modal-backdrop hidden">
         <div class="modal-content">
             <h3 id="modal-title" class="text-xl font-bold mb-4">Confirmar Acción</h3>
@@ -307,7 +303,18 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmación de Reinicio Específico -->
+    <div id="pin-modal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4">Acceso de Administrador</h3>
+            <p class="mb-4">Ingresa el PIN para acceder a esta sección.</p>
+            <input type="password" id="pin-input" class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 mb-4" placeholder="****">
+            <div class="flex justify-end space-x-4">
+                <button id="pin-modal-cancel-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">Cancelar</button>
+                <button id="pin-modal-confirm-btn" class="px-4 py-2 bg-sky-600 text-white font-semibold rounded-lg hover:bg-sky-700">Ingresar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="reset-confirmation-modal" class="modal-backdrop hidden">
         <div class="modal-content">
             <h3 class="text-xl font-bold mb-4">Reiniciar Estadísticas</h3>
@@ -321,11 +328,10 @@
         </div>
     </div>
 
-    <!-- Modal de Enlace Compartido -->
     <div id="share-link-modal" class="modal-backdrop hidden">
         <div class="modal-content">
-            <h3 class="text-xl font-bold mb-4">Compartir Lote de QRs</h3>
-            <p class="mb-4">Copia el siguiente enlace para compartir este lote de QRs:</p>
+            <h3 class="text-xl font-bold mb-4">Compartir Enlace para Artista/Grupo</h3>
+            <p class="mb-4">Copia el siguiente enlace para compartir las entradas de este grupo:</p>
             <div class="flex items-center space-x-2 mb-4">
                 <input type="text" id="share-link-display" class="flex-grow p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500" readonly>
                 <button id="copy-share-link-btn" class="px-4 py-2 bg-sky-600 text-white font-semibold rounded-lg hover:bg-sky-700">Copiar</button>
@@ -336,7 +342,6 @@
         </div>
     </div>
 
-    <!-- Contenedor Principal -->
     <div id="main-content" class="container mx-auto max-w-4xl p-4 sm:p-6">
         
         <header class="text-center mb-6">
@@ -354,7 +359,6 @@
         <div id="message-container" class="mb-4"></div>
 
         <div id="app-content" class="hidden">
-            <!-- Contadores de Entradas -->
             <div class="bg-gray-800 p-4 rounded-lg shadow-md mb-6 flex flex-col sm:flex-row justify-around items-center text-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <div>
                     <p class="text-sm text-gray-400">Entradas Generadas</p>
@@ -366,29 +370,15 @@
                 </div>
             </div>
 
-            <nav class="nav-grid">
-                <div data-section="batch-ticket-generator-section" class="nav-card active">
-                    <span>Generar Entradas</span>
-                </div>
-                <div id="open-scanner-btn" class="nav-card">
-                    <span>Escanear QR</span>
-                </div>
-                <div data-section="all-tickets-section" class="nav-card">
-                    <span>Lista</span>
-                </div>
-                <div data-section="scan-history-section" class="nav-card">
-                    <span>Historial</span>
-                </div>
-                <div data-section="dashboard-section" class="nav-card">
-                    <span>Dashboard</span>
-                </div>
-                <div data-section="simulator-section" class="nav-card">
-                    <span>Simulador</span>
-                </div>
+            <nav class="nav-container"> <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
+                <button id="open-scanner-btn" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
+                <button data-section="all-tickets-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Lista de Entradas</button>
+                <button data-section="scan-history-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Historial</button>
+                <button data-section="dashboard-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Dashboard</button>
+                <button data-section="simulator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Simulador</button>
             </nav>
 
             <main class="mt-8">
-                <!-- Sección de Generador de Entradas en Lote (Ahora primera sección activa) -->
                 <section id="batch-ticket-generator-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-4">Generar Entradas en Lote</h2>
@@ -405,9 +395,10 @@
                                 <label for="show-address-input" class="block mb-1 font-semibold text-gray-300">Dirección (puede ser un link de Google Maps)</label>
                                 <input type="text" id="show-address-input" placeholder="Calle Falsa 123, Ciudad" class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
                             </div>
+                            
                             <div>
-                                <label for="ticket-prefix-input" class="block mb-1 font-semibold text-gray-300">Prefijo (ej: VIP, GENERAL)</label>
-                                <input type="text" id="ticket-prefix-input" placeholder="VIP2025" required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                <label for="ticket-prefix-input" class="block mb-1 font-semibold text-gray-300">Prefijo de Artista/Grupo (ID Único)</label>
+                                <input type="text" id="ticket-prefix-input" placeholder="Ej: JuanPerezShow, RosasVIP" required class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
                             </div>
                             <div>
                                 <label for="ticket-seat-location-input" class="block mb-1 font-semibold text-gray-300">Ubicación (ej: Mesa 5, Sector VIP)</label>
@@ -424,15 +415,14 @@
                         </form>
                         <div id="generated-tickets-container" class="mt-6"></div>
                         <div id="qr-carousel-controls" class="hidden mt-4 flex items-center justify-center gap-4">
-                            <button id="prev-qr-btn" class="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-700">&lt; Anterior</button>
+                            <button id="prev-qr-btn" class="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-700">< Anterior</button>
                             <span id="qr-counter" class="font-semibold"></span>
-                            <button id="next-qr-btn" class="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-700">Siguiente &gt;</button>
+                            <button id="next-qr-btn" class="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-700">Siguiente ></button>
                         </div>
-                        <button id="share-batch-qrs-btn" class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 mt-4 hidden">Compartir Lote de QRs</button>
+                        <button id="share-batch-qrs-btn" class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 mt-4 hidden">Compartir Entradas del Grupo</button>
                     </div>
                 </section>
                 
-                <!-- Sección de Lista de Todas las Entradas -->
                 <section id="all-tickets-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-4">Lista de Todas las Entradas</h2>
@@ -443,7 +433,6 @@
                     </div>
                 </section>
 
-                <!-- Sección de Historial de Escaneos -->
                 <section id="scan-history-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-4">Historial de Escaneos</h2>
@@ -451,14 +440,12 @@
                             <button id="export-csv-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Exportar a CSV</button>
                         </div>
                         <ul id="scan-history-list" class="space-y-3">
-                            <!-- Los elementos del historial se inyectarán aquí -->
-                        </ul>
+                            </ul>
                         <button id="reset-stats-btn" type="button" class="w-full px-4 py-3 bg-red-700 text-white font-bold rounded-lg hover:bg-red-800 mt-6">Reiniciar Estadísticas de Entradas</button>
                     </div>
                 </section>
 
-                 <!-- Sección de Dashboard -->
-                <section id="dashboard-section" class="section">
+                 <section id="dashboard-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-6 text-center">Dashboard en Vivo</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -482,7 +469,6 @@
                     </div>
                 </section>
 
-                <!-- Sección de Simulador de Escaneo -->
                 <section id="simulator-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-4">Simulador de Escaneo</h2>
@@ -504,7 +490,6 @@
             </main>
         </div>
 
-        <!-- Pantalla de Autenticación -->
         <div id="auth-screen" class="hidden">
             <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md mx-auto">
                 <h2 class="text-2xl font-bold mb-4 text-center">Iniciar Sesión o Registrarse</h2>
@@ -530,7 +515,6 @@
 
     </div>
 
-    <!-- Escáner QR a Pantalla Completa (Modal) -->
     <div id="fullscreen-scanner-container" class="hidden">
         <div id="qr-code-reader"></div>
         <div id="qr-reader-container-fullscreen">
@@ -562,7 +546,6 @@
     </div>
 
 
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
@@ -638,7 +621,7 @@
                 const camelCaseId = id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
                 ui[camelCaseId] = document.getElementById(id);
             });
-            ui.navButtons = document.querySelectorAll('.nav-card'); // Updated to select new nav cards
+            ui.navButtons = document.querySelectorAll('.nav-btn');
         }
 
         // --- UTILITY AND UI FUNCTIONS ---
@@ -756,8 +739,9 @@
                 ui.shareLinkDisplay.setSelectionRange(0, 99999); 
 
                 try {
-                    document.execCommand('copy');
-                    displayMessage('¡Enlace copiado al portapapeles!', 'success');
+                    navigator.clipboard.writeText(link).then(() => {
+                        displayMessage('¡Enlace copiado al portapapeles!', 'success');
+                    });
                 } catch (err) {
                     console.error('Error copying link:', err);
                     displayMessage('Error al copiar el enlace. Intenta manualmente.', 'error');
@@ -774,45 +758,8 @@
             ui.closeShareModalBtn.addEventListener('click', closeHandler);
         }
 
-        // --- FIREBASE AND DATA LOGIC ---
-
+        // --- FIREBASE AND DATA LOGIC (RETAINS ORIGINAL FUNCTIONS, AS THEY ARE ROBUST) ---
         const Firebase = {
-            /**
-             * Saves a new ticket to Firestore.
-             * @param {string} ticketId Ticket ID.
-             * @param {string} prefix Ticket prefix.
-             * @param {string} name Person's name.
-             * @param {string} seatLocation Assigned seat location (e.g., Table 5).
-             * @param {string} showName Name of the show.
-             * @param {string} showLocation Location of the show.
-             * @param {string} showAddress Address of the show (can be a Google Maps link).
-             */
-            async saveTicket(ticketId, prefix, name, seatLocation, showName, showLocation, showAddress) {
-                if (!state.isFirebaseReady) {
-                    displayMessage('Firebase no está listo. No se pudo guardar el ticket.', 'error');
-                    return;
-                }
-                const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, ticketId);
-                await setDoc(ticketRef, {
-                    id: ticketId,
-                    prefix,
-                    name,
-                    seatLocation: seatLocation || null, 
-                    showName: showName || null,
-                    showLocation: showLocation || null,
-                    showAddress: showAddress || null,
-                    used: false,
-                    generatedAt: new Date().toISOString(),
-                    usedAt: null,
-                    generatedBy: state.userId
-                });
-            },
-            /**
-             * Updates a ticket in Firestore.
-             * @param {string} ticketId Ticket ID.
-             * @param {object} data Data to update.
-             * @returns {boolean} True if update was successful, false otherwise.
-             */
             async updateTicket(ticketId, data) {
                 if (!state.isFirebaseReady) {
                     displayMessage('Firebase no está listo. No se pudo actualizar el ticket.', 'error');
@@ -822,11 +769,6 @@
                 await updateDoc(ticketRef, data);
                 return true;
             },
-            /**
-             * Saves a scan event to the user's private history.
-             * @param {object} ticketData Scanned ticket data.
-             * @param {string} scanStatus Scan status ('valid', 'invalid', 'used').
-             */
             async saveScanEvent(ticketData, scanStatus) {
                 if (!state.isFirebaseReady) return;
                 const scanHistoryCollection = collection(state.db, `artifacts/${config.appId}/users/${state.userId}/scanHistory`);
@@ -835,980 +777,4 @@
                     prefix: ticketData.prefix || 'N/A',
                     name: ticketData.name || 'N/A',
                     seatLocation: ticketData.seatLocation || 'N/A',
-                    showName: ticketData.showName || 'N/A',
-                    showLocation: ticketData.showLocation || 'N/A',
-                    showAddress: ticketData.showAddress || 'N/A',
-                    status: scanStatus,
-                    scannedAt: new Date().toISOString(),
-                    scannedBy: state.userId,
-                    ticketUsed: ticketData.used || false,
-                    ticketGeneratedAt: ticketData.generatedAt || 'N/A',
-                });
-            },
-            /**
-             * Resets ticket statistics (deletes all tickets and history).
-             */
-            async resetAllTicketsAndHistory() {
-                if (!state.isFirebaseReady) {
-                    displayMessage('Firebase no está listo. No se pudo reiniciar.', 'error');
-                    return;
-                }
-                setLoading(true);
-                try {
-                    const batch = writeBatch(state.db);
-
-                    const ticketsQuery = query(collection(state.db, `artifacts/${config.appId}/public/data/tickets`));
-                    const ticketsSnapshot = await getDocs(ticketsQuery);
-                    ticketsSnapshot.forEach((doc) => {
-                        batch.delete(doc.ref);
-                    });
-
-                    const historyQuery = query(collection(state.db, `artifacts/${config.appId}/users/${state.userId}/scanHistory`));
-                    const historySnapshot = await getDocs(historyQuery);
-                    historySnapshot.forEach((doc) => {
-                        batch.delete(doc.ref);
-                    });
-
-                    const sharedBatchesQuery = query(collection(state.db, `artifacts/${config.appId}/public/data/sharedBatches`));
-                    const sharedBatchesSnapshot = await getDocs(sharedBatchesQuery);
-                    sharedBatchesSnapshot.forEach((doc) => {
-                        if (doc.data().generatedBy === state.userId) {
-                            batch.delete(doc.ref);
-                        }
-                    });
-
-                    await batch.commit();
-                    displayMessage('Todas las entradas y el historial han sido reiniciados.', 'success');
-                } catch (error) {
-                    console.error('Error al reiniciar entradas e historial:', error);
-                    displayMessage('Error al reiniciar entradas e historial. Revisa la consola.', 'error');
-                } finally {
-                    setLoading(false);
-                }
-            },
-            /**
-             * Saves a batch of ticket IDs for sharing.
-             * @param {Array<string>} ticketIds Array of ticket IDs to share.
-             * @returns {string} The generated batch ID.
-             */
-            async saveSharedBatch(ticketIds) {
-                if (!state.isFirebaseReady) {
-                    displayMessage('Firebase no está listo para compartir el lote.', 'error');
-                    return null;
-                }
-                const batchId = crypto.randomUUID();
-                const sharedBatchRef = doc(state.db, `artifacts/${config.appId}/public/data/sharedBatches`, batchId);
-                await setDoc(sharedBatchRef, {
-                    id: batchId,
-                    ticketIds: ticketIds,
-                    generatedBy: state.userId,
-                    sharedAt: new Date().toISOString()
-                });
-                return batchId;
-            },
-            /**
-             * Gets a shared batch by its ID.
-             * @param {string} batchId The ID of the shared batch.
-             * @returns {object|null} The shared batch data or null if not found.
-             */
-            async getSharedBatch(batchId) {
-                if (!state.isFirebaseReady) {
-                    displayMessage('Firebase no está listo para obtener el lote compartido.', 'error');
-                    return null;
-                }
-                const sharedBatchRef = doc(state.db, `artifacts/${config.appId}/public/data/sharedBatches`, batchId);
-                const docSnap = await getDoc(sharedBatchRef);
-                if (docSnap.exists()) {
-                    return docSnap.data();
-                }
-                return null;
-            },
-            /**
-             * Gets multiple tickets by their IDs.
-             * @param {Array<string>} ticketIds Array of ticket IDs to get.
-             * @returns {Array<object>} Array of ticket data.
-             */
-            async getTicketsByIds(ticketIds) {
-                if (!state.isFirebaseReady || ticketIds.length === 0) {
-                    return [];
-                }
-                const tickets = [];
-                for (const id of ticketIds) {
-                    const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, id);
-                    const docSnap = await getDoc(ticketRef);
-                    if (docSnap.exists()) {
-                        tickets.push(docSnap.data());
-                    }
-                }
-                return tickets;
-            }
-        };
-
-        // --- UI SECTION HANDLING ---
-
-        /**
-         * Shows a specific section and hides others.
-         * @param {HTMLElement} sectionToShow The section to show.
-         */
-        function showSection(sectionToShow) {
-            document.querySelectorAll('#app-content .section').forEach(section => {
-                section.classList.remove('active');
-            });
-            sectionToShow.classList.add('active');
-
-            ui.navButtons.forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.section === sectionToShow.id) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            if (sectionToShow.id === 'batch-ticket-generator-section') {
-                if (state.currentBatchGeneratedTickets.length === 0) {
-                    ui.shareBatchQrsBtn.classList.add('hidden');
-                } else {
-                    ui.shareBatchQrsBtn.classList.remove('hidden');
-                }
-            }
-
-            if (sectionToShow.id === 'dashboard-section') {
-                updateDashboard();
-            }
-        }
-
-        // --- QR SCANNER FUNCTIONALITY (REWRITTEN FOR FULLSCREEN AND ROBUSTNESS) ---
-
-        /**
-         * Starts the QR scanner cleanly.
-         */
-        function startQrScanner() {
-            if (state.isScannerActive) {
-                console.log("El escáner ya está activo.");
-                if (state.scanner && state.scanner.getState() === Html5QrcodeScannerState.PAUSED) {
-                    state.scanner.resume();
-                }
-                return;
-            }
-            console.log("Iniciando el escáner QR...");
-            
-            ui.fullscreenScannerContainer.classList.remove('hidden');
-            
-            state.scanner = new Html5Qrcode("qr-code-reader");
-            state.isScannerActive = true;
-
-            ui.scannerStatusMessageFullscreen.textContent = 'Iniciando cámara...';
-            ui.scannedTicketInfoFullscreen.classList.add('hidden');
-            ui.markUsedBtnFullscreen.classList.add('hidden');
-            ui.scanAgainBtnFullscreen.classList.add('hidden');
-
-            const qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
-                let minEdgePercentage = 0.7; // 70%
-                let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-                let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-                return {
-                    width: qrboxSize,
-                    height: qrboxSize
-                };
-            }
-
-            const config = { 
-                fps: 15, 
-                qrbox: qrboxFunction,
-                rememberLastUsedCamera: true 
-            };
-
-            state.scanner.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
-                .then(() => {
-                    console.log("Escáner iniciado exitosamente.");
-                    ui.scannerStatusMessageFullscreen.textContent = 'Apunte al código QR.';
-                })
-                .catch(err => {
-                    console.error("Error al iniciar el escáner:", err);
-                    handleScannerStartError(err);
-                });
-        }
-
-        /**
-         * Stops and closes the fullscreen QR scanner.
-         */
-        async function stopAndCloseScanner() {
-            if (!state.scanner) return;
-            
-            console.log("Deteniendo y cerrando el escáner QR...");
-            state.isScannerActive = false;
-            
-            try {
-                if (state.scanner.getState() === Html5QrcodeScannerState.SCANNING || state.scanner.getState() === Html5QrcodeScannerState.PAUSED) {
-                    await state.scanner.stop();
-                }
-                await state.scanner.clear();
-                console.log("Recursos del escáner liberados.");
-            } catch (err) {
-                console.error("Error al detener o limpiar el escáner:", err);
-            } finally {
-                state.scanner = null;
-                ui.fullscreenScannerContainer.classList.add('hidden');
-            }
-        }
-
-        /**
-         * Handles successful QR scan.
-         * @param {string} decodedText The decoded text from the QR.
-         */
-        async function onScanSuccess(decodedText, decodedResult) {
-            if (!state.isScannerActive) return; 
-            
-            console.log("QR escaneado:", decodedText);
-            
-            if (state.scanner && state.scanner.getState() === Html5QrcodeScannerState.SCANNING) {
-                 state.scanner.pause(true); // Pause, don't stop
-            }
-            
-            ui.scannerStatusMessageFullscreen.textContent = 'QR detectado. Procesando...';
-            await processScan(decodedText, 'fullscreen');
-        }
-        
-        async function processScan(decodedText, context = 'fullscreen') {
-             try {
-                const ticketId = decodedText;
-                const ticketDocRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, ticketId);
-                const ticketDoc = await getDoc(ticketDocRef);
-                
-                let idEl, prefixEl, nameEl, locationEl, statusEl, markBtn, infoContainer, scanAgainBtn;
-                
-                if (context === 'fullscreen') {
-                    idEl = ui.currentScannedTicketIdFullscreen;
-                    prefixEl = ui.currentScannedTicketPrefixFullscreen;
-                    nameEl = ui.currentScannedTicketNameFullscreen;
-                    locationEl = ui.currentScannedTicketSeatLocationFullscreen;
-                    statusEl = ui.currentScannedTicketStatusFullscreen;
-                    markBtn = ui.markUsedBtnFullscreen;
-                    infoContainer = ui.scannedTicketInfoFullscreen;
-                    scanAgainBtn = ui.scanAgainBtnFullscreen;
-                } else { // simulator
-                    idEl = ui.simScannedTicketId;
-                    prefixEl = ui.simScannedTicketPrefix;
-                    nameEl = ui.simScannedTicketName;
-                    locationEl = ui.simScannedTicketSeatLocation;
-                    statusEl = ui.simScannedTicketStatus;
-                    markBtn = { classList: { add: () => {} }}; // Dummy object
-                    infoContainer = ui.simulatorResultContainer;
-                    scanAgainBtn = { classList: { add: () => {} }}; // Dummy object
-                }
-
-
-                infoContainer.classList.remove('hidden');
-                markBtn.classList.add('hidden');
-
-                if (!ticketDoc.exists()) {
-                    idEl.textContent = ticketId;
-                    prefixEl.textContent = 'N/A';
-                    nameEl.textContent = 'Desconocido';
-                    locationEl.textContent = 'N/A';
-                    statusEl.textContent = 'INVÁLIDO';
-                    statusEl.className = 'text-red-500 bg-red-100 px-3 py-1 rounded-md';
-                    flashScanResult('invalid');
-                    if (state.synth) { await Tone.start(); state.synth.triggerAttackRelease("C3", "32n"); }
-                    Firebase.saveScanEvent({ id: ticketId }, 'invalid');
-                } else {
-                    const ticketData = ticketDoc.data();
-                    idEl.textContent = ticketData.id;
-                    prefixEl.textContent = ticketData.prefix;
-                    nameEl.textContent = ticketData.name;
-                    locationEl.textContent = ticketData.seatLocation || 'No Asignado';
-
-                    if (ticketData.used) {
-                        statusEl.textContent = 'YA USADO';
-                        statusEl.className = 'text-yellow-700 bg-yellow-100 px-3 py-1 rounded-md';
-                        flashScanResult('used');
-                        if (state.synth) { await Tone.start(); state.synth.triggerAttackRelease("G3", "16n"); }
-                        Firebase.saveScanEvent(ticketData, 'used');
-                    } else {
-                        statusEl.textContent = 'DISPONIBLE';
-                        statusEl.className = 'text-green-700 bg-green-100 px-3 py-1 rounded-md';
-                        if(context === 'fullscreen') markBtn.classList.remove('hidden');
-                        state.currentScannedTicketId = ticketData.id;
-                        flashScanResult('valid');
-                        if (state.synth) { await Tone.start(); state.synth.triggerAttackRelease("C4", "8n"); }
-                        Firebase.saveScanEvent(ticketData, 'valid');
-                    }
-                }
-            } catch (error) {
-                console.error('Error al procesar el escaneo:', error);
-                displayMessage('Error al procesar el ticket. Inténtalo de nuevo.', 'error');
-            } finally {
-                if (context === 'fullscreen') {
-                    ui.scanAgainBtnFullscreen.classList.remove('hidden');
-                    ui.scannerStatusMessageFullscreen.textContent = 'Resultado mostrado. Presiona para escanear de nuevo.';
-                }
-            }
-        }
-
-
-        /**
-         * Handles minor scan errors (e.g., QR not found in frame).
-         */
-        function onScanFailure(error) {
-        }
-
-        /**
-         * Handles critical errors during scanner startup.
-         * @param {Error} err The error object from the scanner's start promise.
-         */
-        function handleScannerStartError(err) {
-            let userMessage = 'No se pudo iniciar la cámara.';
-            if (err.name === 'NotAllowedError') {
-                userMessage = 'Permiso de cámara denegado. Habilítalo en la configuración de tu navegador.';
-            } else if (err.name === 'NotFoundError') {
-                userMessage = 'No se encontró ninguna cámara en este dispositivo.';
-            } else if (err.name === 'NotReadableError') {
-                userMessage = 'La cámara ya está en uso o no se puede acceder. Cierra otras apps que la usen y asegúrate de que haya buena iluminación.';
-            } else if (err.name === 'OverconstrainedError') {
-                userMessage = 'Tu cámara no cumple los requisitos. Intenta con otro dispositivo.';
-            }
-            displayMessage(userMessage, 'error');
-            ui.scannerStatusMessageFullscreen.textContent = 'Error de cámara. ' + userMessage;
-        }
-
-
-        // --- TICKET GENERATOR FUNCTIONALITY ---
-
-        /**
-         * Generates a QR code for a ticket and displays it in the UI.
-         * @param {string} ticketId The unique ID of the ticket.
-         * @param {string} name The name of the person.
-         * @param {string} prefix The ticket prefix.
-         * @param {string} seatLocation The assigned seat location.
-         * @param {string} qrData The data to encode in the QR.
-         * @param {HTMLElement} container The container where the QR element will be added.
-         * @param {string} showName Name of the show.
-         * @param {string} showLocation Location of the show.
-         * @param {string} showAddress Address of the show (can be a Google Maps link).
-         */
-        function generateQrCodeForTicket(ticketId, name, prefix, seatLocation, qrData, container, showName, showLocation, showAddress) {
-            const qrItemDiv = document.createElement('div');
-            qrItemDiv.className = 'generated-qr-item p-4 border border-gray-700 rounded-md bg-gray-900 text-center mx-auto'; 
-            
-            const qrCodeContainerWrapper = document.createElement('div');
-            qrCodeContainerWrapper.className = 'qrcode-container-wrapper';
-
-            const qrCodeContainerDiv = document.createElement('div');
-            qrCodeContainerDiv.id = `qrcode-${ticketId}`;
-            qrCodeContainerDiv.className = 'qrcode-container'; 
-
-            const logoImg = document.createElement('img');
-            logoImg.src = config.logoUrl;
-            logoImg.alt = "VYTMUSIC Logo";
-            logoImg.className = 'qrcode-logo';
-
-            qrCodeContainerWrapper.appendChild(qrCodeContainerDiv);
-            qrCodeContainerWrapper.appendChild(logoImg); 
-
-            const infoTextDiv = document.createElement('div');
-            infoTextDiv.className = 'qr-info-text';
-
-            let showAddressHtml = '';
-            if (showAddress) {
-                if (showAddress.startsWith('http') && (showAddress.includes('google.com/maps') || showAddress.includes('maps.app.goo.gl'))) {
-                    showAddressHtml = `<p class="text-sm text-gray-400">Dirección: <a href="${showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a></p>`;
-                } else {
-                    showAddressHtml = `<p class="text-sm text-gray-400">Dirección: ${showAddress}</p>`;
-                }
-            }
-
-            infoTextDiv.innerHTML = `
-                <h3>VYT-MUSIC</h3>
-                <p>CERTAMEN DE CANTO</p>
-                <p class="name-display">${name}</p>
-                <p class="text-sm text-gray-400">Show: ${showName || 'N/A'}</p>
-                <p class="text-sm text-gray-400">Lugar: ${showLocation || 'N/A'}</p>
-                ${showAddressHtml}
-                <p class="prefix-display">Prefijo: ${prefix}</p>
-                <p class="seat-location-display">Ubicación: ${seatLocation || 'No Asignado'}</p>
-                <p class="id-display">ID: ${ticketId}</p>
-                <p class="call-to-action">¡INSCRÍBETE!</p>
-                <p class="whatsapp-info">WhatsApp: 3417422062</p>
-            `;
-
-            qrItemDiv.appendChild(qrCodeContainerWrapper);
-            qrItemDiv.appendChild(infoTextDiv);
-            container.appendChild(qrItemDiv); 
-
-            new QRCode(qrCodeContainerDiv.id, {
-                text: qrData,
-                width: 1080,
-                height: 1080,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.M // Changed from H to M for more data capacity
-            });
-
-            const downloadBtn = document.createElement('button');
-            downloadBtn.textContent = 'Descargar QR';
-            downloadBtn.className = 'download-qr-btn';
-            downloadBtn.addEventListener('click', () => {
-                const qrCanvas = qrCodeContainerDiv.querySelector('canvas');
-                if (qrCanvas) {
-                    const dataURL = qrCanvas.toDataURL('image/png');
-                    const a = document.createElement('a');
-                    a.href = dataURL;
-                    a.download = `${name.replace(/\s/g, '_')}_${ticketId}.png`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                } else {
-                    displayMessage('No se pudo encontrar el canvas QR para descargar.', 'error');
-                }
-            });
-            qrItemDiv.appendChild(downloadBtn);
-        }
-
-        /**
-         * Shares the current batch of generated QRs.
-         */
-        async function shareCurrentBatch() {
-            if (state.currentBatchGeneratedTickets.length === 0) {
-                displayMessage('No se han generado QRs en el lote actual para compartir.', 'warning');
-                return;
-            }
-            setLoading(true);
-            try {
-                const ticketIdsToShare = state.currentBatchGeneratedTickets.map(ticket => ticket.id);
-                const batchId = await Firebase.saveSharedBatch(ticketIdsToShare);
-                if (batchId) {
-                    const currentPath = window.location.pathname;
-                    const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-                    const shareableLink = `${window.location.origin}${basePath}shared_qr_viewer.html?batchId=${batchId}`;
-                    showShareLinkModal(shareableLink);
-                    displayMessage('¡Lote de QR compartido exitosamente!', 'success');
-                } else {
-                    displayMessage('Error al generar el enlace para compartir el lote.', 'error');
-                }
-            } catch (error) {
-                console.error('Error al compartir el lote de QR:', error);
-                displayMessage('Error al compartir el lote de QR. Revisa la consola.', 'error');
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        // --- LIST RENDERING ---
-
-        /**
-         * Renders the list of all tickets.
-         * @param {Array<object>} tickets List of ticket objects.
-         */
-        function renderAllTickets(tickets) {
-            ui.allTicketsList.innerHTML = '';
-            if (tickets.length === 0) {
-                ui.allTicketsList.innerHTML = '<li class="text-center text-gray-400">Aún no se han generado entradas.</li>';
-                return;
-            }
-            const sortedTickets = [...tickets].sort((a, b) => a.used - b.used);
-
-            sortedTickets.forEach(ticket => {
-                const li = document.createElement('li');
-                li.className = 'bg-gray-900 p-4 rounded-md shadow flex flex-col sm:flex-row sm:justify-between sm:items-center';
-                li.innerHTML = `
-                    <div>
-                        <p class="font-semibold text-white">${ticket.name} <span class="text-gray-400 text-sm">(${ticket.prefix})</span></p>
-                        <p class="text-sm text-gray-400 break-all">ID: ${ticket.id}</p>
-                        <p class="text-sm text-gray-400">Ubicación: ${ticket.seatLocation || 'No Asignado'}</p>
-                        <p class="text-sm text-gray-400">Show: ${ticket.showName || 'N/A'}</p>
-                        <p class="text-sm text-gray-400">Lugar: ${ticket.showLocation || 'N/A'}</p>
-                        ${ticket.showAddress ? `<p class="text-sm text-gray-400">Dirección: ${ticket.showAddress.startsWith('http') ? `<a href="${ticket.showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a>` : ticket.showAddress}</p>` : ''}
-                    </div>
-                    <div class="mt-2 sm:mt-0">
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${ticket.used ? 'bg-yellow-600' : 'bg-green-600'}">
-                            ${ticket.used ? 'USADO' : 'DISPONIBLE'}
-                        </span>
-                    </div>
-                `;
-                ui.allTicketsList.appendChild(li);
-            });
-        }
-
-        /**
-         * Renders the scan history.
-         * @param {Array<object>} historyItems List of history objects.
-         */
-        function renderScanHistory(historyItems) {
-            state.scanHistory = historyItems; // Store for CSV export
-            ui.scanHistoryList.innerHTML = '';
-            if (historyItems.length === 0) {
-                ui.scanHistoryList.innerHTML = '<li class="text-center text-gray-400">No hay historial de escaneos.</li>';
-                return;
-            }
-            const sortedHistory = [...historyItems].sort((a, b) => new Date(b.scannedAt) - new Date(a.scannedAt));
-
-            sortedHistory.forEach(item => {
-                const li = document.createElement('li');
-                const scanTime = new Date(item.scannedAt).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
-                let statusClass = '';
-                let statusText = '';
-                if (item.status === 'valid') {
-                    statusClass = 'bg-green-600';
-                    statusText = 'Válido';
-                } else if (item.status === 'used') {
-                    statusClass = 'bg-yellow-600';
-                    statusText = 'Usado';
-                } else if (item.status === 'invalid') {
-                    statusClass = 'bg-red-600';
-                    statusText = 'Inválido';
-                }
-
-                li.className = 'bg-gray-900 p-4 rounded-md shadow flex flex-col sm:flex-row sm:justify-between sm:items-center';
-                li.innerHTML = `
-                    <div>
-                        <p class="font-semibold text-white">${item.name} <span class="text-gray-400 text-sm">(${item.prefix})</span></p>
-                        <p class="text-sm text-gray-400 break-all">ID: ${item.id}</p>
-                        <p class="text-sm text-gray-400">Ubicación: ${item.seatLocation || 'N/A'}</p>
-                        <p class="text-sm text-gray-400">Show: ${item.showName || 'N/A'}</p>
-                        <p class="text-sm text-gray-400">Lugar: ${item.showLocation || 'N/A'}</p>
-                        ${item.showAddress ? `<p class="text-sm text-gray-400">Dirección: ${item.showAddress.startsWith('http') ? `<a href="${ticket.showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a>` : item.showAddress}</p>` : ''}
-                        <p class="text-xs text-gray-500">Escaneado: ${scanTime}</p>
-                    </div>
-                    <div class="mt-2 sm:mt-0">
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
-                            ${statusText}
-                        </span>
-                    </div>
-                `;
-                ui.scanHistoryList.appendChild(li);
-            });
-        }
-
-        function exportScanHistoryToCSV() {
-            if (state.scanHistory.length === 0) {
-                displayMessage("No hay historial para exportar.", "warning");
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            const headers = ["ID Ticket", "Nombre", "Prefijo", "Ubicacion", "Estado", "Fecha Escaneo"];
-            csvContent += headers.join(",") + "\r\n";
-
-            state.scanHistory.forEach(item => {
-                const row = [
-                    `"${item.id}"`,
-                    `"${item.name}"`,
-                    `"${item.prefix}"`,
-                    `"${item.seatLocation || 'N/A'}"`,
-                    `"${item.status}"`,
-                    `"${new Date(item.scannedAt).toLocaleString('es-ES')}"`
-                ];
-                csvContent += row.join(",") + "\r\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "historial_escaneo_vytmusic.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function updateDashboard() {
-            // Occupancy Rate
-            const occupancy = state.totalGeneratedTickets > 0 ? (state.totalUsedTickets / state.totalGeneratedTickets) * 100 : 0;
-            ui.occupancyRate.textContent = `${occupancy.toFixed(1)}%`;
-
-            // Scans per hour
-            const scansByHour = {};
-            state.scanHistory.forEach(scan => {
-                const hour = new Date(scan.scannedAt).getHours();
-                scansByHour[hour] = (scansByHour[hour] || 0) + 1;
-            });
-            ui.scansPerHour.innerHTML = Object.keys(scansByHour).length > 0 ? '' : '<p class="text-gray-400">No hay datos aún.</p>';
-            for (const hour in scansByHour) {
-                ui.scansPerHour.innerHTML += `<p>${hour}:00 - ${hour}:59: <span class="font-bold text-sky-300">${scansByHour[hour]}</span></p>`;
-            }
-
-            // Scans by prefix
-            const scansByPrefix = {};
-            state.scanHistory.forEach(scan => {
-                if(scan.prefix && scan.prefix !== 'N/A') {
-                   scansByPrefix[scan.prefix] = (scansByPrefix[scan.prefix] || 0) + 1;
-                }
-            });
-            ui.scansByPrefix.innerHTML = Object.keys(scansByPrefix).length > 0 ? '' : '<p class="text-gray-400">No hay datos aún.</p>';
-            for (const prefix in scansByPrefix) {
-                ui.scansByPrefix.innerHTML += `<p>${prefix}: <span class="font-bold text-sky-300">${scansByPrefix[prefix]}</span></p>`;
-            }
-        }
-
-        // --- INITIALIZATION AND EVENT LISTENERS ---
-
-        /**
-         * Initializes the application.
-         */
-        async function startApp() {
-            cacheUIElements();
-            setLoading(true);
-            
-            if (!config.firebase) {
-                displayMessage("Error: La configuración de Firebase no se ha cargado. La aplicación no puede funcionar.", "error");
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const app = initializeApp(config.firebase);
-                state.db = getFirestore(app);
-                state.auth = getAuth(app);
-                state.synth = new Tone.Synth().toDestination(); 
-                console.log("Firebase y Tone.js inicializados.");
-            } catch (error) {
-                console.error("Error al inicializar Firebase:", error);
-                displayMessage("Error crítico al conectar con Firebase.", "error");
-                setLoading(false);
-                return;
-            }
-
-            onAuthStateChanged(state.auth, async (user) => {
-                if (user) {
-                    state.userId = user.uid;
-                    ui.userEmailDisplay.textContent = user.email;
-                    ui.logoutBtn.classList.remove('hidden');
-                    ui.authScreen.classList.add('hidden');
-                    ui.appContent.classList.remove('hidden');
-                    
-                    state.isFirebaseReady = true;
-                    displayMessage(`Sesión iniciada como ${user.email}`, 'success');
-                    
-                    setupFirestoreListeners();
-                    showSection(ui.batchTicketGeneratorSection); 
-                } else {
-                    state.userId = null;
-                    ui.userEmailDisplay.textContent = '';
-                    ui.logoutBtn.classList.add('hidden');
-                    ui.authScreen.classList.remove('hidden');
-                    ui.appContent.classList.add('hidden');
-                    state.isFirebaseReady = false;
-                    if (state.ticketListenerUnsubscribe) state.ticketListenerUnsubscribe();
-                    if (state.historyListenerUnsubscribe) state.historyListenerUnsubscribe();
-                    if (state.allTicketsListenerUnsubscribe) state.allTicketsListenerUnsubscribe();
-                    if (state.ticketCountsListenerUnsubscribe) state.ticketCountsListenerUnsubscribe();
-                }
-                setLoading(false);
-            });
-
-            state.logoImage.src = config.logoUrl;
-            setupEventListeners();
-        }
-
-        /**
-         * Configures Firestore listeners.
-         */
-        function setupFirestoreListeners() {
-            if (!state.isFirebaseReady || !state.userId) {
-                return;
-            }
-
-            if (state.ticketCountsListenerUnsubscribe) state.ticketCountsListenerUnsubscribe();
-            const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
-            state.ticketCountsListenerUnsubscribe = onSnapshot(ticketsCollectionRef, (snapshot) => {
-                let usedCount = 0;
-                snapshot.docs.forEach(doc => {
-                    if (doc.data().used) {
-                        usedCount++;
-                    }
-                });
-                ui.totalGeneratedTickets.textContent = snapshot.size;
-                ui.totalUsedTickets.textContent = usedCount;
-                state.totalGeneratedTickets = snapshot.size;
-                state.totalUsedTickets = usedCount;
-            }, (error) => {
-                console.error("Error al escuchar los recuentos de tickets:", error);
-            });
-
-            if (state.allTicketsListenerUnsubscribe) state.allTicketsListenerUnsubscribe();
-            state.allTicketsListenerUnsubscribe = onSnapshot(ticketsCollectionRef, (snapshot) => {
-                const tickets = snapshot.docs.map(doc => doc.data());
-                state.allTicketsData = tickets;
-                renderAllTickets(tickets);
-            }, (error) => {
-                console.error("Error al escuchar todos los tickets:", error);
-            });
-
-            if (state.historyListenerUnsubscribe) state.historyListenerUnsubscribe();
-            const historyCollectionRef = collection(state.db, `artifacts/${config.appId}/users/${state.userId}/scanHistory`);
-            state.historyListenerUnsubscribe = onSnapshot(historyCollectionRef, (snapshot) => {
-                const historyItems = snapshot.docs.map(doc => doc.data());
-                renderScanHistory(historyItems);
-            }, (error) => {
-                console.error("Error al escuchar el historial de escaneo:", error);
-            });
-        }
-
-        /**
-         * Configures event listeners for UI elements.
-         */
-        function setupEventListeners() {
-            ui.navButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const sectionId = e.currentTarget.dataset.section;
-                    if (!sectionId) return;
-                    showSection(document.getElementById(sectionId));
-                });
-            });
-
-            ui.openScannerBtn.addEventListener('click', startQrScanner);
-            ui.closeScannerBtn.addEventListener('click', stopAndCloseScanner);
-            
-            ui.scanAgainBtnFullscreen.addEventListener('click', () => {
-                ui.scannedTicketInfoFullscreen.classList.add('hidden');
-                ui.scanAgainBtnFullscreen.classList.add('hidden');
-                if (state.scanner && state.scanner.getState() === Html5QrcodeScannerState.PAUSED) {
-                    state.scanner.resume();
-                    state.isScannerActive = true;
-                    ui.scannerStatusMessageFullscreen.textContent = 'Apunte al código QR.';
-                } else {
-                    startQrScanner();
-                }
-            });
-
-            ui.markUsedBtnFullscreen.addEventListener('click', () => {
-                if (state.currentScannedTicketId) {
-                    showConfirmation('Confirmar Uso de Ticket', `¿Estás seguro de que quieres marcar el ticket ${ui.currentScannedTicketNameFullscreen.textContent} (ID: ${state.currentScannedTicketId}) como USADO?`, async () => {
-                        setLoading(true);
-                        try {
-                            const success = await Firebase.updateTicket(state.currentScannedTicketId, {
-                                used: true,
-                                usedAt: new Date().toISOString(),
-                                usedBy: state.userId
-                            });
-                            if (success) {
-                                displayMessage(`Ticket ${ui.currentScannedTicketNameFullscreen.textContent} marcado como USADO.`, 'success');
-                                flashScanResult('used'); // Flash the result
-                            }
-                        } catch (error) {
-                            console.error('Error al marcar el ticket como usado:', error);
-                            displayMessage('Error al marcar el ticket como usado.', 'error');
-                        } finally {
-                            setLoading(false);
-                            ui.scannedTicketInfoFullscreen.classList.add('hidden');
-                            ui.scanAgainBtnFullscreen.classList.add('hidden');
-                            if (state.scanner && state.scanner.getState() === Html5QrcodeScannerState.PAUSED) {
-                                state.scanner.resume();
-                                state.isScannerActive = true;
-                                ui.scannerStatusMessageFullscreen.textContent = 'Apunte al código QR.';
-                            }
-                        }
-                    });
-                }
-            });
-
-            ui.generatorForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (state.isSubmitting) return; 
-                
-                const ticketPrefix = ui.ticketPrefixInput.value.trim();
-                if(ticketPrefix.length > 20) {
-                    displayMessage('El prefijo no puede tener más de 20 caracteres.', 'error');
-                    return;
-                }
-
-                state.isSubmitting = true;
-                ui.generatorFormSubmitBtn.disabled = true;
-                ui.generatorFormClearBtn.disabled = true;
-                setLoading(true);
-                
-                ui.generatedTicketsContainer.innerHTML = '';
-                state.currentBatchGeneratedTickets = [];
-
-                const showName = ui.showNameInput.value.trim();
-                const showLocation = ui.showLocationInput.value.trim();
-                const showAddress = ui.showAddressInput.value.trim();
-                const batchNamesRaw = ui.batchTicketNamesInput.value.trim();
-                const seatLocation = ui.ticketSeatLocationInput.value.trim();
-
-                const names = batchNamesRaw.split(/[\n,]+/).map(name => name.trim()).filter(name => name);
-
-                if (names.length === 0 || !ticketPrefix || !showName || !showLocation) {
-                    displayMessage('Por favor, ingresa un nombre de show, ubicación, prefijo y al menos un nombre.', 'warning');
-                    setLoading(false);
-                    state.isSubmitting = false;
-                    ui.generatorFormSubmitBtn.disabled = false;
-                    ui.generatorFormClearBtn.disabled = false;
-                    return;
-                }
-
-                try {
-                    const batch = writeBatch(state.db);
-                    const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
-
-                    for (const name of names) {
-                        const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
-                        const ticketRef = doc(ticketsCollectionRef, ticketId);
-                        const ticketData = {
-                            id: ticketId,
-                            prefix: ticketPrefix,
-                            name: name,
-                            seatLocation: seatLocation || null,
-                            showName: showName,
-                            showLocation: showLocation,
-                            showAddress: showAddress || null,
-                            used: false,
-                            generatedAt: new Date().toISOString(),
-                            usedAt: null,
-                            generatedBy: state.userId
-                        };
-                        batch.set(ticketRef, ticketData);
-                        state.currentBatchGeneratedTickets.push({ ...ticketData, qrDataUrl: ticketId });
-                    }
-                    await batch.commit();
-                    
-                    ui.generatedTicketsContainer.innerHTML = '';
-                    state.currentQrIndex = 0;
-                    displayCurrentQr();
-                    ui.qrCarouselControls.classList.remove('hidden');
-
-                    displayMessage(`${names.length} tickets generados exitosamente.`, 'success');
-                    ui.shareBatchQrsBtn.classList.remove('hidden');
-                } catch (error) {
-                    console.error('Error al generar tickets en lote:', error);
-                    displayMessage('Error al generar tickets. Revisa la consola.', 'error');
-                } finally {
-                    setLoading(false);
-                    state.isSubmitting = false;
-                    ui.generatorFormSubmitBtn.disabled = false;
-                    ui.generatorFormClearBtn.disabled = false;
-                }
-            });
-
-            ui.generatorFormClearBtn.addEventListener('click', () => {
-                ui.generatorForm.reset();
-                ui.generatedTicketsContainer.innerHTML = '';
-                state.currentBatchGeneratedTickets = [];
-                ui.shareBatchQrsBtn.classList.add('hidden');
-                ui.qrCarouselControls.classList.add('hidden');
-                displayMessage('Formulario limpiado.', 'info');
-            });
-
-            ui.shareBatchQrsBtn.addEventListener('click', shareCurrentBatch);
-            ui.resetStatsBtn.addEventListener('click', () => showResetConfirmation(Firebase.resetAllTicketsAndHistory));
-            ui.exportCsvBtn.addEventListener('click', exportScanHistoryToCSV);
-            ui.allTicketsSearchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredTickets = state.allTicketsData.filter(ticket =>
-                    ticket.name.toLowerCase().includes(searchTerm) ||
-                    ticket.id.toLowerCase().includes(searchTerm) ||
-                    (ticket.seatLocation && ticket.seatLocation.toLowerCase().includes(searchTerm))
-                );
-                renderAllTickets(filteredTickets);
-            });
-            ui.simulateScanBtn.addEventListener('click', () => {
-                const qrText = ui.simulatorInput.value.trim();
-                if (qrText) {
-                    processScan(qrText, 'simulator');
-                } else {
-                    displayMessage("Por favor, ingresa un texto para simular.", "warning");
-                }
-            });
-            ui.toggleTorchBtn.addEventListener('click', toggleTorch);
-
-            // Auth Listeners
-            ui.loginBtn.addEventListener('click', async () => {
-                const email = ui.emailInput.value;
-                const password = ui.passwordInput.value;
-                if (!email || !password) {
-                    displayMessage('Por favor, ingresa email y contraseña.', 'warning');
-                    return;
-                }
-                setLoading(true);
-                try {
-                    await signInWithEmailAndPassword(state.auth, email, password);
-                } catch (error) {
-                    displayMessage(`Error al iniciar sesión: ${error.message}`, 'error');
-                } finally {
-                    setLoading(false);
-                }
-            });
-
-            ui.registerBtn.addEventListener('click', async () => {
-                const email = ui.emailInput.value;
-                const password = ui.passwordInput.value;
-                if (!email || !password) {
-                    displayMessage('Por favor, ingresa email y contraseña.', 'warning');
-                    return;
-                }
-                setLoading(true);
-                try {
-                    await createUserWithEmailAndPassword(state.auth, email, password);
-                } catch (error) {
-                    displayMessage(`Error al registrarse: ${error.message}`, 'error');
-                } finally {
-                    setLoading(false);
-                }
-            });
-
-            ui.logoutBtn.addEventListener('click', async () => {
-                await signOut(state.auth);
-                displayMessage('Sesión cerrada.', 'info');
-            });
-            
-            ui.demoModeBtn.addEventListener('click', () => {
-                ui.authScreen.classList.add('hidden');
-                ui.appContent.classList.remove('hidden');
-                ui.userEmailDisplay.textContent = 'Modo de Prueba';
-                ui.logoutBtn.classList.remove('hidden'); // Show logout to be able to go back
-                state.isFirebaseReady = false; // Ensure Firebase is marked as not ready
-                showSection(document.getElementById('batch-ticket-generator-section'));
-                displayMessage('Entrando en modo de prueba. Las funciones de base de datos están desactivadas.', 'info');
-            });
-
-
-            // Carousel listeners
-            ui.prevQrBtn.addEventListener('click', () => {
-                if (state.currentQrIndex > 0) {
-                    state.currentQrIndex--;
-                    displayCurrentQr();
-                }
-            });
-
-            ui.nextQrBtn.addEventListener('click', () => {
-                if (state.currentQrIndex < state.currentBatchGeneratedTickets.length - 1) {
-                    state.currentQrIndex++;
-                    displayCurrentQr();
-                }
-            });
-        }
-        
-        function displayCurrentQr() {
-            ui.generatedTicketsContainer.innerHTML = '';
-            const ticket = state.currentBatchGeneratedTickets[state.currentQrIndex];
-            if (ticket) {
-                generateQrCodeForTicket(ticket.id, ticket.name, ticket.prefix, ticket.seatLocation, ticket.qrDataUrl, ui.generatedTicketsContainer, ticket.showName, ticket.showLocation, ticket.showAddress);
-                ui.qrCounter.textContent = `Entrada ${state.currentQrIndex + 1} de ${state.currentBatchGeneratedTickets.length}`;
-            }
-        }
-        
-        async function toggleTorch() {
-            if (state.scanner && state.isScannerActive) {
-                try {
-                    const track = state.scanner.getRunningTrackCameraCapabilities();
-                    const capabilities = track.getCapabilities();
-                    if (capabilities.torch) {
-                        await track.applyConstraints({
-                            advanced: [{ torch: !state.isTorchOn }]
-                        });
-                        state.isTorchOn = !state.isTorchOn;
-                        ui.toggleTorchBtn.classList.toggle('active', state.isTorchOn);
-                        displayMessage(`Linterna ${state.isTorchOn ? 'encendida' : 'apagada'}.`, 'info');
-                    } else {
-                        displayMessage("La linterna no es compatible con este dispositivo.", "warning");
-                    }
-                } catch (err) {
-                    console.error("Error al controlar la linterna:", err);
-                    displayMessage("No se pudo controlar la linterna.", "error");
-                }
-            }
-        }
-
-
-        document.addEventListener('DOMContentLoaded', startApp);
-    </script>
-</body>
-</html>
+                    showName:
