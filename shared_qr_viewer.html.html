@@ -91,7 +91,7 @@
 </head>
 <body class="antialiased">
 
-    <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div></div>
+    <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
     
     <div class="container mx-auto max-w-7xl p-4 sm:p-6">
         <header class="text-center mb-8">
@@ -115,6 +115,7 @@
 
         const state = { db: null, auth: null };
         const config = {
+            appId: typeof __app_id !== 'undefined' ? __app_id : 'vytmusic-app-prod',
             firebase: {
                 apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
                 authDomain: "vyt-music.firebaseapp.com",
@@ -204,7 +205,7 @@
             ui.artistNameDisplay.textContent = `Entradas para: ${decodeURIComponent(artistPrefix)}`;
 
             try {
-                const ticketsCollectionRef = collection(state.db, `artifacts/vytmusic-app-prod/public/data/tickets`);
+                const ticketsCollectionRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
                 const q = query(ticketsCollectionRef, where("prefix", "==", artistPrefix));
 
                 const querySnapshot = await getDocs(q);
