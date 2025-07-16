@@ -18,8 +18,10 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <!-- Tone.js CDN for sound effects -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-    <!-- html2canvas para "sacar fotos" a los divs -->
+    <!-- html2canvas para "sacar fotos" a los divs (Mantenido por si es útil en otro lugar, pero html2pdf es el principal para QR) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- html2pdf para generar PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         /* Estilos base personalizados */
@@ -54,6 +56,42 @@
             padding-bottom: 1rem; /* Espaciado debajo de la línea */
         }
 
+        /* Nuevo contenedor para los botones de navegación con estilo de recuadro */
+        .buttons-panel-wrapper {
+            background-color: #1f2937; /* Similar a bg-gray-800 */
+            border-radius: 0.75rem; /* Bordes redondeados */
+            padding: 1.5rem; /* Espaciado interno */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Sombra suave */
+            margin-bottom: 2rem; /* Espacio con lo de abajo */
+            display: flex;
+            justify-content: center; /* Centra el contenido */
+            flex-wrap: wrap; /* Permite que los botones se envuelvan */
+            gap: 1rem; /* Espacio entre los botones */
+        }
+
+        /* Ajuste para los botones de navegación existentes */
+        .nav-btn {
+            /* Mantener estilos existentes como transition, border-bottom */
+            padding: 0.75rem 1.25rem; /* Ligeramente más grandes para mejor clic */
+            border-radius: 0.5rem; /* Bordes redondeados para cada botón */
+            font-weight: 600;
+            color: #d1d5db; /* text-gray-300 por defecto */
+            background-color: transparent; /* Fondo transparente por defecto */
+            transition: all 0.2s ease-in-out;
+            border: 1px solid transparent; /* Borde sutil para botones inactivos */
+            border-bottom: none; /* Eliminar el borde inferior de la nav-container para no duplicar */
+        }
+        .nav-btn:hover {
+            background-color: rgba(56, 189, 248, 0.1); /* Ligero fondo azul al hover */
+            color: #38bdf8;
+            border-color: #38bdf8; /* Borde al hover */
+        }
+        .nav-btn.active {
+            background-color: #38bdf8; /* sky-400 */
+            color: #111827; /* bg-gray-900 oscuro para el texto activo */
+            border-color: #38bdf8;
+        }
+        
         /* Overlay de carga */
         .loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -321,14 +359,17 @@
                 </div>
             </div>
 
-            <nav class="nav-container"> <!-- Contenedor para centrar los botones de navegación -->
-                <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
-                <button id="open-scanner-btn" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
-                <button data-section="all-tickets-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Lista de Entradas</button>
-                <button data-section="scan-history-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Historial</button>
-                <button data-section="dashboard-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Dashboard</button>
-                <button data-section="simulator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Simulador</button>
-            </nav>
+            <!-- Nuevo contenedor para los botones de navegación -->
+            <div class="buttons-panel-wrapper">
+                <nav class="nav-container">
+                    <button data-section="batch-ticket-generator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Generar Entradas</button>
+                    <button id="open-scanner-btn" class="nav-btn px-4 py-2 font-semibold transition-colors">Escanear QR</button>
+                    <button data-section="all-tickets-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Lista de Entradas</button>
+                    <button data-section="scan-history-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Historial</button>
+                    <button data-section="dashboard-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Dashboard</button>
+                    <button data-section="simulator-section" class="nav-btn px-4 py-2 font-semibold transition-colors">Simulador</button>
+                </nav>
+            </div>
 
             <main class="mt-8">
                 <!-- Sección de Generador de Entradas en Lote (Ahora primera sección activa) -->
@@ -549,6 +590,7 @@
                 appId: "1:574981837817:web:a29933a22bbfd51a086328"
             },
             logoUrl: 'https://i.imgur.com/rqkZi9P.png',
+            whatsappNumber: '5493417422062' // Tu número de WhatsApp con código de país
         };
 
         // --- UI ELEMENTS ---
@@ -643,11 +685,18 @@
             ui.shareLinkDisplay.value = link;
             ui.shareLinkModal.classList.remove('hidden');
             const copyHandler = () => {
-                navigator.clipboard.writeText(link).then(() => {
+                // Using document.execCommand('copy') as navigator.clipboard.writeText() might not work due to iFrame restrictions
+                const tempInput = document.createElement('input');
+                tempInput.value = link;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand('copy');
                     displayMessage('¡Enlace copiado!', 'success');
-                }).catch(err => {
-                    displayMessage('Error al copiar el enlace.', 'error');
-                });
+                } catch (err) {
+                    displayMessage('Error al copiar el enlace. Por favor, cópialo manualmente.', 'error');
+                }
+                document.body.removeChild(tempInput);
             };
             const closeHandler = () => {
                 ui.copyShareLinkBtn.removeEventListener('click', copyHandler);
@@ -836,11 +885,11 @@
                 <div class="mt-4 border-t border-gray-700 pt-4 w-full">
                     <p class="text-xl font-bold text-sky-400">VYT-MUSIC</p>
                     <p class="text-sm text-gray-300">certamen de canto</p>
-                    <a href="https://wa.me/TUNUMERODEWHATSAPP" target="_blank" class="text-green-400 mt-2 inline-block hover:underline">
+                    <a href="https://wa.me/${config.whatsappNumber}" target="_blank" class="text-green-400 mt-2 inline-block hover:underline">
                         ¡Inscribite aquí!
                     </a>
                 </div>
-                <button class="download-qr-btn w-full mt-4" role="button">Descargar Entrada (PNG)</button>
+                <button class="download-qr-btn w-full mt-4" role="button">Descargar Entrada (PDF)</button>
             `;
             
             container.appendChild(cardWrapper);
@@ -853,19 +902,17 @@
                 correctLevel: QRCode.CorrectLevel.H
             });
 
-            // --> CAMBIO REALIZADO: La lógica de descarga ahora usa html2canvas para generar un PNG de toda la tarjeta.
+            // --> CAMBIO REALIZADO: La lógica de descarga ahora usa html2pdf para generar un PDF de toda la tarjeta.
             cardWrapper.querySelector('.download-qr-btn').addEventListener('click', () => {
                 const elementToPrint = document.getElementById(`card-${ticket.id}`);
-                
-                html2canvas(elementToPrint, { 
-                    backgroundColor: '#1f2937', // Coincide con el fondo de la tarjeta
-                    useCORS: true // Necesario si el logo es de una URL externa
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.href = canvas.toDataURL('image/png');
-                    link.download = `Entrada_${ticket.name.replace(/\s/g, '_')}.png`;
-                    link.click();
-                });
+                const options = {
+                    margin:       0.2,
+                    filename:     `Entrada_VYTMUSIC_${ticket.name.replace(/\s/g, '_')}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true },
+                    jsPDF:        { unit: 'in', format: 'a6', orientation: 'portrait' }
+                };
+                html2pdf().set(options).from(elementToPrint).save();
             });
         }
 
@@ -879,8 +926,8 @@
                 displayMessage('Ingresa un Prefijo de Artista/Grupo para poder compartir.', 'warning');
                 return;
             }
-            const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-            const shareableLink = `${window.location.origin}${basePath}shared_qr_viewer.html?artist=${encodeURIComponent(artistPrefix)}`;
+            // CORRECCIÓN: Apuntar directamente a shared_qr_viewer.html.html desde la raíz del origen.
+            const shareableLink = `${window.location.origin}/shared_qr_viewer.html.html?artist=${encodeURIComponent(artistPrefix)}`;
             showShareLinkModal(shareableLink);
         }
 
