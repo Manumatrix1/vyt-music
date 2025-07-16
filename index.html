@@ -426,7 +426,7 @@
                 <section id="all-tickets-section" class="section">
                     <div class="bg-gray-800 p-6 rounded-lg shadow-xl">
                         <h2 class="text-2xl font-bold mb-4">Lista de Todas las Entradas</h2>
-                        <input type="text" id="all-tickets-search-input" placeholder="Buscar por nombre, ID o ubicación..." class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 mb-4">
+                        <input type="text" id="all-tickets-search-input" placeholder="Buscar por nombre, ID, prefijo o ubicación..." class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 mb-4">
                         <ul id="all-tickets-list" class="space-y-3">
                             <li class="text-center text-gray-400">Aún no se han generado entradas.</li>
                         </ul>
@@ -592,9 +592,6 @@
         // --- UI ELEMENTS ---
         const ui = {};
 
-        /**
-         * Centralized function to query and store all UI elements.
-         */
         function cacheUIElements() {
             const ids = [
                 'loading-overlay', 'scan-flash-overlay', 'confirmation-modal', 'modal-title', 'modal-body',
@@ -625,12 +622,6 @@
         }
 
         // --- UTILITY AND UI FUNCTIONS ---
-
-        /**
-         * Displays a message to the user.
-         * @param {string} message The message to display.
-         * @param {'success'|'error'|'warning'|'info'} type The type of message.
-         */
         function displayMessage(message, type = 'success') {
             const colors = {
                 success: 'bg-green-500 text-white', error: 'bg-red-500 text-white',
@@ -640,131 +631,72 @@
             setTimeout(() => { ui.messageContainer.innerHTML = ''; }, 5000);
         }
 
-        /**
-         * Shows or hides the main loading overlay.
-         * @param {boolean} show True to show, false to hide.
-         */
         function setLoading(show) {
             ui.loadingOverlay.classList.toggle('hidden', !show);
         }
 
-        /**
-         * Shows a colored overlay to indicate scan result.
-         * @param {'valid'|'invalid'|'used'} type The result type.
-         */
         function flashScanResult(type) {
             ui.scanFlashOverlay.className = `scan-flash ${type}`;
             ui.scanFlashOverlay.style.opacity = '1';
             setTimeout(() => { ui.scanFlashOverlay.style.opacity = '0'; }, 500);
         }
 
-        /**
-         * Shows a generic confirmation modal.
-         * @param {string} title The modal title.
-         * @param {string} body The modal message.
-         * @param {function} onConfirm Callback function when confirm is clicked.
-         */
         function showConfirmation(title, body, onConfirm) {
             ui.modalTitle.textContent = title;
             ui.modalBody.textContent = body;
             ui.confirmationModal.classList.remove('hidden');
-            
-            const confirmHandler = () => {
-                hideConfirmation();
-                onConfirm();
-            };
-
-            const cancelHandler = () => {
-                hideConfirmation();
-            };
-
+            const confirmHandler = () => { hideConfirmation(); onConfirm(); };
+            const cancelHandler = () => { hideConfirmation(); };
             const hideConfirmation = () => {
                 ui.modalConfirmBtn.removeEventListener('click', confirmHandler);
                 ui.modalCancelBtn.removeEventListener('click', cancelHandler);
                 ui.confirmationModal.classList.add('hidden');
             };
-
             ui.modalConfirmBtn.addEventListener('click', confirmHandler);
             ui.modalCancelBtn.addEventListener('click', cancelHandler);
         }
 
-        /**
-         * Shows a specific reset confirmation modal, requiring text input.
-         * @param {function} onConfirm Callback function when correct text is entered and confirm is clicked.
-         */
         function showResetConfirmation(onConfirm) {
             ui.resetConfirmationModal.classList.remove('hidden');
-            ui.resetConfirmInput.value = ''; // Clear input
-            ui.resetModalConfirmBtn.disabled = true; // Disable button initially
-
-            const inputHandler = () => {
-                ui.resetModalConfirmBtn.disabled = ui.resetConfirmInput.value !== 'REINICIO';
-            };
-
-            const confirmHandler = () => {
-                if (ui.resetConfirmInput.value === 'REINICIO') {
-                    hideResetConfirmation();
-                    onConfirm();
-                } else {
-                    displayMessage('Debes escribir "REINICIO" para confirmar.', 'warning');
-                }
-            };
-
-            const cancelHandler = () => {
-                hideResetConfirmation();
-            };
-
+            ui.resetConfirmInput.value = '';
+            ui.resetModalConfirmBtn.disabled = true;
+            const inputHandler = () => { ui.resetModalConfirmBtn.disabled = ui.resetConfirmInput.value !== 'REINICIO'; };
+            const confirmHandler = () => { if (ui.resetConfirmInput.value === 'REINICIO') { hideResetConfirmation(); onConfirm(); } };
+            const cancelHandler = () => { hideResetConfirmation(); };
             const hideResetConfirmation = () => {
                 ui.resetConfirmInput.removeEventListener('input', inputHandler);
                 ui.resetModalConfirmBtn.removeEventListener('click', confirmHandler);
                 ui.resetModalCancelBtn.removeEventListener('click', cancelHandler);
                 ui.resetConfirmationModal.classList.add('hidden');
             };
-
             ui.resetConfirmInput.addEventListener('input', inputHandler);
             ui.resetModalConfirmBtn.addEventListener('click', confirmHandler);
             ui.resetModalCancelBtn.addEventListener('click', cancelHandler);
         }
 
-        /**
-         * Shows the share link modal.
-         * @param {string} link The link to display.
-         */
         function showShareLinkModal(link) {
             ui.shareLinkDisplay.value = link;
             ui.shareLinkModal.classList.remove('hidden');
-
             const copyHandler = () => {
-                ui.shareLinkDisplay.select();
-                ui.shareLinkDisplay.setSelectionRange(0, 99999); 
-
-                try {
-                    navigator.clipboard.writeText(link).then(() => {
-                        displayMessage('¡Enlace copiado al portapapeles!', 'success');
-                    });
-                } catch (err) {
-                    console.error('Error copying link:', err);
-                    displayMessage('Error al copiar el enlace. Intenta manualmente.', 'error');
-                }
+                navigator.clipboard.writeText(link).then(() => {
+                    displayMessage('¡Enlace copiado!', 'success');
+                }).catch(err => {
+                    displayMessage('Error al copiar el enlace.', 'error');
+                });
             };
-
             const closeHandler = () => {
                 ui.copyShareLinkBtn.removeEventListener('click', copyHandler);
                 ui.closeShareModalBtn.removeEventListener('click', closeHandler);
                 ui.shareLinkModal.classList.add('hidden');
             };
-
             ui.copyShareLinkBtn.addEventListener('click', copyHandler);
             ui.closeShareModalBtn.addEventListener('click', closeHandler);
         }
 
-        // --- FIREBASE AND DATA LOGIC (RETAINS ORIGINAL FUNCTIONS, AS THEY ARE ROBUST) ---
+        // --- FIREBASE AND DATA LOGIC ---
         const Firebase = {
             async updateTicket(ticketId, data) {
-                if (!state.isFirebaseReady) {
-                    displayMessage('Firebase no está listo. No se pudo actualizar el ticket.', 'error');
-                    return false;
-                }
+                if (!state.isFirebaseReady) return false;
                 const ticketRef = doc(state.db, `artifacts/${config.appId}/public/data/tickets`, ticketId);
                 await updateDoc(ticketRef, data);
                 return true;
@@ -777,4 +709,418 @@
                     prefix: ticketData.prefix || 'N/A',
                     name: ticketData.name || 'N/A',
                     seatLocation: ticketData.seatLocation || 'N/A',
-                    showName:
+                    showName: ticketData.showName || 'N/A',
+                    status: scanStatus,
+                    scannedAt: new Date().toISOString(),
+                });
+            },
+            async resetAllTicketsAndHistory() {
+                if (!state.isFirebaseReady) return;
+                setLoading(true);
+                try {
+                    const batch = writeBatch(state.db);
+                    const ticketsQuery = query(collection(state.db, `artifacts/${config.appId}/public/data/tickets`));
+                    const ticketsSnapshot = await getDocs(ticketsQuery);
+                    ticketsSnapshot.forEach((doc) => batch.delete(doc.ref));
+                    const historyQuery = query(collection(state.db, `artifacts/${config.appId}/users/${state.userId}/scanHistory`));
+                    const historySnapshot = await getDocs(historyQuery);
+                    historySnapshot.forEach((doc) => batch.delete(doc.ref));
+                    await batch.commit();
+                    displayMessage('Estadísticas reiniciadas.', 'success');
+                } catch (error) {
+                    displayMessage('Error al reiniciar.', 'error');
+                } finally {
+                    setLoading(false);
+                }
+            },
+        };
+
+        // --- UI SECTION HANDLING ---
+        function showSection(sectionToShow) {
+            document.querySelectorAll('#app-content .section').forEach(section => section.classList.remove('active'));
+            sectionToShow.classList.add('active');
+            ui.navButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.section === sectionToShow.id);
+            });
+            if (sectionToShow.id === 'dashboard-section') updateDashboard();
+        }
+
+        // --- QR SCANNER FUNCTIONALITY ---
+        function startQrScanner() {
+            if (state.isScannerActive) return;
+            state.isScannerActive = true;
+            ui.fullscreenScannerContainer.classList.remove('hidden');
+            state.scanner = new Html5Qrcode("qr-code-reader");
+            ui.scannerStatusMessageFullscreen.textContent = 'Iniciando cámara...';
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            state.scanner.start({ facingMode: "environment" }, config, onScanSuccess, () => {})
+                .then(() => { ui.scannerStatusMessageFullscreen.textContent = 'Apunte al código QR'; })
+                .catch(err => { displayMessage('Error de cámara. ' + err, 'error'); });
+        }
+
+        async function stopAndCloseScanner() {
+            if (state.scanner && state.isScannerActive) {
+                try {
+                    await state.scanner.stop();
+                    state.scanner = null;
+                } catch (err) {}
+            }
+            state.isScannerActive = false;
+            ui.fullscreenScannerContainer.classList.add('hidden');
+        }
+        
+        async function onScanSuccess(decodedText) {
+            if (state.scanner) state.scanner.pause(true);
+            ui.scannerStatusMessageFullscreen.textContent = 'Procesando...';
+            await processScan(decodedText, 'fullscreen');
+        }
+
+        async function processScan(decodedText, context = 'fullscreen') {
+             try {
+                const ticketId = decodedText;
+                const ticketDoc = await getDoc(doc(state.db, `artifacts/${config.appId}/public/data/tickets`, ticketId));
+                let idEl, prefixEl, nameEl, locationEl, statusEl, markBtn, infoContainer, scanAgainBtn;
+                if (context === 'fullscreen') {
+                    idEl = ui.currentScannedTicketIdFullscreen;
+                    prefixEl = ui.currentScannedTicketPrefixFullscreen;
+                    nameEl = ui.currentScannedTicketNameFullscreen;
+                    locationEl = ui.currentScannedTicketSeatLocationFullscreen;
+                    statusEl = ui.currentScannedTicketStatusFullscreen;
+                    markBtn = ui.markUsedBtnFullscreen;
+                    infoContainer = ui.scannedTicketInfoFullscreen;
+                    scanAgainBtn = ui.scanAgainBtnFullscreen;
+                } else {
+                    idEl = ui.simScannedTicketId;
+                    prefixEl = ui.simScannedTicketPrefix;
+                    nameEl = ui.simScannedTicketName;
+                    locationEl = ui.simScannedTicketSeatLocation;
+                    statusEl = ui.simScannedTicketStatus;
+                    markBtn = { classList: { add: () => {} }};
+                    infoContainer = ui.simulatorResultContainer;
+                    scanAgainBtn = { classList: { add: () => {} }};
+                }
+                infoContainer.classList.remove('hidden');
+                markBtn.classList.add('hidden');
+                let status, colorClass, sound;
+                if (!ticketDoc.exists()) {
+                    idEl.textContent = ticketId;
+                    prefixEl.textContent = nameEl.textContent = locationEl.textContent = 'N/A';
+                    status = 'INVÁLIDO'; colorClass = 'text-red-500'; sound = "C3";
+                    Firebase.saveScanEvent({ id: ticketId }, 'invalid');
+                } else {
+                    const ticketData = ticketDoc.data();
+                    idEl.textContent = ticketData.id;
+                    prefixEl.textContent = ticketData.prefix;
+                    nameEl.textContent = ticketData.name;
+                    locationEl.textContent = ticketData.seatLocation || 'No Asignado';
+                    if (ticketData.used) {
+                        status = 'YA USADO'; colorClass = 'text-yellow-500'; sound = "G3";
+                        Firebase.saveScanEvent(ticketData, 'used');
+                    } else {
+                        status = 'VÁLIDO'; colorClass = 'text-green-500'; sound = "C4";
+                        if(context === 'fullscreen') markBtn.classList.remove('hidden');
+                        state.currentScannedTicketId = ticketData.id;
+                        Firebase.saveScanEvent(ticketData, 'valid');
+                    }
+                }
+                statusEl.textContent = status;
+                statusEl.className = `text-2xl font-bold ${colorClass}`;
+                flashScanResult(status.toLowerCase().split(' ')[0]);
+                if (state.synth) Tone.start().then(() => state.synth.triggerAttackRelease(sound, "8n"));
+            } catch (error) {
+                displayMessage('Error al procesar el ticket.', 'error');
+            } finally {
+                if (context === 'fullscreen') scanAgainBtn.classList.remove('hidden');
+            }
+        }
+        
+        // --- TICKET GENERATOR FUNCTIONALITY ---
+        function generateQrCodeForTicket(ticket, container) {
+            const qrItemDiv = document.createElement('div');
+            qrItemDiv.className = 'generated-qr-item p-4 border-gray-700 bg-gray-900';
+            const qrCodeContainerWrapper = document.createElement('div');
+            qrCodeContainerWrapper.className = 'qrcode-container-wrapper';
+            const qrCodeContainerDiv = document.createElement('div');
+            qrCodeContainerDiv.id = `qrcode-${ticket.id}`;
+            qrCodeContainerDiv.className = 'qrcode-container';
+            const logoImg = document.createElement('img');
+            logoImg.src = config.logoUrl;
+            logoImg.className = 'qrcode-logo';
+            qrCodeContainerWrapper.appendChild(qrCodeContainerDiv);
+            qrCodeContainerWrapper.appendChild(logoImg);
+            const infoTextDiv = document.createElement('div');
+            infoTextDiv.className = 'qr-info-text text-black';
+            infoTextDiv.innerHTML = `
+                <h3 class="text-2xl font-bold text-sky-500">VYT-MUSIC</h3>
+                <p>${ticket.showName}</p>
+                <p class="font-bold text-xl">${ticket.name}</p>
+                <p>Ubicación: ${ticket.seatLocation || 'N/A'}</p>
+            `;
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = 'Descargar';
+            downloadBtn.className = 'download-qr-btn';
+            downloadBtn.onclick = () => {
+                const canvas = qrCodeContainerDiv.querySelector('canvas');
+                if(canvas) downloadBtn.href = canvas.toDataURL();
+                downloadBtn.download = `${ticket.name}.png`;
+            };
+            qrItemDiv.append(qrCodeContainerWrapper, infoTextDiv, downloadBtn);
+            container.appendChild(qrItemDiv);
+            new QRCode(qrCodeContainerDiv, { text: ticket.id, width: 256, height: 256 });
+        }
+
+        async function shareCurrentBatch() {
+            const artistPrefix = ui.ticketPrefixInput.value.trim();
+            if (!artistPrefix) {
+                displayMessage('Ingresa un Prefijo de Artista/Grupo para poder compartir.', 'warning');
+                return;
+            }
+            const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+            const shareableLink = `${window.location.origin}${basePath}shared_qr_viewer.html?artist=${encodeURIComponent(artistPrefix)}`;
+            showShareLinkModal(shareableLink);
+        }
+
+        // --- LIST RENDERING AND OTHER UI FUNCTIONS ---
+        function renderAllTickets(tickets) {
+            ui.allTicketsList.innerHTML = '';
+            if (!tickets || tickets.length === 0) {
+                ui.allTicketsList.innerHTML = '<li class="text-center text-gray-400">No hay entradas.</li>';
+                return;
+            }
+            tickets.sort((a, b) => a.used - b.used).forEach(ticket => {
+                const li = document.createElement('li');
+                li.className = 'bg-gray-900 p-4 rounded-md flex justify-between items-center';
+                const statusClass = ticket.used ? 'bg-yellow-600' : 'bg-green-600';
+                li.innerHTML = `
+                    <div>
+                        <p class="font-semibold">${ticket.name} <span class="text-gray-400 text-sm">(${ticket.prefix})</span></p>
+                        <p class="text-sm text-gray-400">ID: ${ticket.id}</p>
+                        <p class="text-sm text-gray-400">Ubicación: ${ticket.seatLocation || 'N/A'}</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${ticket.used ? 'USADO' : 'DISPONIBLE'}</span>
+                `;
+                ui.allTicketsList.appendChild(li);
+            });
+        }
+
+        function renderScanHistory(historyItems) {
+            ui.scanHistoryList.innerHTML = '';
+            if (!historyItems || historyItems.length === 0) {
+                ui.scanHistoryList.innerHTML = '<li class="text-center text-gray-400">No hay historial.</li>';
+                return;
+            }
+            historyItems.sort((a, b) => new Date(b.scannedAt) - new Date(a.scannedAt)).forEach(item => {
+                const li = document.createElement('li');
+                let statusClass = item.status === 'valid' ? 'bg-green-600' : item.status === 'used' ? 'bg-yellow-600' : 'bg-red-600';
+                li.className = 'bg-gray-900 p-4 rounded-md flex justify-between items-center';
+                li.innerHTML = `
+                    <div>
+                        <p class="font-semibold">${item.name || 'N/A'} <span class="text-gray-400 text-sm">(${item.prefix || 'N/A'})</span></p>
+                        <p class="text-sm text-gray-400">${item.id}</p>
+                        <p class="text-xs text-gray-500">${new Date(item.scannedAt).toLocaleString()}</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${item.status.toUpperCase()}</span>`;
+                ui.scanHistoryList.appendChild(li);
+            });
+        }
+
+        function exportScanHistoryToCSV() {
+            if (state.scanHistory.length === 0) {
+                displayMessage("No hay historial para exportar.", "warning");
+                return;
+            }
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "ID Ticket,Nombre,Prefijo,Ubicacion,Estado,Fecha Escaneo\r\n";
+            state.scanHistory.forEach(item => {
+                let row = [item.id, item.name, item.prefix, item.seatLocation || 'N/A', item.status, new Date(item.scannedAt).toLocaleString('es-ES')].map(val => `"${val}"`).join(",");
+                csvContent += row + "\r\n";
+            });
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", "historial_escaneo_vytmusic.csv");
+            link.click();
+        }
+
+        function updateDashboard() {
+            const occupancy = state.totalGeneratedTickets > 0 ? (state.totalUsedTickets / state.totalGeneratedTickets) * 100 : 0;
+            ui.occupancyRate.textContent = `${occupancy.toFixed(1)}%`;
+            const scansByHour = state.scanHistory.reduce((acc, s) => { const h = new Date(s.scannedAt).getHours(); acc[h] = (acc[h] || 0) + 1; return acc; }, {});
+            ui.scansPerHour.innerHTML = Object.keys(scansByHour).length > 0 ? '' : '<p class="text-gray-400">No hay datos.</p>';
+            Object.keys(scansByHour).sort((a,b) => a-b).forEach(h => { ui.scansPerHour.innerHTML += `<p>${h}:00: <span class="font-bold">${scansByHour[h]}</span></p>`; });
+            const scansByPrefix = state.scanHistory.reduce((acc, s) => { if(s.prefix) acc[s.prefix] = (acc[s.prefix] || 0) + 1; return acc; }, {});
+            ui.scansByPrefix.innerHTML = Object.keys(scansByPrefix).length > 0 ? '' : '<p class="text-gray-400">No hay datos.</p>';
+            Object.keys(scansByPrefix).forEach(p => { ui.scansByPrefix.innerHTML += `<p>${p}: <span class="font-bold">${scansByPrefix[p]}</span></p>`; });
+        }
+        
+        // --- INITIALIZATION AND EVENT LISTENERS ---
+        function setupEventListeners() {
+            ui.navButtons.forEach(b => b.addEventListener('click', e => showSection(document.getElementById(e.currentTarget.dataset.section))));
+            ui.openScannerBtn.addEventListener('click', startQrScanner);
+            ui.closeScannerBtn.addEventListener('click', stopAndCloseScanner);
+            ui.scanAgainBtnFullscreen.addEventListener('click', () => {
+                ui.scannedTicketInfoFullscreen.classList.add('hidden');
+                if (state.scanner) {
+                    try { state.scanner.resume(); } catch(e) {}
+                }
+                ui.scannerStatusMessageFullscreen.textContent = 'Apunte al código QR.';
+            });
+            ui.markUsedBtnFullscreen.addEventListener('click', () => {
+                if (state.currentScannedTicketId) {
+                    showConfirmation('Confirmar Uso', `Marcar ticket ${ui.currentScannedTicketNameFullscreen.textContent} como USADO?`, async () => {
+                        await Firebase.updateTicket(state.currentScannedTicketId, { used: true, usedAt: new Date().toISOString(), usedBy: state.userId });
+                        ui.scannedTicketInfoFullscreen.classList.add('hidden');
+                        if (state.scanner) {
+                            try { state.scanner.resume(); } catch(e) {}
+                        }
+                    });
+                }
+            });
+            ui.generatorForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (state.isSubmitting) return;
+                state.isSubmitting = true;
+                setLoading(true);
+                ui.generatedTicketsContainer.innerHTML = '';
+                state.currentBatchGeneratedTickets = [];
+                const ticketPrefix = ui.ticketPrefixInput.value.trim();
+                const showName = document.getElementById('show-name-input').value.trim();
+                const showLocation = document.getElementById('show-location-input').value.trim();
+                const showAddress = document.getElementById('show-address-input').value.trim();
+                const names = ui.batchTicketNamesInput.value.trim().split(/[\n,]+/).map(n => n.trim()).filter(Boolean);
+                const seatLocation = ui.ticketSeatLocationInput.value.trim();
+
+                if (names.length === 0 || !ticketPrefix || !showName || !showLocation) {
+                    displayMessage('Faltan datos requeridos.', 'warning');
+                    setLoading(false); state.isSubmitting = false; return;
+                }
+                try {
+                    const batch = writeBatch(state.db);
+                    const ticketsCol = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
+                    names.forEach(name => {
+                        const ticketId = `${ticketPrefix}-${crypto.randomUUID().substring(0, 8)}`;
+                        const ticketData = { id: ticketId, prefix: ticketPrefix, name, seatLocation, showName, showLocation, showAddress, used: false, generatedAt: new Date().toISOString(), usedAt: null, generatedBy: state.userId };
+                        batch.set(doc(ticketsCol, ticketId), ticketData);
+                        state.currentBatchGeneratedTickets.push(ticketData);
+                    });
+                    await batch.commit();
+                    state.currentQrIndex = 0;
+                    displayCurrentQr();
+                    ui.qrCarouselControls.classList.remove('hidden');
+                    ui.shareBatchQrsBtn.classList.remove('hidden');
+                    displayMessage(`${names.length} tickets generados.`, 'success');
+                } catch (error) {
+                    displayMessage(`Error: ${error.message}`, 'error');
+                } finally {
+                    setLoading(false); state.isSubmitting = false;
+                }
+            });
+            ui.generatorFormClearBtn.addEventListener('click', () => {
+                ui.generatorForm.reset();
+                ui.generatedTicketsContainer.innerHTML = '';
+                state.currentBatchGeneratedTickets = [];
+                ui.shareBatchQrsBtn.classList.add('hidden');
+                ui.qrCarouselControls.classList.add('hidden');
+            });
+            ui.shareBatchQrsBtn.addEventListener('click', shareCurrentBatch);
+            ui.resetStatsBtn.addEventListener('click', () => showResetConfirmation(Firebase.resetAllTicketsAndHistory));
+            ui.exportCsvBtn.addEventListener('click', exportScanHistoryToCSV);
+            ui.allTicketsSearchInput.addEventListener('input', e => {
+                const term = e.target.value.toLowerCase();
+                renderAllTickets(state.allTicketsData.filter(t => t.name.toLowerCase().includes(term) || t.id.toLowerCase().includes(term) || t.prefix.toLowerCase().includes(term)));
+            });
+            ui.simulateScanBtn.addEventListener('click', () => {
+                const qrText = ui.simulatorInput.value.trim();
+                if (qrText) processScan(qrText, 'simulator');
+            });
+            ui.loginBtn.addEventListener('click', async () => {
+                setLoading(true);
+                try { await signInWithEmailAndPassword(state.auth, ui.emailInput.value, ui.passwordInput.value); }
+                catch (e) { displayMessage(e.message, 'error'); } 
+                finally { setLoading(false); }
+            });
+            ui.registerBtn.addEventListener('click', async () => {
+                setLoading(true);
+                try { await createUserWithEmailAndPassword(state.auth, ui.emailInput.value, ui.passwordInput.value); }
+                catch (e) { displayMessage(e.message, 'error'); }
+                finally { setLoading(false); }
+            });
+            ui.logoutBtn.addEventListener('click', () => signOut(state.auth));
+            ui.prevQrBtn.addEventListener('click', () => { if (state.currentQrIndex > 0) { state.currentQrIndex--; displayCurrentQr(); } });
+            ui.nextQrBtn.addEventListener('click', () => { if (state.currentQrIndex < state.currentBatchGeneratedTickets.length - 1) { state.currentQrIndex++; displayCurrentQr(); } });
+        }
+        
+        function displayCurrentQr() {
+            ui.generatedTicketsContainer.innerHTML = '';
+            const ticket = state.currentBatchGeneratedTickets[state.currentQrIndex];
+            if (ticket) {
+                generateQrCodeForTicket(ticket, ui.generatedTicketsContainer);
+                ui.qrCounter.textContent = `Entrada ${state.currentQrIndex + 1} de ${state.currentBatchGeneratedTickets.length}`;
+            }
+        }
+        
+        function setupFirestoreListeners() {
+            if (!state.isFirebaseReady || !state.userId) return;
+            const ticketsRef = collection(state.db, `artifacts/${config.appId}/public/data/tickets`);
+            state.ticketCountsListenerUnsubscribe = onSnapshot(ticketsRef, s => {
+                const ticketsData = s.docs.map(d => d.data());
+                state.totalGeneratedTickets = ticketsData.length;
+                state.totalUsedTickets = ticketsData.filter(d => d.used).length;
+                ui.totalGeneratedTickets.textContent = state.totalGeneratedTickets;
+                ui.totalUsedTickets.textContent = state.totalUsedTickets;
+            });
+            state.allTicketsListenerUnsubscribe = onSnapshot(ticketsRef, s => {
+                state.allTicketsData = s.docs.map(d => d.data());
+                renderAllTickets(state.allTicketsData);
+            });
+            const historyRef = collection(state.db, `artifacts/${config.appId}/users/${state.userId}/scanHistory`);
+            state.historyListenerUnsubscribe = onSnapshot(historyRef, s => {
+                state.scanHistory = s.docs.map(d => d.data());
+                renderScanHistory(state.scanHistory);
+            });
+        }
+        
+        async function startApp() {
+            cacheUIElements();
+            setLoading(true);
+            try {
+                const app = initializeApp(config.firebase);
+                state.db = getFirestore(app);
+                state.auth = getAuth(app);
+                state.synth = new Tone.Synth().toDestination();
+            } catch (error) {
+                setLoading(false);
+                return displayMessage("Error crítico al conectar con Firebase.", "error");
+            }
+
+            onAuthStateChanged(state.auth, (user) => {
+                if (user) {
+                    state.userId = user.uid;
+                    ui.userEmailDisplay.textContent = user.email;
+                    ui.logoutBtn.classList.remove('hidden');
+                    ui.authScreen.classList.add('hidden');
+                    ui.appContent.classList.remove('hidden');
+                    state.isFirebaseReady = true;
+                    setupFirestoreListeners();
+                    showSection(ui.batchTicketGeneratorSection); 
+                } else {
+                    state.userId = null;
+                    ui.userEmailDisplay.textContent = '';
+                    ui.logoutBtn.classList.add('hidden');
+                    ui.authScreen.classList.remove('hidden');
+                    ui.appContent.classList.add('hidden');
+                    state.isFirebaseReady = false;
+                    if (state.ticketCountsListenerUnsubscribe) state.ticketCountsListenerUnsubscribe();
+                    if (state.allTicketsListenerUnsubscribe) state.allTicketsListenerUnsubscribe();
+                    if (state.historyListenerUnsubscribe) state.historyListenerUnsubscribe();
+                }
+                setLoading(false);
+            });
+
+            state.logoImage.src = config.logoUrl;
+            setupEventListeners();
+        }
+
+        document.addEventListener('DOMContentLoaded', startApp);
+    </script>
+</body>
+</html>
