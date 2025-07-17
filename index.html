@@ -1007,10 +1007,12 @@
                 // ** CORRECCIÓN: Manejo de configuración de Firebase indefinida **
                 const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
                 if (!firebaseConfigString) {
-                    console.warn("Firebase config is not defined. Using fallback or entering demo mode.");
-                    enterDemoMode(); // Opcional: entrar en modo demo si no hay config
+                    console.warn("Firebase config is not defined. Showing auth screen as fallback.");
+                    // ** MODIFICACIÓN: Mostrar pantalla de login en lugar de modo demo **
+                    ui.authScreen.classList.remove('hidden');
+                    ui.appContent.classList.add('hidden');
                     setLoading(false);
-                    setupEventListeners();
+                    setupEventListeners(); // Setup listeners for login buttons
                     return;
                 }
 
