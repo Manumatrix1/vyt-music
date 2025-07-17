@@ -133,7 +133,6 @@
 
         <div id="message-container" class="mb-4 max-w-4xl mx-auto"></div>
         
-        <!-- ** NUEVO: Buscador y botón de compartir ** -->
         <div id="controls-container" class="hidden max-w-xl mx-auto mb-8 space-y-4">
              <input type="text" id="ticket-search-input" placeholder="Busca tu entrada por nombre o ID..." class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
              <button id="share-all-tickets-btn" class="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
@@ -157,7 +156,7 @@
             db: null, 
             auth: null,
             currentArtistPrefix: null,
-            allTicketsData: [] // Almacenar todas las entradas cargadas para el filtro
+            allTicketsData: []
         };
         const config = {
             logoUrl: 'https://i.imgur.com/rqkZi9P.png' 
@@ -273,9 +272,8 @@
             });
         }
         
-        // ** NUEVA FUNCIÓN PARA RENDERIZAR ENTRADAS **
         function renderTickets(ticketsToRender) {
-            ui.qrsContainer.innerHTML = ''; // Limpiar contenedor
+            ui.qrsContainer.innerHTML = '';
             if (ticketsToRender.length === 0) {
                 ui.qrsContainer.innerHTML = '<p class="text-center text-gray-400 col-span-full">No se encontraron entradas con ese criterio.</p>';
                 return;
@@ -283,11 +281,10 @@
             ticketsToRender.forEach(ticket => createTicketCard(ticket));
         }
 
-        // ** NUEVA FUNCIÓN PARA FILTRAR ENTRADAS **
         function filterTickets() {
             const searchTerm = ui.ticketSearchInput.value.toLowerCase().trim();
             if (!searchTerm) {
-                renderTickets(state.allTicketsData); // Muestra todas si no hay búsqueda
+                renderTickets(state.allTicketsData);
                 return;
             }
             const filtered = state.allTicketsData.filter(ticket => 
@@ -313,13 +310,13 @@
 
                 if (state.allTicketsData.length > 0) {
                     ui.showNameDisplay.textContent = `Show: ${state.allTicketsData[0].showName || 'N/A'}`;
-                    renderTickets(state.allTicketsData); // Renderizar todas al inicio
+                    renderTickets(state.allTicketsData);
                     displayMessage(`${state.allTicketsData.length} entradas cargadas.`, 'success');
-                    ui.controlsContainer.classList.remove('hidden'); // Mostrar controles
+                    ui.controlsContainer.classList.remove('hidden');
                 } else {
                     displayMessage('No se encontraron tickets para este grupo o el prefijo es incorrecto.', 'warning');
                     ui.showNameDisplay.textContent = 'Show: No disponible';
-                    ui.controlsContainer.classList.add('hidden'); // Ocultar si no hay tickets
+                    ui.controlsContainer.classList.add('hidden');
                 }
             } catch (error) {
                 console.error('Error al cargar las entradas del artista:', error);
@@ -341,16 +338,30 @@
         async function startApp() {
             setLoading(true);
             try {
-                const firebaseConfig = JSON.parse(__firebase_config);
-                const app = initializeApp(firebaseConfig);
+                // ** CORRECCIÓN: Usar la configuración del entorno o una de respaldo **
+                const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+                const configToUse = firebaseConfigString 
+                    ? JSON.parse(firebaseConfigString)
+                    : {
+                        apiKey: "AIzaSyC_2Ukoxf_ry7QfKtou1Cz6nY-qTVw4qTU",
+                        authDomain: "vyt-music.firebaseapp.com",
+                        projectId: "vyt-music",
+                        storageBucket: "vyt-music.appspot.com",
+                        messagingSenderId: "574981837817",
+                        appId: "1:574981837817:web:a29933a22bbfd51a086328"
+                    };
+
+                const app = initializeApp(configToUse);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
+                
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(state.auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(state.auth);
                 }
             } catch (error) {
+                console.error("Error crítico al conectar con Firebase:", error);
                 displayMessage("Error crítico al conectar con Firebase.", "error");
                 setLoading(false);
                 return;
