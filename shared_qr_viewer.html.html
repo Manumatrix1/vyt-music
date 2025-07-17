@@ -16,11 +16,12 @@
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #111827; /* bg-gray-900 */
+            background-color: #111827;
             color: #f9fafb;
             min-height: 100vh;
         }
@@ -34,7 +35,7 @@
         }
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #38bdf8; /* text-sky-400 */
+            border-top: 4px solid #38bdf8;
             border-radius: 50%; width: 40px; height: 40px;
             animation: spin 1s linear infinite;
         }
@@ -53,17 +54,12 @@
             padding: 1.5rem;
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .ticket-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
         }
 
         .qrcode-wrapper {
             position: relative;
             width: 100%;
-            max-width: 250px;
+            max-width: 300px;
             padding-bottom: 100%; /* Aspect ratio 1:1 */
             height: 0;
             background-color: white;
@@ -74,8 +70,6 @@
         .qrcode-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
-            padding: 16px; /* Padding inside the white box */
-            box-sizing: border-box;
         }
         .qrcode-container canvas, .qrcode-container img[alt="QR Code"] {
             width: 100% !important; height: 100% !important;
@@ -88,7 +82,6 @@
             transform: translate(-50%, -50%);
             border-radius: 50%; background-color: white;
             padding: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
         }
 
         .download-btn {
@@ -98,8 +91,7 @@
         .download-btn:hover {
             background-color: #0ea5e9;
         }
-        
-        .modal-backdrop {
+         .modal-backdrop {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
@@ -115,7 +107,7 @@
 
     <div id="loading-overlay" class="loading-overlay hidden"><div class="spinner"></div></div>
     
-    <!-- Modal de Enlace Compartido -->
+     <!-- Modal de Enlace Compartido -->
     <div id="share-link-modal" class="modal-backdrop hidden">
         <div class="modal-content bg-gray-800 p-6 rounded-lg shadow-xl w-11/12 max-w-lg">
             <h3 class="text-xl font-bold mb-4">Compartir Enlace de Entradas</h3>
@@ -132,7 +124,7 @@
 
     <div class="container mx-auto max-w-7xl p-4 sm:p-6">
         <header class="text-center mb-8">
-            <img src="https://i.imgur.com/rqkZi9P.png" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 120px;" onerror="this.onerror=null;this.src='https://placehold.co/120x120/ffffff/000000?text=Logo';">
+            <img src="https://i.imgur.com/rqkZi9P.png" alt="VYTMUSIC Logo" class="mx-auto mb-4 bg-white rounded-full" style="max-width: 120px;">
             <p class="text-gray-400 font-semibold tracking-wider">PRODUCCIONES</p>
             <h1 class="text-4xl sm:text-5xl font-bold text-sky-400">VYTMUSIC</h1>
             <h2 id="batch-artist-name-display" class="text-2xl text-white mt-4">Entradas para: Cargando...</h2>
@@ -140,18 +132,15 @@
         </header>
 
         <div id="message-container" class="mb-4 max-w-4xl mx-auto"></div>
-
-        <!-- Botón para compartir todas las entradas -->
-        <div class="flex justify-center mb-6">
-            <button id="share-all-tickets-btn" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 hidden">
-                Compartir Enlace de Todas las Entradas
+        
+        <!-- ** NUEVO: Buscador y botón de compartir ** -->
+        <div id="controls-container" class="hidden max-w-xl mx-auto mb-8 space-y-4">
+             <input type="text" id="ticket-search-input" placeholder="Busca tu entrada por nombre o ID..." class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+             <button id="share-all-tickets-btn" class="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+                Compartir Enlace a Todas las Entradas
             </button>
         </div>
 
-        <!-- Buscador de Entradas -->
-        <div id="search-container" class="mb-6 max-w-xl mx-auto hidden">
-            <input type="text" id="ticket-search-input" placeholder="Buscar tu entrada por nombre o ID..." class="w-full p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500">
-        </div>
 
         <div id="shared-qrs-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Las tarjetas de las entradas se cargarán aquí -->
@@ -160,44 +149,35 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
-        // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- CONFIGURACIÓN CENTRAL ---
         const state = { 
             db: null, 
-            auth: null, 
+            auth: null,
             currentArtistPrefix: null,
             allTicketsData: [] // Almacenar todas las entradas cargadas para el filtro
-        }; 
-
+        };
         const config = {
-            // IMPORTANTE: Si el logo sigue sin aparecer en los PDFs, descarga esta imagen
-            // y guárdala en la misma carpeta que tus archivos HTML (ej. 'logo.png').
-            // Luego, cambia la URL a 'logo.png'.
-            logoUrl: 'https://i.imgur.com/rqkZi9P.png',
-            whatsappNumber: '5493417422062' // Tu número de WhatsApp con código de país
+            logoUrl: 'https://i.imgur.com/rqkZi9P.png' 
         };
 
-        // --- ELEMENTOS DE LA UI ---
         const ui = {
             loadingOverlay: document.getElementById('loading-overlay'),
             messageContainer: document.getElementById('message-container'),
             qrsContainer: document.getElementById('shared-qrs-container'),
             showNameDisplay: document.getElementById('batch-show-name-display'),
             artistNameDisplay: document.getElementById('batch-artist-name-display'),
+            controlsContainer: document.getElementById('controls-container'),
+            ticketSearchInput: document.getElementById('ticket-search-input'),
+            shareAllTicketsBtn: document.getElementById('share-all-tickets-btn'),
             shareLinkModal: document.getElementById('share-link-modal'),
             shareLinkDisplay: document.getElementById('share-link-display'),
             copyShareLinkBtn: document.getElementById('copy-share-link-btn'),
-            closeShareModalBtn: document.getElementById('close-share-modal-btn'),
-            shareAllTicketsBtn: document.getElementById('share-all-tickets-btn'),
-            searchContainer: document.getElementById('search-container'),
-            ticketSearchInput: document.getElementById('ticket-search-input')
+            closeShareModalBtn: document.getElementById('close-share-modal-btn')
         };
 
-        // --- FUNCIONES DE LA UI ---
         function displayMessage(message, type = 'info') {
             const colors = { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500 text-black', info: 'bg-sky-500' };
             ui.messageContainer.innerHTML = `<div class="p-4 rounded-md text-white ${colors[type]}">${message}</div>`;
@@ -207,11 +187,10 @@
         function setLoading(show) {
             ui.loadingOverlay.classList.toggle('hidden', !show);
         }
-
+        
         function showShareLinkModal(link) {
             ui.shareLinkDisplay.value = link;
             ui.shareLinkModal.classList.remove('hidden');
-            
             const copyHandler = () => {
                 const tempInput = document.createElement('input');
                 tempInput.value = link;
@@ -225,52 +204,42 @@
                 }
                 document.body.removeChild(tempInput);
             };
-            
             const closeHandler = () => {
                 ui.copyShareLinkBtn.removeEventListener('click', copyHandler);
                 ui.closeShareModalBtn.removeEventListener('click', closeHandler);
                 ui.shareLinkModal.classList.add('hidden');
             };
-            
             ui.copyShareLinkBtn.addEventListener('click', copyHandler, { once: true });
             ui.closeShareModalBtn.addEventListener('click', closeHandler, { once: true });
         }
 
-        // --- LÓGICA DE ENTRADAS ---
+
         function createTicketCard(ticket) {
             const cardWrapper = document.createElement('div');
             cardWrapper.id = `card-${ticket.id}`;
             cardWrapper.className = 'ticket-card';
             
-            const qrWrapper = `
-                <div class="qrcode-wrapper">
-                    <div id="qrcode-${ticket.id}" class="qrcode-container"></div>
-                    <img src="${config.logoUrl}" alt="Logo" class="qrcode-logo" onerror="this.style.display='none'">
+            const codesContainer = `
+                <div class="w-full max-w-[300px] mx-auto">
+                    <div class="qrcode-wrapper">
+                        <div id="qrcode-${ticket.id}" class="qrcode-container"></div>
+                        <img src="${config.logoUrl}" alt="Logo" class="qrcode-logo">
+                    </div>
+                    <div class="mt-1 p-2 bg-white rounded-md">
+                        <svg id="barcode-${ticket.id}" class="w-full"></svg>
+                    </div>
                 </div>
             `;
+
             const addressHtml = ticket.showAddress 
                 ? `<p class="text-sm text-gray-400">${ticket.showAddress.startsWith('http') ? `<a href="${ticket.showAddress}" target="_blank" class="text-sky-400 hover:underline">Ver en Mapa</a>` : ticket.showAddress}</p>` 
                 : '';
 
             cardWrapper.innerHTML = `
-                <div class="w-full">
-                    <h3 class="text-2xl font-bold text-sky-400">${ticket.name}</h3>
-                    <p class="text-gray-300">${ticket.seatLocation || 'Ubicación General'}</p>
-                </div>
-                ${qrWrapper}
-                <div class="w-full">
-                    <p class="text-lg font-semibold">${ticket.showName}</p>
-                    <p class="text-md text-gray-400">${ticket.showLocation}</p>
-                    ${addressHtml}
-                    <p class="text-xs text-gray-500 mt-2">ID: ${ticket.id}</p>
-                </div>
-                <div class="mt-4 border-t border-gray-700 pt-4 w-full">
-                    <p class="text-xl font-bold text-sky-400">VYT-MUSIC</p>
-                    <p class="text-sm text-gray-300">certamen de canto</p>
-                    <a href="https://wa.me/${config.whatsappNumber}" target="_blank" class="text-green-400 mt-2 inline-block hover:underline">
-                        ¡Inscribite aquí!
-                    </a>
-                </div>
+                <div class="w-full"><h3 class="text-2xl font-bold text-sky-400">${ticket.name}</h3><p class="text-gray-300">${ticket.seatLocation || 'Ubicación General'}</p></div>
+                ${codesContainer}
+                <div class="w-full mt-4"><p class="text-lg font-semibold">${ticket.showName}</p><p class="text-md text-gray-400">${ticket.showLocation}</p>${addressHtml}<p class="text-xs text-gray-500 mt-2">ID: ${ticket.id}</p></div>
+                <div class="mt-4 border-t border-gray-700 pt-4 w-full"><p class="text-xl font-bold text-sky-400">VYT-MUSIC</p><p class="text-sm text-gray-300">certamen de canto</p><a href="https://wa.me/5493417422062" target="_blank" class="text-green-400 mt-2 inline-block hover:underline">¡Inscribite aquí!</a></div>
                 <button class="download-btn w-full mt-4 px-4 py-3 text-white font-bold rounded-lg">Descargar Entrada (PDF)</button>
             `;
             
@@ -284,27 +253,48 @@
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
+            
+            try {
+                JsBarcode(`#barcode-${ticket.id}`, ticket.id, {
+                    format: "CODE128", lineColor: "#000", width: 2, height: 30,
+                    displayValue: true, fontSize: 14, textMargin: 2, background: "transparent", margin: 10
+                });
+            } catch (e) { console.error("Error al generar el código de barras:", e); }
 
             cardWrapper.querySelector('.download-btn').addEventListener('click', () => {
                 const elementToPrint = document.getElementById(`card-${ticket.id}`);
                 const options = {
-                    margin:       0.2,
-                    filename:     `Entrada_VYTMUSIC_${ticket.name.replace(/\s/g, '_')}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, allowTaint: true }, 
-                    jsPDF:        { unit: 'in', format: 'a6', orientation: 'portrait' }
+                    margin: 0.2, filename: `Entrada_VYTMUSIC_${ticket.name.replace(/\s/g, '_')}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'a6', orientation: 'portrait' }
                 };
                 html2pdf().set(options).from(elementToPrint).save();
             });
         }
-
+        
+        // ** NUEVA FUNCIÓN PARA RENDERIZAR ENTRADAS **
         function renderTickets(ticketsToRender) {
-            ui.qrsContainer.innerHTML = ''; // Limpiar contenedor actual
+            ui.qrsContainer.innerHTML = ''; // Limpiar contenedor
             if (ticketsToRender.length === 0) {
-                ui.qrsContainer.innerHTML = '<p class="text-center text-gray-400 col-span-full">No se encontraron entradas con ese criterio de búsqueda.</p>';
+                ui.qrsContainer.innerHTML = '<p class="text-center text-gray-400 col-span-full">No se encontraron entradas con ese criterio.</p>';
                 return;
             }
             ticketsToRender.forEach(ticket => createTicketCard(ticket));
+        }
+
+        // ** NUEVA FUNCIÓN PARA FILTRAR ENTRADAS **
+        function filterTickets() {
+            const searchTerm = ui.ticketSearchInput.value.toLowerCase().trim();
+            if (!searchTerm) {
+                renderTickets(state.allTicketsData); // Muestra todas si no hay búsqueda
+                return;
+            }
+            const filtered = state.allTicketsData.filter(ticket => 
+                ticket.name.toLowerCase().includes(searchTerm) || 
+                ticket.id.toLowerCase().includes(searchTerm)
+            );
+            renderTickets(filtered);
         }
 
         async function loadArtistTickets(artistPrefix) {
@@ -314,9 +304,6 @@
             state.currentArtistPrefix = artistPrefix;
 
             try {
-                // *** CORRECCIÓN CLAVE ***
-                // La ruta a la colección debe ser correcta y coincidir con la de `index.html`.
-                // Usamos la variable `appId` para asegurar consistencia.
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const ticketsCollectionRef = collection(state.db, `artifacts/${appId}/public/data/tickets`);
                 const q = query(ticketsCollectionRef, where("prefix", "==", artistPrefix));
@@ -326,82 +313,45 @@
 
                 if (state.allTicketsData.length > 0) {
                     ui.showNameDisplay.textContent = `Show: ${state.allTicketsData[0].showName || 'N/A'}`;
-                    renderTickets(state.allTicketsData);
+                    renderTickets(state.allTicketsData); // Renderizar todas al inicio
                     displayMessage(`${state.allTicketsData.length} entradas cargadas.`, 'success');
-                    // *** AQUÍ ESTÁ LA LÓGICA ***
-                    // Si se cargan entradas, se muestra el botón de compartir y el buscador.
-                    ui.shareAllTicketsBtn.classList.remove('hidden');
-                    ui.searchContainer.classList.remove('hidden');
+                    ui.controlsContainer.classList.remove('hidden'); // Mostrar controles
                 } else {
-                    displayMessage('No se encontraron entradas para este grupo o el enlace es incorrecto.', 'warning');
+                    displayMessage('No se encontraron tickets para este grupo o el prefijo es incorrecto.', 'warning');
                     ui.showNameDisplay.textContent = 'Show: No disponible';
-                    ui.shareAllTicketsBtn.classList.add('hidden');
-                    ui.searchContainer.classList.add('hidden');
+                    ui.controlsContainer.classList.add('hidden'); // Ocultar si no hay tickets
                 }
             } catch (error) {
                 console.error('Error al cargar las entradas del artista:', error);
                 displayMessage('Error al cargar las entradas. Revisa la consola.', 'error');
-                ui.shareAllTicketsBtn.classList.add('hidden');
-                ui.searchContainer.classList.add('hidden');
             } finally {
                 setLoading(false);
             }
         }
-
+        
         function generateAndShareAllTicketsLink() {
             if (!state.currentArtistPrefix) {
                 displayMessage('No hay un grupo de entradas cargado para compartir.', 'warning');
                 return;
             }
-            // Genera el enlace a la página actual con el parámetro del artista
             const shareableLink = `${window.location.origin}${window.location.pathname}?artist=${encodeURIComponent(state.currentArtistPrefix)}`;
             showShareLinkModal(shareableLink);
         }
 
-        function filterTickets() {
-            const searchTerm = ui.ticketSearchInput.value.toLowerCase().trim();
-            if (!searchTerm) {
-                renderTickets(state.allTicketsData); // Si el buscador está vacío, muestra todas
-                return;
-            }
-            const filtered = state.allTicketsData.filter(ticket => 
-                ticket.name.toLowerCase().includes(searchTerm) || 
-                ticket.id.toLowerCase().includes(searchTerm) ||
-                (ticket.seatLocation && ticket.seatLocation.toLowerCase().includes(searchTerm))
-            );
-            renderTickets(filtered);
-        }
-
-        // --- INICIO DE LA APLICACIÓN ---
         async function startApp() {
             setLoading(true);
             try {
-                // *** CORRECCIÓN CLAVE: INICIALIZACIÓN DE FIREBASE ***
-                // Usamos las variables del entorno para una conexión segura y automática.
-                // Esto evita errores por credenciales incorrectas o faltantes.
-                const firebaseConfig = typeof __firebase_config !== 'undefined' 
-                    ? JSON.parse(__firebase_config)
-                    : null;
-
-                if (!firebaseConfig) {
-                    throw new Error("La configuración de Firebase no está disponible.");
-                }
-
+                const firebaseConfig = JSON.parse(__firebase_config);
                 const app = initializeApp(firebaseConfig);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
-                
-                // Autenticación robusta
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(state.auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(state.auth);
                 }
-                console.log("Autenticación con Firebase exitosa.");
-
             } catch (error) {
-                console.error("Error crítico al conectar con Firebase:", error);
-                displayMessage("Error crítico al conectar con la base de datos.", "error");
+                displayMessage("Error crítico al conectar con Firebase.", "error");
                 setLoading(false);
                 return;
             }
@@ -418,8 +368,8 @@
             }
 
             // Añadir event listeners
-            ui.shareAllTicketsBtn.addEventListener('click', generateAndShareAllTicketsLink);
             ui.ticketSearchInput.addEventListener('input', filterTickets);
+            ui.shareAllTicketsBtn.addEventListener('click', generateAndShareAllTicketsLink);
         }
 
         document.addEventListener('DOMContentLoaded', startApp);
