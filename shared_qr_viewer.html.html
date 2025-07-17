@@ -270,8 +270,8 @@
             cardWrapper.querySelector('.download-btn').addEventListener('click', () => {
                 const elementToPrint = document.getElementById(`card-${ticket.id}`);
                 html2canvas(elementToPrint, {
-                    backgroundColor: '#1f2937', // Match the card's background
-                    useCORS: true // Important for external images like the logo
+                    backgroundColor: '#1f2937',
+                    useCORS: true
                 }).then(canvas => {
                     const link = document.createElement('a');
                     link.href = canvas.toDataURL('image/png');
