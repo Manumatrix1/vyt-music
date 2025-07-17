@@ -1031,29 +1031,12 @@
         async function startApp() {
             cacheUIElements();
             setLoading(true);
-            setupEventListeners(); // Mover aquí para que los botones de login siempre funcionen
-
+            
             try {
                 const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
                 
                 if (!firebaseConfigString) {
-                    console.warn("Firebase config is not defined. Showing auth screen as fallback.");
-                    ui.authScreen.classList.remove('hidden');
-                    ui.appContent.classList.add('hidden');
-                    setLoading(false);
-                    // No se puede inicializar firebase, pero los botones de login necesitan un objeto auth
-                    // Lo mejor es mostrar un error y parar. Pero si el usuario quiere que funcione,
-                    // necesitamos una config de fallback, lo que no es seguro.
-                    // La lógica actual de mostrar el login y no hacer nada más es la más segura.
-                    // El problema es que state.auth es null.
-                    // Vamos a inicializarlo con una config vacía para que no falle, aunque no conecte.
-                    try {
-                        const app = initializeApp({});
-                        state.auth = getAuth(app);
-                    } catch(e) {
-                         displayMessage("Configuración de Firebase inválida o ausente.", "error");
-                    }
-                    return;
+                    throw new Error("Firebase config not provided by environment.");
                 }
 
                 const firebaseConfig = JSON.parse(firebaseConfigString);
@@ -1062,7 +1045,11 @@
                 state.auth = getAuth(app);
                 state.synth = new Tone.Synth().toDestination();
                 
+                // **CORRECCIÓN: Los listeners se configuran DESPUÉS de inicializar Firebase**
+                setupEventListeners();
+
                 onAuthStateChanged(state.auth, user => {
+                    setLoading(false); // Ocultar loading una vez que se sabe el estado de auth
                     if (user && !state.isOfflineMode) {
                         state.userId = user.uid;
                         ui.userEmailDisplay.textContent = user.email || 'Anónimo';
@@ -1076,19 +1063,20 @@
                         ui.authScreen.classList.remove('hidden');
                         ui.appContent.classList.add('hidden');
                     }
-                     setLoading(false);
                 });
 
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(state.auth, __initial_auth_token);
-                } else {
-                    setLoading(false); // Si no hay token, quitar el loading para mostrar el login
                 }
                 
             } catch (error) {
                 console.error("Error crítico:", error);
                 displayMessage("Error crítico al conectar con Firebase. Revisa la configuración.", "error");
                 setLoading(false);
+                // Si falla la inicialización, solo mostramos la pantalla de login
+                // Los botones de login/registro no funcionarán, indicando un problema de config
+                ui.authScreen.classList.remove('hidden');
+                ui.appContent.classList.add('hidden');
             }
         }
 
