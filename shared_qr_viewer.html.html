@@ -71,7 +71,7 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
         }
-        .qrcode-container canvas, .qrcode-container img[alt="QR Code"] {
+        .qrcode-container canvas, .qrcode-container img {
             width: 100% !important; height: 100% !important;
             object-fit: contain;
         }
@@ -87,6 +87,7 @@
         .download-btn {
             background-color: #38bdf8;
             transition: background-color 0.3s ease;
+            border: 2px solid #0ea5e9;
         }
         .download-btn:hover {
             background-color: #0ea5e9;
@@ -263,7 +264,8 @@
             
             ui.qrsContainer.appendChild(cardWrapper);
             
-            new QRCode(document.getElementById(`qrcode-${ticket.id}`), {
+            const qrElement = document.getElementById(`qrcode-${ticket.id}`);
+            new QRCode(qrElement, {
                 text: ticket.id,
                 width: 256,
                 height: 256,
@@ -292,7 +294,6 @@
                     `;
                 }
                 
-                // ** CORRECCIÓN: Ocultar el botón de descarga en el clon **
                 const downloadBtnClone = clone.querySelector('.download-btn');
                 if(downloadBtnClone) {
                     downloadBtnClone.style.display = 'none';
