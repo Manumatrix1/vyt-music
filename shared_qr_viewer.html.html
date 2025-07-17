@@ -114,7 +114,7 @@
             <p class="mb-4">Copia el siguiente enlace para que el artista lo comparta:</p>
             <div class="flex items-center space-x-2 mb-4">
                 <input type="text" id="share-link-display" class="flex-grow p-3 rounded-md border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-500" readonly>
-                <button id="copy-share-link-btn" class="px-4 py-2 bg-sky-600 text-white font-semibold rounded-lg hover:bg-sky-700">Copiar</button>
+                <button id="copy-share-link-btn" class="px-4 py-2 bg-sky-600 text-white font-semibold rounded-lg hover:bg-sky-700 transition-colors duration-200">Copiar</button>
             </div>
             <div class="flex justify-end">
                 <button id="close-share-modal-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700">Cerrar</button>
@@ -197,7 +197,15 @@
                 tempInput.select();
                 try {
                     document.execCommand('copy');
-                    displayMessage('¡Enlace copiado!', 'success');
+                    // ** MEJORA: Feedback visual al copiar **
+                    ui.copyShareLinkBtn.textContent = '¡Copiado!';
+                    ui.copyShareLinkBtn.classList.remove('bg-sky-600', 'hover:bg-sky-700');
+                    ui.copyShareLinkBtn.classList.add('bg-green-500');
+                    setTimeout(() => {
+                        ui.copyShareLinkBtn.textContent = 'Copiar';
+                        ui.copyShareLinkBtn.classList.add('bg-sky-600', 'hover:bg-sky-700');
+                        ui.copyShareLinkBtn.classList.remove('bg-green-500');
+                    }, 2000);
                 } catch (err) {
                     displayMessage('Error al copiar. Por favor, cópialo manualmente.', 'error');
                 }
@@ -338,7 +346,6 @@
         async function startApp() {
             setLoading(true);
             try {
-                // ** CORRECCIÓN: Usar la configuración del entorno o una de respaldo **
                 const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
                 const configToUse = firebaseConfigString 
                     ? JSON.parse(firebaseConfigString)
