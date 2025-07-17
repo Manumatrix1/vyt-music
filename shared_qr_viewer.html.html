@@ -197,7 +197,6 @@
                 tempInput.select();
                 try {
                     document.execCommand('copy');
-                    // ** MEJORA: Feedback visual al copiar **
                     ui.copyShareLinkBtn.textContent = '¡Copiado!';
                     ui.copyShareLinkBtn.classList.remove('bg-sky-600', 'hover:bg-sky-700');
                     ui.copyShareLinkBtn.classList.add('bg-green-500');
@@ -270,11 +269,14 @@
 
             cardWrapper.querySelector('.download-btn').addEventListener('click', () => {
                 const elementToPrint = document.getElementById(`card-${ticket.id}`);
+                // ** CORRECCIÓN: Opciones de PDF ajustadas para evitar cortes **
                 const options = {
-                    margin: 0.2, filename: `Entrada_VYTMUSIC_${ticket.name.replace(/\s/g, '_')}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true },
-                    jsPDF: { unit: 'in', format: 'a6', orientation: 'portrait' }
+                    margin:       0.5, // Margen en pulgadas
+                    filename:     `Entrada_VYTMUSIC_${ticket.name.replace(/\s/g, '_')}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true, logging: false },
+                    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+                    pagebreak:    { mode: ['avoid-all'] } // Evitar cortar el contenido de la tarjeta
                 };
                 html2pdf().set(options).from(elementToPrint).save();
             });
