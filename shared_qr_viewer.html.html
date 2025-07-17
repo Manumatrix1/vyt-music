@@ -15,7 +15,7 @@
 
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
     <style>
@@ -245,8 +245,8 @@
                 <div class="w-full"><h3 class="text-2xl font-bold text-sky-400">${ticket.name}</h3><p class="text-gray-300">${ticket.seatLocation || 'Ubicación General'}</p></div>
                 ${codesContainer}
                 <div class="w-full mt-4"><p class="text-lg font-semibold">${ticket.showName}</p><p class="text-md text-gray-400">${ticket.showLocation}</p>${addressHtml}<p class="text-xs text-gray-500 mt-2">ID: ${ticket.id}</p></div>
-                <div class="mt-4 border-t border-gray-700 pt-4 w-full"><p class="text-xl font-bold text-sky-400">VYT-MUSIC</p><p class="text-sm text-gray-300">certamen de canto</p><a href="https://wa.me/5493417422062" target="_blank" class="text-green-400 mt-2 inline-block hover:underline">¡Inscribite aquí!</a></div>
-                <button class="download-btn w-full mt-4 px-4 py-3 text-white font-bold rounded-lg">Descargar Entrada (PDF)</button>
+                <div class="mt-4 border-t border-gray-700 pt-4 w-full"><p class="text-xl font-bold text-sky-400">VYT-MUSIC</p><p class="text-sm text-gray-300">certamen de canto</p><p class="text-green-400 mt-2">Contacto: +54 9 341 742-2062</p></div>
+                <button class="download-btn w-full mt-4 px-4 py-3 text-white font-bold rounded-lg">Descargar Entrada (PNG)</button>
             `;
             
             ui.qrsContainer.appendChild(cardWrapper);
@@ -269,16 +269,15 @@
 
             cardWrapper.querySelector('.download-btn').addEventListener('click', () => {
                 const elementToPrint = document.getElementById(`card-${ticket.id}`);
-                // ** CORRECCIÓN: Opciones de PDF ajustadas para evitar cortes **
-                const options = {
-                    margin:       0.5, // Margen en pulgadas
-                    filename:     `Entrada_VYTMUSIC_${ticket.name.replace(/\s/g, '_')}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, logging: false },
-                    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-                    pagebreak:    { mode: ['avoid-all'] } // Evitar cortar el contenido de la tarjeta
-                };
-                html2pdf().set(options).from(elementToPrint).save();
+                html2canvas(elementToPrint, {
+                    backgroundColor: '#1f2937', // Match the card's background
+                    useCORS: true // Important for external images like the logo
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = `Entrada_VYTMUSIC_${ticket.name.replace(/\s/g, '_')}.png`;
+                    link.click();
+                });
             });
         }
         
