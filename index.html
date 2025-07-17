@@ -1004,7 +1004,17 @@
             cacheUIElements();
             setLoading(true);
             try {
-                const firebaseConfig = JSON.parse(__firebase_config);
+                // ** CORRECCIÓN: Manejo de configuración de Firebase indefinida **
+                const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+                if (!firebaseConfigString) {
+                    console.warn("Firebase config is not defined. Using fallback or entering demo mode.");
+                    enterDemoMode(); // Opcional: entrar en modo demo si no hay config
+                    setLoading(false);
+                    setupEventListeners();
+                    return;
+                }
+
+                const firebaseConfig = JSON.parse(firebaseConfigString);
                 const app = initializeApp(firebaseConfig);
                 state.db = getFirestore(app);
                 state.auth = getAuth(app);
@@ -1035,7 +1045,7 @@
                 
             } catch (error) {
                 console.error("Error crítico:", error);
-                displayMessage("Error crítico al conectar con Firebase.", "error");
+                displayMessage("Error crítico al conectar con Firebase. Revisa la configuración.", "error");
                 setLoading(false);
             }
             setupEventListeners();
